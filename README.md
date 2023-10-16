@@ -2,4 +2,4 @@
 
 Team: Superscalar 
 
-Members: Dongming Liu, Elijah Ye, Tracey Miao
+Members: Dongming Liu, Elijah Ye, Tracy Miao
