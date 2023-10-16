@@ -1,4 +1,4 @@
-### Fall 2023 ECE411
+# Fall 2023 ECE411
 
 Team: Superscalar 
 
