@@ -82,12 +82,12 @@ typedef union packed{
     // unless you want to overwrite everything, otherwise do not write to this variable
     logic[WORD_LEN-1:0] word;   
 
-    rv32i_inst_r_t r_type; // r-type instruction
-    rv32i_inst_i_t i_type; // i-type instruction
-    rv32i_inst_s_t s_type; // s-type instruction
-    rv32i_inst_b_t b_type; // b-type instruction
-    rv32i_inst_u_t u_type; // u-type instruction
-    rv32i_inst_j_t j_type; // j-type instruction
+    rv32i_inst_r_t r_inst; // r-type instruction
+    rv32i_inst_i_t i_inst; // i-type instruction
+    rv32i_inst_s_t s_inst; // s-type instruction
+    rv32i_inst_b_t b_inst; // b-type instruction
+    rv32i_inst_u_t u_inst; // u-type instruction
+    rv32i_inst_j_t j_inst; // j-type instruction
 }rv32i_inst_t;
 
 
@@ -102,7 +102,7 @@ typedef struct packed{
     
     // TODO: ask this
     logic           branch_enable;  // seems to be something for ex ctrl signals, 1 if inst is branch
-    
+
     alu_ops         aluop;
     branch_funct3_t cmpop;
     cmpmux_sel_t    cmpmux_sel;
