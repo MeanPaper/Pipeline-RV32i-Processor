@@ -1,0 +1,2 @@
+module control_word
+endmodule 
