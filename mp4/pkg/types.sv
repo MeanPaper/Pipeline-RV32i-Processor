@@ -11,18 +11,14 @@ import cmpmux::*;
 import alumux::*;
 import regfilemux::*;
 
-/* Parameters */
-parameter int WORD_LEN = 32;
-
 /* Basic Types */
-typedef logic [WORD_LEN-1: 0] rv32i_word; // [31:0], 32 bits
-typedef logic [4:0] rv32i_reg;            // [4:0], 32 registers
-typedef logic [3:0] rv32i_mem_wmask;      // [3:0], 4 bits, used to select the bytes in the word
-typedef logic [6:0] funct7_t;               // [36:0], 7 bits, function bits, plz refer to rv32i instruction type
-typedef logic [2:0] funct3_t;
+typedef logic [31:0]    rv32i_word;         
+typedef logic [4:0]     rv32i_reg;          // register index  
+typedef logic [3:0]     rv32i_mem_wmask;    
+typedef logic [6:0]     funct7_t;           // instruction func7 field    
+typedef logic [2:0]     funct3_t;           // instruction func3 field
 
 /************** instructions formats **************/
-
 // r type format
 typedef struct packed{
     funct7_t        funct7;        
@@ -35,7 +31,7 @@ typedef struct packed{
 
 // i type format
 typedef struct packed{
-    logic[11:0]     imm;   // use i_imm
+    logic[11:0]     imm;    
     rv32i_reg       rs1;
     funct3_t        funct3;    
     rv32i_reg       rd;
@@ -44,7 +40,7 @@ typedef struct packed{
 
 // s type format
 typedef struct packed{
-    logic[6:0]      top_imm; // try not to use these imms, use s_imm
+    logic[6:0]      top_imm;
     rv32i_reg       rs2;
     rv32i_reg       rs1;
     funct3_t        funct3;
@@ -54,7 +50,7 @@ typedef struct packed{
 
 // b type format
 typedef struct packed{
-    logic[6:0]      top_imm; // try not to use these imms, use b_imm
+    logic[6:0]      top_imm; 
     rv32i_reg       rs2;
     rv32i_reg       rs1;
     funct3_t        funct3;    
@@ -64,30 +60,27 @@ typedef struct packed{
 
 // u type format
 typedef struct packed{ 
-    logic[19:0]     imm;    // try not to use this imm, use u_imm
+    logic[19:0]     imm;   
     rv32i_reg       rd;
     rv32i_opcode    opcode;
 }rv32i_inst_u_t;
 
 // j type format
 typedef struct packed{
-    logic[19:0]     imm;   // try not to use this imm, use j_imm
+    logic[19:0]     imm;    
     rv32i_reg       rd;
     rv32i_opcode    opcode;    
 }rv32i_inst_j_t;
 
 /************** instructions union **************/
 typedef union packed{
-
-    // unless you want to overwrite everything, otherwise do not write to this variable
-    logic[WORD_LEN-1:0] word;   
-
-    rv32i_inst_r_t r_inst; // r-type instruction
-    rv32i_inst_i_t i_inst; // i-type instruction
-    rv32i_inst_s_t s_inst; // s-type instruction
-    rv32i_inst_b_t b_inst; // b-type instruction
-    rv32i_inst_u_t u_inst; // u-type instruction
-    rv32i_inst_j_t j_inst; // j-type instruction
+    logic[31:0]     word;   
+    rv32i_inst_r_t  r_inst; // r-type instruction
+    rv32i_inst_i_t  i_inst; // i-type instruction
+    rv32i_inst_s_t  s_inst; // s-type instruction
+    rv32i_inst_b_t  b_inst; // b-type instruction
+    rv32i_inst_u_t  u_inst; // u-type instruction
+    rv32i_inst_j_t  j_inst; // j-type instruction
 }rv32i_inst_t;
 
 
@@ -96,106 +89,79 @@ typedef union packed{
 // the control word is valid. may use it flush pipeline
 // TODO: do we need pc and opcode
 typedef struct packed{
-    logic           valid;
-    rv32i_word      pc;
-    rv32i_opcode    opcode;
-    
-    // TODO: ask this
-    logic           branch_enable;  // seems to be something for ex ctrl signals, 1 if inst is branch
-
+    logic           is_branch;  
     alu_ops         aluop;
     branch_funct3_t cmpop;
     cmpmux_sel_t    cmpmux_sel;
     alumux1_sel_t   alumux1_sel;
     alumux2_sel_t   alumux2_sel;
-
     // TODO: double check this, seems like it is part of both IF and EXE, do we still need this?
     // not really in my opinion
-    // marmux_sel_t    marmux_sel;     
+    marmux_sel_t    marmux_sel;
 }EX_ctrl_t;
 
 typedef struct packed{
-    logic           valid;
-    rv32i_word      pc;
-    rv32i_opcode    opcode;
-
-    logic       mem_read;
-    logic       mem_write;
-    // logic       branch_enable;
-    rv32i_mem_wmask wmask;
-
+    logic               mem_read;
+    logic               mem_write;
+    rv32i_mem_wmask     wmask;
 }MEM_ctrl_t;
+
+typedef struct packed{
+    logic               load_regfile;   
+    regfilemux_sel_t    regfilemux_sel;
+}WB_ctrl_t;
 
 typedef struct packed{
     logic           valid;
     rv32i_word      pc;
     rv32i_opcode    opcode;
-
-    logic   load_regfile;   // load signals
-    regfilemux_sel_t regfilemux_sel;
-}WB_ctrl_t;
+    EX_ctrl_t       ex_ctrlwd;
+    MEM_ctrl_t      mem_ctrlwd;
+    WB_ctrl_t       wb_ctrlwd;  
+}ctrl_word_t;
 
 /************** intermediate stages **************/
-// the struct use to store the stage control signals
+// the struct use to store the stage registers
 typedef struct packed {
-    
-    // TODO: pc reg
-    rv32i_word      pc;
-
-    // TODO: ir register data section
-    rv32i_inst_t    ir; // the calculation can be done outside (eg. decode state)
+    rv32i_word      pc;     // program counter
+    rv32i_inst_t    ir;     // instruction reg
 }IF_ID_stage_t;
 
 //TODO: double check the imms
 typedef struct packed {
-    
     // control signal blocks
-    EX_ctrl_t   EX_ctrlwd;
-    MEM_ctrl_t  MEM_ctrlwd;
-    WB_ctrl_t   WB_ctrlwd;
-
+    ctrl_word_t ctrl_wd;
     rv32i_word  rs1_out;     // src reg 1 output
     rv32i_word  rs2_out;     // src reg 2 output
     rv32i_word  i_imm; 
     rv32i_word  s_imm;      
     rv32i_word  b_imm;
-    rv32i_word  u_imm;       // u_type immediate
+    rv32i_word  u_imm;       
     rv32i_word  j_imm;
-
     rv32i_reg   rd;          // dest reg
 }ID_EX_stage_t;
 
 // TODO: double check
 typedef struct packed {
-
     // control signal blocks
-    EX_ctrl_t   EX_ctrlwd;
-    MEM_ctrl_t  MEM_ctrlwd;
-    WB_ctrl_t   WB_ctrlwd;
-
-    rv32i_word  cmp_out;         // use for branch or set compare output
-    rv32i_word  alu_out;         // alu output
-    rv32i_word  mar;             // memory address register
-    rv32i_word  mem_data_out;    // store data that is about to write to the memory
+    ctrl_word_t ctrl_wd;
+    rv32i_word  cmp_out;        
+    rv32i_word  alu_out;         
+    rv32i_word  mar;         
+    rv32i_word  mem_data_out;    
     rv32i_word  u_imm;   
     rv32i_reg   rd;
-
 }EX_MEM_stage_t;
 
 // TODO: double check
 typedef struct packed {
-    
     // control signal blocks
-    EX_ctrl_t   EX_ctrlwd;
-    MEM_ctrl_t  MEM_ctrlwd;
-    WB_ctrl_t   WB_ctrlwd;
-
+    ctrl_word_t ctrl_wd;
     rv32i_word  alu_out;
     rv32i_word  cmp_out;    
-    rv32i_word  mdr;        // memory data register
+    rv32i_word  mdr;        
     rv32i_word  u_imm;   
     rv32i_reg   rd;
-    
 }MEM_WB_stage_t;
 
 endpackage
