@@ -5,20 +5,11 @@ import rv32i_types::*;
     /* inputs */
     input logic clk,
     input logic rst,
-    input rv32i_reg rs1,
-    input rv32i_reg rs2,
-    input rv32i_reg rd,
-    input logic load_regfile,
+    input IF_ID_stage_t id_in,
     input regfilemux::regfilemux_sel_t regfilemux_sel,
-    input rv32i_word alu_out,
-    input rv32i_word u_imm,
-    input logic br_en, 
-    input rv32i_word mdr_out,
-    input rv32i_word pc_out,
-
+    
     /* outputs to ID/EX buffer*/
-    output rv32i_word rs1_out,
-    output rv32i_word rs2_out,
+    output ID_EX_stage_t id_out
 
 );
     /* RegFile signals */
