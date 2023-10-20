@@ -2,31 +2,11 @@ module execute
 import rv32i_types::*;
 (
     /* input signals from ID/EX buffer */
-<<<<<<< HEAD
-    input rv32i_word pc_out,
-    input rv32i_word rs1_out,
-    input rv32i_word rs2_out,
-    input rv32i_word i_imm,
-    input rv32i_word u_imm,
-    input rv32i_word b_imm,
-    input rv32i_word s_imm,
-    input rv32i_word j_imm,
-    input alu_ops aluop,
-    input branch_funct3_t cmpop,
-    input alumux::alumux1_sel_t alumux1_sel,
-    input alumux::alumux2_sel_t alumux2_sel,
-    input cmpmux::cmpmux_sel_t cmpmux_sel,
-
-    /* output to EX/MEM buffer */
-    output rv32i_word alu_out,
-    output pcmux::pcmux_sel_t pcmux_sel,
-=======
     input ID_EX_stage_t ex_in,
 
     /* output to EX/MEM buffer */
     output EX_MEM_stage_t ex_out,
     output logic [1:0] pcmux_sel
->>>>>>> 449659a59fcba1fd70632745170b65925fb50e2f
 );
     /* intermidiate variables */
     /* ALU signals */
@@ -35,46 +15,6 @@ import rv32i_types::*;
     /* CMP signals */
     logic br_en;
     rv32i_word cmpmux_out;
-<<<<<<< HEAD
-
-
-    alu ALU(
-        .aluop,
-        .a(alumux1_out),
-        .b(alumux2_out),
-        .f(alu_out)
-    );
-
-    cmp CMP(
-        .a(rs1_out),
-        .b(cmpmux_out),
-        .cmpop,
-        .br_en(br_en)
-    );
-
-    /******************************** Muxes **************************************/
-always_comb begin : MUXES
-    unique case (alumux1_sel)
-        alumux::rs1_out: alumux1_out = rs1_out;
-        alumux::pc_out: alumux1_out = pc_out;
-    endcase
-
-    unique case (alumux2_sel)
-        alumux::i_imm: alumux2_out = i_imm;
-        alumux::u_imm: alumux2_out = u_imm;
-        alumux::b_imm: alumux2_out = b_imm;
-        alumux::s_imm: alumux2_out = s_imm;
-        alumux::j_imm: alumux2_out = j_imm;
-        alumux::rs2_out: alumux2_out = rs2_out;
-    endcase
-
-    unique case (cmpmux_sel)
-        cmpmux::rs2_out: cmpmux_out = rs2_out;
-        cmpmux::i_imm: cmpmux_out = i_imm;
-    endcase
-
-end : MUXES
-=======
     logic is_jlar;
 
     assign ex_out.cmp_out = br_en;
@@ -128,6 +68,5 @@ end : MUXES
         endcase
 
     end : EX_MUXES
->>>>>>> 449659a59fcba1fd70632745170b65925fb50e2f
 
 endmodule
