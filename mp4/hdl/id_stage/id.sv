@@ -48,15 +48,15 @@ import rv32i_types::*;
     always_comb begin : EX_MUXES
 
         unique case (regfilemux_sel)
-        regfilemux::alu_out: regfilemux_out = alu_out;
-        regfilemux::br_en: regfilemux_out = {31'b0, br_en};
-        regfilemux::u_imm: regfilemux_out = u_imm;
-        regfilemux::lw: regfilemux_out = mdrreg_out;
-        regfilemux::lb: regfilemux_out = {{24{mdrreg_b[7]}}, mdrreg_b}; // TODO: hopefully this works
-        regfilemux::lbu: regfilemux_out = {{24{1'b0}}, mdrreg_b};
-        regfilemux::lh: regfilemux_out = {{16{mdrreg_h[15]}}, mdrreg_h};
-        regfilemux::lhu: regfilemux_out = {{16{1'b0}}, mdrreg_h};
-        regfilemux::pc_plus4: regfilemux_out = pc_out + 4;
+            regfilemux::alu_out: regfilemux_out = alu_out;
+            regfilemux::br_en: regfilemux_out = {31'b0, br_en};
+            regfilemux::u_imm: regfilemux_out = u_imm;
+            regfilemux::lw: regfilemux_out = mdrreg_out;
+            regfilemux::lb: regfilemux_out = {{24{mdrreg_b[7]}}, mdrreg_b}; // TODO: hopefully this works
+            regfilemux::lbu: regfilemux_out = {{24{1'b0}}, mdrreg_b};
+            regfilemux::lh: regfilemux_out = {{16{mdrreg_h[15]}}, mdrreg_h};
+            regfilemux::lhu: regfilemux_out = {{16{1'b0}}, mdrreg_h};
+            regfilemux::pc_plus4: regfilemux_out = pc_out + 4;
         endcase
 
     end : EX_MUXES
