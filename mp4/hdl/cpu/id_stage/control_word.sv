@@ -41,29 +41,64 @@ function automatic void set_op_lui_ctrl();
 endfunction
 
 function automatic void set_op_auipc_ctrl();
-    
+    ex_ctrls.alumux1_sel = alumux::pc_out;
+    ex_ctrls.alumux2_sel = alumux::u_imm;
+    ex_ctrls.aluop = alu_add;
+    wb_ctrls.load_regfile = 1'b1;
+    wb_ctrls.regfilemux_sel = alu_out;
 endfunction
 
 function automatic void set_op_jal_ctrl();
+    ex_ctrls.alumux1_sel = alumux::pc_out; // use pc 
+    ex_ctrls.alumux2_sel = alumux::j_imm; 
+    ex_ctrls.aluop = alu_add;
+    wb_ctrls.load_regfile = 1'b1;
+    wb_ctrls.regfilemux_sel = regfilemux::pc_plus4;
 endfunction
 
+// jalr follows i-type format
 function automatic void set_op_jalr_ctrl();
+    ex_ctrls.alumux1_sel = alumux::rs1_out; // use reg
+    ex_ctrls.alumux2_sel = alumux::i_imm;   // i-imm
+    ex_ctrls.aluop = alu_add;
+    wb_ctrls.load_regfile = 1'b1;
+    wb_ctrls.regfilemux_sel = regfilemux::pc_plus4;
 endfunction
 
 function automatic void set_op_br_ctrl();
+    ex_ctrls.alumux1_sel = alumux::pc_out;
+    ex_ctrls.alumux2_sel = alumux::b_imm;
+    ex_ctrls.aluop = alu_add;
+    ex_ctrls.cmpmux_sel = rs2_out;
+    ex_ctrls.cmpop = branch_funct3;
+    ex_ctrls.is_branch = 1'b1; // raise is_branch flag
 endfunction
 
 function automatic void set_op_store_ctrl();
+    ex_ctrls.alumux1_sel = alumux::rs1_out;
+    ex_ctrls.alumux2_sel = alumux::s_imm;
+    ex_ctrls.aluop = alu_add;
+    mem_ctrls.mem_write = 1'b1;
+
+    // belong to mem stage
+    // case (store_funct3)
+    //     sw: mem_ctrls.wmask = 4'b1111;
+    //     sh: mem_ctrls.wmask = 4'b0011 << {mem_offset[1], 1'b0};
+    //     sb: mem_ctrls.wmask = 4'b0001 << mem_offset;
+    //     default: wmask = 4'b1111;
+    // endcase
+    
 endfunction
 
 function automatic void set_op_load_ctrl();
+
 endfunction
 
 // i_type instruction, or op_imm will write to register
 // and does nothing in mem stage
 function automatic void set_op_imm_ctrl();
     wb_ctrls.load_regfile = 1'b1;
-    unique case(arith_funct3) // arithmetic operation are encoded in funct3
+    case(arith_funct3) // arithmetic operation are encoded in funct3
         slt: begin
             // setCMP(cmpmux::i_imm, blt);
             ex_ctrls.cmpmux_sel = cmpmux::i_imm;
@@ -103,7 +138,7 @@ endfunction
 // reg_reg only will only use EX and WB control words
 function automatic void set_op_reg_ctrl();
     wb_ctrls.load_regfile = 1'b1; // op_reg always load regfile
-    unique case (arith_funct3)
+    case (arith_funct3)
         add: begin
             ex_ctrls.alumux1_sel = alumux::rs1_out;
             ex_ctrls.alumux2_sel = alumux::rs2_out;
@@ -146,7 +181,6 @@ always_comb begin
     ex_ctrls = '0;
     mem_ctrls = '0;
     wb_ctrls = '0;
-
     ctrl_word.valid = 1'b1; 
     ctrl_word.pc = pc_i;
     ctrl_word.opcode = opcode;
@@ -156,19 +190,25 @@ always_comb begin
     
     unique case(opcode) 
         op_lui: begin
+            set_op_lui_ctrl();
         end
         op_auipc: begin
+            set_op_auipc_ctrl();
         end
         op_jal: begin
+            set_op_jal_ctrl();
         end
         op_jalr: begin
+            set_op_jalr_ctrl();
         end
         op_br: begin
-            ex_ctrls.is_branch = 1'b1;
+            set_op_br_ctrl();
         end
         op_store: begin
+            set_op_store_ctrl();
         end
         op_load: begin
+            set_op_load_ctrl();
         end
         op_imm: begin
             set_op_imm_ctrl();
@@ -179,7 +219,6 @@ always_comb begin
         default:;
     endcase
 end
-
 endmodule 
 
 // op_lui   = 7'b0110111, //load upper immediate (U type)
