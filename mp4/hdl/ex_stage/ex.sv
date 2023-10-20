@@ -19,6 +19,8 @@ import rv32i_types::*;
 
     assign ex_out.cmp_out = br_en;
     assign is_jlar = (ex_in.ctrl_wd.opcode == op_jalr);
+    assign ex_out.ctrl_wd = ex_in.ctrl_wd;
+    
 
     alu ALU(
         .aluop(ex_in.ctrl_wd.ex_ctrlwd.aluop),
