@@ -2,21 +2,6 @@ module execute
 import rv32i_types::*;
 (
     /* input signals from ID/EX buffer */
-    // input rv32i_word pc_out,
-    // input rv32i_word rs1_out,
-    // input rv32i_word rs2_out,
-    // input rv32i_word i_imm,
-    // input rv32i_word u_imm,
-    // input rv32i_word b_imm,
-    // input rv32i_word s_imm,
-    // input rv32i_word j_imm,
-    // input alu_ops aluop,
-    // input branch_funct3_t cmpop,
-    // input alumux::alumux1_sel_t alumux1_sel,
-    // input alumux::alumux2_sel_t alumux2_sel,
-    // input cmpmux::cmpmux_sel_t cmpmux_sel,
-    // input logic is_branch,
-    // input rv32i_opcode opcode,
     input ID_EX_stage_t ex_in,
 
     /* output to EX/MEM buffer */
