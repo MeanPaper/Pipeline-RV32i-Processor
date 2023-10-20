@@ -15,8 +15,8 @@ import regfilemux::*;
 typedef logic [31:0]    rv32i_word;         
 typedef logic [4:0]     rv32i_reg;          // register index  
 typedef logic [3:0]     rv32i_mem_wmask;    
-typedef logic [6:0]     funct7_t;           // instruction func7 field    
-typedef logic [2:0]     funct3_t;           // instruction func3 field
+typedef logic [6:0]     funct7_t;           // instruction funct7 field    
+typedef logic [2:0]     funct3_t;           // instruction funct3 field
 
 /************** instructions formats **************/
 // r type format
@@ -171,7 +171,7 @@ endpackage
 
 package instr_field; // just a name for import
     
-typedef enum bit [6:0] {
+typedef enum logic [6:0] {
     op_lui   = 7'b0110111, //load upper immediate (U type)
     op_auipc = 7'b0010111, //add upper immediate PC (U type)
     op_jal   = 7'b1101111, //jump and link (J type)
@@ -184,7 +184,7 @@ typedef enum bit [6:0] {
     op_csr   = 7'b1110011  //control and status register (I type)
 } rv32i_opcode;
 
-typedef enum bit [2:0] {
+typedef enum logic [2:0] {
     beq  = 3'b000,
     bne  = 3'b001,
     blt  = 3'b100,
@@ -193,7 +193,7 @@ typedef enum bit [2:0] {
     bgeu = 3'b111
 } branch_funct3_t;
 
-typedef enum bit [2:0] {
+typedef enum logic [2:0] {
     lb  = 3'b000,
     lh  = 3'b001,
     lw  = 3'b010,
@@ -201,13 +201,13 @@ typedef enum bit [2:0] {
     lhu = 3'b101
 } load_funct3_t;
 
-typedef enum bit [2:0] {
+typedef enum logic [2:0] {
     sb = 3'b000,
     sh = 3'b001,
     sw = 3'b010
 } store_funct3_t;
 
-typedef enum bit [2:0] {
+typedef enum logic [2:0] {
     add  = 3'b000, //check bit30 for sub if op_reg opcode
     sll  = 3'b001,
     slt  = 3'b010,
@@ -218,7 +218,7 @@ typedef enum bit [2:0] {
     aand = 3'b111
 } arith_funct3_t;
 
-typedef enum bit [2:0] { // why arith_functs and this are repeated, why not just use one copy
+typedef enum logic [2:0] {
     alu_add = 3'b000,
     alu_sll = 3'b001,
     alu_sra = 3'b010,
