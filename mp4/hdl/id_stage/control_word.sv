@@ -41,6 +41,7 @@ function automatic void set_op_lui_ctrl();
 endfunction
 
 function automatic void set_op_auipc_ctrl();
+    
 endfunction
 
 function automatic void set_op_jal_ctrl();
@@ -181,8 +182,6 @@ end
 
 endmodule 
 
-
-
 // op_lui   = 7'b0110111, //load upper immediate (U type)
 // op_auipc = 7'b0010111, //add upper immediate PC (U type)
 // op_jal   = 7'b1101111, //jump and link (J type)
@@ -193,8 +192,6 @@ endmodule
 // op_imm   = 7'b0010011, //arith ops with register/immediate operands (I type)
 // op_reg   = 7'b0110011, //arith ops with register operands (R type)
 // op_csr   = 7'b1110011  //control and status register (I type)
-
-
 
 // typedef struct packed{
 //     logic           is_branch;  
@@ -227,7 +224,6 @@ endmodule
 //     MEM_ctrl_t      mem_ctrlwd;
 //     WB_ctrl_t       wb_ctrlwd;  
 // }ctrl_word_t;
-
 
 // function void setALU(alumux::alumux1_sel_t sel1, alumux::alumux2_sel_t sel2, alu_ops op); 
 //     ex_ctrls.alumux1_sel = sel1;
