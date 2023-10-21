@@ -7,7 +7,7 @@ import rv32i_types::*;
 );
 
 // declarations
-ctrl_word_t     crtl_word;
+ctrl_word_t     ctrl_word;
 EX_ctrl_t       ex_ctrls;
 MEM_ctrl_t      mem_ctrls;
 WB_ctrl_t       wb_ctrls;
@@ -22,24 +22,26 @@ instr_field::load_funct3_t load_funct3;
 instr_field::arith_funct3_t arith_funct3;
 
 // assignments
-assign control_words_o = crtl_word;
+assign control_words_o = ctrl_word;
 
 // extracting function bits
 assign funct3 = instr_i.r_inst.funct3;              // instruction funct3 
 assign funct4 = instr_i.r_inst.funct7;              // instruction funct7
 
 // type casting
-assign opcode = `rv32i_opcode(instr_i.word[6:0]);   // opcode lower 7 bits 
-assign branch_funct3 = `branch_funct3_t(funct3);
-assign store_funct3 = `store_funct3_t(funct3); 
-assign load_funct3 = `load_funct3_t(funct3);
-assign arith_funct3 = `arith_funct3_t(funct3);
+assign opcode = rv32i_opcode'(instr_i.word[6:0]);   // opcode lower 7 bits 
+assign branch_funct3 = branch_funct3_t'(funct3);
+assign store_funct3 = store_funct3_t'(funct3); 
+assign load_funct3 = load_funct3_t'(funct3);
+assign arith_funct3 = arith_funct3_t'(funct3);
 
+// op_lui control words
 function automatic void set_op_lui_ctrl();
     wb_ctrls.load_regfile = 1'b1;
     wb_ctrls.regfilemux_sel = regfilemux::u_imm;
 endfunction
 
+// op_auipc control words
 function automatic void set_op_auipc_ctrl();
     ex_ctrls.alumux1_sel = alumux::pc_out;
     ex_ctrls.alumux2_sel = alumux::u_imm;
@@ -48,6 +50,7 @@ function automatic void set_op_auipc_ctrl();
     wb_ctrls.regfilemux_sel = alu_out;
 endfunction
 
+// op_jal control words
 function automatic void set_op_jal_ctrl();
     ex_ctrls.alumux1_sel = alumux::pc_out; // use pc 
     ex_ctrls.alumux2_sel = alumux::j_imm; 
@@ -56,8 +59,9 @@ function automatic void set_op_jal_ctrl();
     wb_ctrls.regfilemux_sel = regfilemux::pc_plus4;
 endfunction
 
-// jalr follows i-type format
+// op_jalr control word
 function automatic void set_op_jalr_ctrl();
+    // jalr follows i-type format
     ex_ctrls.alumux1_sel = alumux::rs1_out; // use reg
     ex_ctrls.alumux2_sel = alumux::i_imm;   // i-imm
     ex_ctrls.aluop = alu_add;
@@ -65,6 +69,7 @@ function automatic void set_op_jalr_ctrl();
     wb_ctrls.regfilemux_sel = regfilemux::pc_plus4;
 endfunction
 
+// op_br control word
 function automatic void set_op_br_ctrl();
     ex_ctrls.alumux1_sel = alumux::pc_out;
     ex_ctrls.alumux2_sel = alumux::b_imm;
@@ -74,30 +79,23 @@ function automatic void set_op_br_ctrl();
     ex_ctrls.is_branch = 1'b1; // raise is_branch flag
 endfunction
 
+// op_store control word
 function automatic void set_op_store_ctrl();
     ex_ctrls.alumux1_sel = alumux::rs1_out;
     ex_ctrls.alumux2_sel = alumux::s_imm;
     ex_ctrls.aluop = alu_add;
     mem_ctrls.mem_write = 1'b1;
     mem_ctrls.store_funct3 = store_funct3;
-
-    // belong to mem stage
-    // case (store_funct3)
-    //     sw: mem_ctrls.wmask = 4'b1111;
-    //     sh: mem_ctrls.wmask = 4'b0011 << {mem_offset[1], 1'b0};
-    //     sb: mem_ctrls.wmask = 4'b0001 << mem_offset;
-    //     default: wmask = 4'b1111;
-    // endcase
-    
 endfunction
 
+// op_load control word
 function automatic void set_op_load_ctrl();
     ex_ctrls.alumux1_sel = alumux::rs1_out;
     ex_ctrls.alumux2_sel = alumux::i_imm;
     ex_ctrls.aluop = alu_add;
     mem_ctrls.mem_read = 1'b1;
     wb_ctrls.load_regfile = 1'b1;
-    case(load_funct3)
+    unique case(load_funct3)
         lw: wb_ctrls.regfilemux_sel = regfilemux::lw;
         lhu: wb_ctrls.regfilemux_sel = regfilemux::lhu;
         lh: wb_ctrls.regfilemux_sel = regfilemux::lh;
@@ -111,15 +109,13 @@ endfunction
 // and does nothing in mem stage
 function automatic void set_op_imm_ctrl();
     wb_ctrls.load_regfile = 1'b1;
-    case(arith_funct3) // arithmetic operation are encoded in funct3
+    unique case(arith_funct3) // arithmetic operation are encoded in funct3
         slt: begin
-            // setCMP(cmpmux::i_imm, blt);
             ex_ctrls.cmpmux_sel = cmpmux::i_imm;
             ex_ctrls.cmpop = blt;
             wb_ctrls.regfilemux_sel = regfilemux::br_en;
         end
         sltu: begin
-            // setCMP(cmpmux::i_imm, bltu);
             ex_ctrls.cmpmux_sel = cmpmux::i_imm;
             ex_ctrls.cmpop = bltu;
             wb_ctrls.regfilemux_sel = regfilemux::br_en; 
@@ -132,26 +128,21 @@ function automatic void set_op_imm_ctrl();
                 ex_ctrls.aluop = alu_sra;
             end
             wb_ctrls.regfilemux_sel = regfilemux::alu_out;
-            // setRegfileMux(regfilemux::alu_out);
         end
         default: begin  // add, and, or, xor, sll
             ex_ctrls.alumux1_sel = alumux::rs1_out;
             ex_ctrls.alumux2_sel = alumux::i_imm;
-            ex_ctrls.aluop = `alu_ops(arith_funct3);
+            ex_ctrls.aluop = alu_ops'(arith_funct3);
             wb_ctrls.regfilemux_sel = regfilemux::alu_out;
-            // setALU(alumux::rs1_out, alumux::i_imm, `alu_ops(arith_funct3)); // EX
-            // setRegfileMux(regfilemux::alu_out); // WB 
         end
     endcase
-
-    // TODO: is pc_plus4 control by the control word
 endfunction
 
 // setting reg_reg instructions control signals
 // reg_reg only will only use EX and WB control words
 function automatic void set_op_reg_ctrl();
     wb_ctrls.load_regfile = 1'b1; // op_reg always load regfile
-    case (arith_funct3)
+    unique case (arith_funct3)
         add: begin
             ex_ctrls.alumux1_sel = alumux::rs1_out;
             ex_ctrls.alumux2_sel = alumux::rs2_out;
@@ -182,7 +173,7 @@ function automatic void set_op_reg_ctrl();
         default: begin // and, or, xor, sll
             ex_ctrls.alumux1_sel = alumux::rs1_out;
             ex_ctrls.alumux2_sel = alumux::rs2_out;
-            ex_ctrls.aluop = `alu_ops(arith_funct3);
+            ex_ctrls.aluop = alu_ops'(arith_funct3);
             wb_ctrls.regfilemux_sel = regfilemux::alu_out;
         end
     endcase
