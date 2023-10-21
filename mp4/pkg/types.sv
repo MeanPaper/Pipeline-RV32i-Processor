@@ -157,7 +157,8 @@ typedef struct packed {
     ctrl_word_t ctrl_wd;
     rv32i_word  alu_out;
     rv32i_word  cmp_out;    
-    rv32i_word  mdr;        
+    rv32i_word  mdr;
+    rv32i_word  mar;        
     rv32i_word  u_imm;   
     rv32i_reg   rd;
 }MEM_WB_stage_t;

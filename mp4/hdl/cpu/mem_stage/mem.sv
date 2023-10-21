@@ -30,21 +30,32 @@ import rv32i_types::*;
 logic [3:0] wmask;
 
 /*****transfer to next stage******/
-always_ff @(posedge clk ) begin : transfer_to_next
-    mem_out.cmp_out <= mem_in.cmp_out;
-    mem_out.u_imm <= mem_in.u_imm;
-    mem_out.rd <= mem_in.rd;
-    mem_out.alu_out <= mem_in.alu_out;
-end: transfer_to_next
+// always_ff @(posedge clk ) begin : transfer_to_next
+//     mem_out.cmp_out <= mem_in.cmp_out;
+//     mem_out.u_imm <= mem_in.u_imm;
+//     mem_out.rd <= mem_in.rd;
+//     mem_out.alu_out <= mem_in.alu_out;
+// end: transfer_to_next
 
-/**************mdr_out************/
-always_ff @(posedge clk) begin : mdr
-    if (rst) begin
-        mem_out.mdr <= '0;
-    end else if (load_mdr) begin 
-        mem_out.mdr <= dmem_rdata;
-    end
-end: mdr
+// /**************mdr_out************/
+// always_ff @(posedge clk) begin : mdr
+//     if (rst) begin
+//         mem_out.mdr <= '0;
+//     end else if (load_mdr) begin 
+//         mem_out.mdr <= dmem_rdata;
+//     end
+// end: mdr
+
+/*****transfer to next stage******/
+always_comb begin : transfer_to_next
+    mem_out.ctrl_wd = mem_in.ctrl_wd;
+    mem_out.cmp_out = mem_in.cmp_out;
+    mem_out.u_imm = mem_in.u_imm;
+    mem_out.rd = mem_in.rd;
+    mem_out.alu_out = mem_in.alu_out;
+    mem_out.mar = mem_in.mar;
+    mem_out.mdr = dmem_rdata;   // mdr next value
+end: transfer_to_next
 
 /**********dmem_address***********/
 assign dmem_address = {mem_in.mar[31:2], 2'b0};
