@@ -61,7 +61,7 @@ import rv32i_types::*;
             alumux::rs2_out: alumux2_out = ex_in.rs2_out;
         endcase
 
-        unique case (cmpmux_sel)
+        unique case (ex_in.ctrl_wd.ex_ctrlwd.cmpmux_sel)
             cmpmux::rs2_out: cmpmux_out = ex_in.rs2_out;
             cmpmux::i_imm: cmpmux_out = ex_in.i_imm;
         endcase
@@ -78,7 +78,7 @@ import rv32i_types::*;
             default: pcmux_sel = {1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch};
         endcase
 
-        unique case (marmux_sel)
+        unique case (ex_in.ctrl_wd.ex_ctrlwd.marmux_sel)
             marmux::pc_out: marmux_out = ex_in.ctrl_wd.pc;
             marmux::alu_out: marmux_out = alu_out;
         endcase
