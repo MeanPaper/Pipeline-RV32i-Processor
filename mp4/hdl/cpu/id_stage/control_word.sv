@@ -79,6 +79,7 @@ function automatic void set_op_store_ctrl();
     ex_ctrls.alumux2_sel = alumux::s_imm;
     ex_ctrls.aluop = alu_add;
     mem_ctrls.mem_write = 1'b1;
+    mem_ctrls.store_funct3 = store_funct3;
 
     // belong to mem stage
     // case (store_funct3)
@@ -91,7 +92,19 @@ function automatic void set_op_store_ctrl();
 endfunction
 
 function automatic void set_op_load_ctrl();
-
+    ex_ctrls.alumux1_sel = alumux::rs1_out;
+    ex_ctrls.alumux2_sel = alumux::i_imm;
+    ex_ctrls.aluop = alu_add;
+    mem_ctrls.mem_read = 1'b1;
+    wb_ctrls.load_regfile = 1'b1;
+    case(load_funct3)
+        lw: wb_ctrls.regfilemux_sel = regfilemux::lw;
+        lhu: wb_ctrls.regfilemux_sel = regfilemux::lhu;
+        lh: wb_ctrls.regfilemux_sel = regfilemux::lh;
+        lb: wb_ctrls.regfilemux_sel = regfilemux::lb;
+        lbu: wb_ctrls.regfilemux_sel = regfilemux::lbu;
+        default: wb_ctrls.regfilemux_sel = regfilemux::lw;
+    endcase
 endfunction
 
 // i_type instruction, or op_imm will write to register
@@ -174,7 +187,6 @@ function automatic void set_op_reg_ctrl();
         end
     endcase
 endfunction
-
 
 always_comb begin
     ctrl_word = '0; // clear ctrl word

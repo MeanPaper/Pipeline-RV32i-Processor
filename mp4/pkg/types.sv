@@ -103,7 +103,7 @@ typedef struct packed{
 typedef struct packed{
     logic               mem_read;
     logic               mem_write;
-    rv32i_mem_wmask     wmask;
+    store_funct3_t      store_funct3;
 }MEM_ctrl_t;
 
 typedef struct packed{
