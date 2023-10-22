@@ -117,7 +117,7 @@ mem mem(
 );
 
 /******************************* WB stage ***********************************/
-wb wb(
+write_back write_back(
     .wb_in(mem_to_wb),
 
     /* output to regfile */
