@@ -19,7 +19,7 @@ import rv32i_types::*;
     output logic [31:0] dmem_address,
     output logic dmem_read,
     output logic dmem_write,
-    output logic [3:0] mem_byte_enable
+    output logic [3:0] mem_byte_enable,
 );
 
 //to do: wmask & mem_byte_enable
@@ -109,8 +109,10 @@ always_comb begin : wmask & rmask
     endcase
 end: wmask & rmask
 
-/***************** mem_byte_enable *******************/
+/********** mem_byte_enable & dmem_read & dmem_write **************/
 assign mem_byte_enable = wmask;
+assign dmem_write = mem_in.ctrl_wd.mem_ctrlwd.mem_write;
+assign dmem_read = mem_in.ctrl_wd.mem_ctrlwd.mem_read;
 
 
 /*

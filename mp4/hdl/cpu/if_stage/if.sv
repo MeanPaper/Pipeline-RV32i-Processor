@@ -8,8 +8,12 @@ import rv32i_types::*;
     input pcmux::pcmux_sel_t pcmux_sel,
     input logic load_pc,
 
-    /* outputs to IF/ID buffer*/
-    output IF_ID_stage_t if_output
+    /* outputs to IF/ID buffer */
+    output IF_ID_stage_t if_output,
+
+    /* outputs to Magic Memory */
+    output logic imem_read,
+    output logic [31:0] imem_address
 );
 /******************* Signals Needed for RVFI Monitor *************************/
 rv32i_word pcmux_out;
@@ -31,5 +35,7 @@ always_comb begin : PC_MUX
     endcase
 end
 
+assign imem_address = if_output.pc_out;
+assign imem_read = 1'b1; //for CP1
 
 endmodule

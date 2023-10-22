@@ -15,19 +15,17 @@ import rv32i_types::*;
 
     // Use these for CP1 (magic memory)
     output  logic   [31:0]  imem_address,
-    output  logic           imem_read,
+    output  logic           imem_read, //need double check
     input   logic   [31:0]  imem_rdata,
-    input   logic           imem_resp,
+    input   logic           imem_resp, //tbd
     output  logic   [31:0]  dmem_address,
     output  logic           dmem_read,
-    output  logic           dmem_write,
+    output  logic           dmem_write, 
     output  logic   [3:0]   dmem_wmask,
     input   logic   [31:0]  dmem_rdata,
     output  logic   [31:0]  dmem_wdata,
-    input   logic           dmem_resp
+    input   logic           dmem_resp //tbd
 );
-
-//todo: add WB stage
 
 /**************************** Control Signals ********************************/
 pcmux::pcmux_sel_t pcmux_sel;
@@ -48,7 +46,9 @@ EX_MEM_stage_t ex_to_mem;
 MEM_WB_stage_t mem_to_wb;
 /****************************** Load Signals  ********************************/
 logic load_pc;
-logic load_mdr; //tbd
+logic load_mdr; 
+logic load_regfile;
+rv32i_word regfile_in;
 assign load_pc = 1'b1; //For CP1
 assign load_mdr = 1'b1; // For CP1
 /******************************* IF stage ************************************/
@@ -60,8 +60,13 @@ i_fetch i_fetch(
     .pcmux_sel(pcmux_sel),
     .load_pc(load_pc),//hardcode to 1 for CP1
 
-    /* outputs to IF/ID buffer*/
-    .if_output(if_to_id_next)
+    /* outputs to IF/ID buffer */
+    .if_output(if_to_id_next),
+
+    /* outputs to Magic Memory */
+    .imem_address(imem_address),
+    .imem_read(imem_read), //hardcode to 1 for CP1
+    .(imem_resp)//tbd, from control_wd
 );
 
 /******************************* ID stage ************************************/
@@ -70,7 +75,9 @@ i_decode i_decode(
     .clk(clk),
     .rst(rst),
     .id_in(if_to_id),
-    .regfilemux_sel(mem_to_wb.ctrl_wd.wb_ctrlwd.regfilemux_sel), //todo, how to hook regfilemux_sel from control_word?
+    .regfile_in(regfile_in),
+    .load_regfile(load_regfile),
+    //.regfilemux_sel(mem_to_wb.ctrl_wd.wb_ctrlwd.regfilemux_sel), 
 
     /* outputs to ID/EX buffer*/
     .id_out(id_to_ex_next)
@@ -103,11 +110,22 @@ mem mem(
     /* output to Magic Memory */
     .dmem_wdata(dmem_wdata),
     .dmem_address(dmem_address),
-    .dmem_write(dmem_write),
+    .dmem_write(dmem_write), 
     .dmem_read(dmem_read),
-    .mem_byte_enable(dmem_wmask)
+    .mem_byte_enable(dmem_wmask),
+    .(dmem_resp)//tbd, pass from control_wd
 );
 
+/******************************* WB stage ***********************************/
+wb wb(
+    .wb_in(mem_to_wb),
+
+    /* output to regfile */
+    .regfile_in(regfile_in),
+    .load_regfile(load_regfile)
+);
+
+//it seems that we do not have if_id anymore?
 always_ff @(posedge clk) begin
     if(rst) begin
         if_id <= '0;
