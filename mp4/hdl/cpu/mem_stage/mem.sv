@@ -20,7 +20,7 @@ import rv32i_types::*;
     output logic [31:0] dmem_address,
     output logic dmem_read,
     output logic dmem_write,
-    output logic [3:0] mem_byte_enable,
+    output logic [3:0] mem_byte_enable
 );
 
 //to do: wmask & mem_byte_enable
@@ -86,7 +86,7 @@ end: dmem_write_data
  
 
 /***************** wmask & rmask ******************************/
-always_comb begin :
+always_comb begin
     wmask = '0;
     if(mem_in.ctrl_wd.opcode == op_store) begin
         case (mem_in.ctrl_wd.mem_ctrlwd.store_funct3)

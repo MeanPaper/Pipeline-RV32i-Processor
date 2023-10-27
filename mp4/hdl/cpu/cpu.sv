@@ -65,7 +65,7 @@ i_fetch i_fetch(
 
     /* outputs to Magic Memory */
     .imem_address(imem_address),
-    .imem_read(imem_read), //hardcode to 1 for CP1
+    .imem_read(imem_read) //hardcode to 1 for CP1
     // .imem_resp(imem_resp)//tbd, from control_wd
 );
 
@@ -111,7 +111,7 @@ mem mem(
     .dmem_address(dmem_address),
     .dmem_write(dmem_write), 
     .dmem_read(dmem_read),
-    .mem_byte_enable(dmem_wmask),
+    .mem_byte_enable(dmem_wmask)
     // .dmem_resp(dmem_resp)//tbd, pass from control_wd
 );
 
@@ -127,10 +127,10 @@ write_back write_back(
 //it seems that we do not have if_id anymore?
 always_ff @(posedge clk) begin
     if(rst) begin
-        if_id <= '0;
-        id_ex <= '0;
-        ex_mem <= '0;
-        mem_wb <= '0;
+        if_to_id <= '0;
+        id_to_ex <= '0;
+        ex_to_mem <= '0;
+        mem_to_wb <= '0;
     end
     else begin
 

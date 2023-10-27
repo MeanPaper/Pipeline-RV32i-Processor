@@ -88,7 +88,7 @@ import rv32i_types::*;
 
     always_ff @(posedge clk) begin
         if(rst) begin
-            order <= `0;
+            order <= '0;
         end
         if(commit == 1'b1) order <= order + 1;
     end

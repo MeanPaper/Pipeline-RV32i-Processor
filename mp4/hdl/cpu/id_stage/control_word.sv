@@ -1,9 +1,9 @@
-module control_word;
+module control_word
 import rv32i_types::*;
 (   
-    input rv32i_word    pc_i;
-    input rv32i_inst_t  instr_i;
-    output ctrl_word_t  control_words_o;
+    input rv32i_word    pc_i,
+    input rv32i_inst_t  instr_i,
+    output ctrl_word_t  control_words_o
 );
 
 // declarations
@@ -16,17 +16,17 @@ funct3_t        funct3;
 funct7_t        funct7;
 
 // different func3 bits
-instr_field::branch_funct3_t branch_funct3;
-instr_field::store_funct3_t store_funct3;
-instr_field::load_funct3_t load_funct3;
-instr_field::arith_funct3_t arith_funct3;
+branch_funct3_t branch_funct3;
+store_funct3_t store_funct3;
+load_funct3_t load_funct3;
+arith_funct3_t arith_funct3;
 
 // assignments
 assign control_words_o = ctrl_word;
 
 // extracting function bits
 assign funct3 = instr_i.r_inst.funct3;              // instruction funct3 
-assign funct4 = instr_i.r_inst.funct7;              // instruction funct7
+assign funct7 = instr_i.r_inst.funct7;              // instruction funct7
 
 // type casting
 assign opcode = rv32i_opcode'(instr_i.word[6:0]);   // opcode lower 7 bits 
@@ -47,7 +47,7 @@ function automatic void set_op_auipc_ctrl();
     ex_ctrls.alumux2_sel = alumux::u_imm;
     ex_ctrls.aluop = alu_add;
     wb_ctrls.load_regfile = 1'b1;
-    wb_ctrls.regfilemux_sel = alu_out;
+    wb_ctrls.regfilemux_sel = regfilemux::alu_out;
 endfunction
 
 // op_jal control words
@@ -74,7 +74,7 @@ function automatic void set_op_br_ctrl();
     ex_ctrls.alumux1_sel = alumux::pc_out;
     ex_ctrls.alumux2_sel = alumux::b_imm;
     ex_ctrls.aluop = alu_add;
-    ex_ctrls.cmpmux_sel = rs2_out;
+    ex_ctrls.cmpmux_sel = cmpmux::rs2_out;
     ex_ctrls.cmpop = branch_funct3;
     ex_ctrls.is_branch = 1'b1; // raise is_branch flag
 endfunction
@@ -161,12 +161,12 @@ function automatic void set_op_reg_ctrl();
             end
         end 
         slt: begin
-            ex_ctrls.cmpmux_sel = rs2_out;
+            ex_ctrls.cmpmux_sel = cmpmux::rs2_out;
             ex_ctrls.cmpop = blt;
             wb_ctrls.regfilemux_sel = regfilemux::br_en; 
         end
         sltu: begin
-            ex_ctrls.cmpmux_sel = rs2_out;
+            ex_ctrls.cmpmux_sel = cmpmux::rs2_out;
             ex_ctrls.cmpop = bltu;
             wb_ctrls.regfilemux_sel = regfilemux::br_en;
         end

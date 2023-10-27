@@ -27,7 +27,7 @@ import rv32i_types::*;
         if(wb_in.ctrl_wd.opcode == op_load) begin
             case(wb_in.ctrl_wd.wb_ctrlwd.regfilemux_sel)
                 regfilemux::lw: rmask = 4'b1111;
-                regfilemux::lh, regfilemux::lhu: rmask = 4'b0011 << {wb_in.mar[1], 1b'0};
+                regfilemux::lh, regfilemux::lhu: rmask = 4'b0011 << {wb_in.mar[1], 1'b0};
                 regfilemux::lb, regfilemux::lbu: rmask = 4'b0001 << wb_in.mar;
                 default: rmask = '0;
             endcase
