@@ -12,6 +12,7 @@ import rv32i_types::*;
     rv32i_word regfilemux_out;
     logic [7:0] mdrreg_b;
     logic [15:0] mdrreg_h;
+    logic [3:0] rmask;
 
     /* assignments for output signal */
     assign regfile_in = regfilemux_out;
@@ -21,6 +22,17 @@ import rv32i_types::*;
     assign mdrreg_b = wb_in.mdr[(wb_in.mar[1:0] * 8) +: 8];
     assign mdrreg_h = wb_in.mdr[(wb_in.mar[1:0] * 8) +: 16];
 
+    always_comb begin
+        rmask = '0;
+        if(wb_in.ctrl_wd.opcode == op_load) begin
+            case(wb_in.ctrl_wd.wb_ctrlwd.regfilemux_sel)
+                regfilemux::lw: rmask = 4'b1111;
+                regfilemux::lh, regfilemux::lhu: rmask = 4'b0011 << {wb_in.mar[1], 1b'0};
+                regfilemux::lb, regfilemux::lbu: rmask = 4'b0001 << wb_in.mar;
+                default: rmask = '0;
+            endcase
+        end
+    end
 
     always_comb begin : MUX
         unique case (wb_in.ctrl_wd.wb_ctrlwd.regfilemux_sel)
