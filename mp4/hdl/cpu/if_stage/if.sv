@@ -7,6 +7,7 @@ import rv32i_types::*;
     input rv32i_word alu_out,
     input pcmux::pcmux_sel_t pcmux_sel,
     input logic load_pc,
+    // input logic imem_resp, /* response from icache */
 
     /* outputs to IF/ID buffer */
     output IF_ID_stage_t if_output,
@@ -18,6 +19,8 @@ import rv32i_types::*;
 /******************* Signals Needed for RVFI Monitor *************************/
 rv32i_word pcmux_out;
 /*****************************************************************************/
+assign imem_address = if_output.pc_out;
+assign imem_read = 1'b1; //for CP1
 
 pc PC (
     .clk(clk),
@@ -35,7 +38,6 @@ always_comb begin : PC_MUX
     endcase
 end
 
-assign imem_address = if_output.pc_out;
-assign imem_read = 1'b1; //for CP1
+
 
 endmodule

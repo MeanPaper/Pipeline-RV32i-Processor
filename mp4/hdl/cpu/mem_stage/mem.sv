@@ -10,6 +10,7 @@ import rv32i_types::*;
 
     /* input signals from EX/MEM buffer */
     input EX_MEM_stage_t mem_in,
+    // input logic dmem_resp,
 
     /* output to EX/MEM buffer */
     output MEM_WB_stage_t mem_out,
@@ -28,6 +29,7 @@ import rv32i_types::*;
 //done: pass control_wd store_funct3 into stage
 
 logic [3:0] wmask;
+logic [3:0] rmask;
 
 /*****transfer to next stage******/
 // always_ff @(posedge clk ) begin : transfer_to_next
@@ -84,30 +86,32 @@ end: dmem_write_data
  
 
 /***************** wmask & rmask ******************************/
-always_comb begin : wmask & rmask
+always_comb begin :
     wmask = '0;
-    case (mem_in.ctrl_wd.mem_ctrlwd.store_funct3)
-        sw: wmask = 4'b1111;
-        sh: 
-        begin
-            case(dmem_address[1:0])
-                2'b00: wmask = 4'b0011;
-                2'b01: wmask = 4'bxxxx;
-                2'b10: wmask = 4'b1100;
-                2'b11: wmask = 4'bxxxx;
-            endcase
-        end
-        sb:
-        begin
-            case(dmem_address[1:0])
-                2'b00: wmask = 4'b0001;
-                2'b01: wmask = 4'b0010;
-                2'b10: wmask = 4'b0100;
-                2'b11: wmask = 4'b1000;
-            endcase
-        end 
-    endcase
-end: wmask & rmask
+    if(mem_in.ctrl_wd.opcode == op_store) begin
+        case (mem_in.ctrl_wd.mem_ctrlwd.store_funct3)
+            sw: wmask = 4'b1111;
+            sh: 
+            begin
+                case(dmem_address[1:0])
+                    2'b00: wmask = 4'b0011;
+                    2'b01: wmask = 4'bxxxx;
+                    2'b10: wmask = 4'b1100;
+                    2'b11: wmask = 4'bxxxx;
+                endcase
+            end
+            sb:
+            begin
+                case(dmem_address[1:0])
+                    2'b00: wmask = 4'b0001;
+                    2'b01: wmask = 4'b0010;
+                    2'b10: wmask = 4'b0100;
+                    2'b11: wmask = 4'b1000;
+                endcase
+            end 
+        endcase
+    end
+end
 
 /********** mem_byte_enable & dmem_read & dmem_write **************/
 assign mem_byte_enable = wmask;

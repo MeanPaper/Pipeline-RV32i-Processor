@@ -66,7 +66,7 @@ i_fetch i_fetch(
     /* outputs to Magic Memory */
     .imem_address(imem_address),
     .imem_read(imem_read), //hardcode to 1 for CP1
-    .(imem_resp)//tbd, from control_wd
+    // .imem_resp(imem_resp)//tbd, from control_wd
 );
 
 /******************************* ID stage ************************************/
@@ -87,7 +87,6 @@ i_decode i_decode(
 execute execute(
     /* input signals from ID/EX buffer */
     .ex_in(id_to_ex),
-
     /* output to EX/MEM buffer */
     .ex_out(ex_to_mem_next),
     .pcmux_sel(pcmux_sel)
@@ -113,7 +112,7 @@ mem mem(
     .dmem_write(dmem_write), 
     .dmem_read(dmem_read),
     .mem_byte_enable(dmem_wmask),
-    .(dmem_resp)//tbd, pass from control_wd
+    // .dmem_resp(dmem_resp)//tbd, pass from control_wd
 );
 
 /******************************* WB stage ***********************************/
@@ -137,7 +136,9 @@ always_ff @(posedge clk) begin
 
         // if_id pipeline reg
         if_to_id.pc <= if_to_id_next.pc;
-        if_to_id.ir <= imem_rdata;
+        if(imem_resp == 1'b1) begin
+            if_to_id.ir <= imem_rdata;
+        end
 
         // id_ex pipeline reg
         
@@ -145,7 +146,16 @@ always_ff @(posedge clk) begin
         ex_to_mem <= ex_to_mem_next;
 
         // mem_wb pipeline reg
-        mem_to_wb <= mem_to_wb_next;
+        mem_to_wb.ctrl_wd <= mem_to_wb_next.ctrl_wd;
+        mem_to_wb.cmp_out <= mem_to_wb_next.cmp_out;
+        mem_to_wb.u_imm <= mem_to_wb_next.u_imm;
+        mem_to_wb.rd <= mem_to_wb_next.rd;
+        mem_to_wb.alu_out <= mem_to_wb_next.alu_out;
+        mem_to_wb.mar <= mem_to_wb_next.mar;
+        if(dmem_resp == 1'b1) begin
+            mem_to_wb.mdr <= mem_to_wb_next.mdr;
+        end
+             
     end
 end
 endmodule
