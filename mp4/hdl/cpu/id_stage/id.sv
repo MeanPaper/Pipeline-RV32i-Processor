@@ -8,7 +8,7 @@ import rv32i_types::*;
     input IF_ID_stage_t     id_in,
     input rv32i_word        regfile_in,
     input logic             load_regfile,
-    
+    input rv32i_reg         rd,
     /* outputs to ID/EX buffer*/
     output ID_EX_stage_t    id_out
 );
@@ -45,7 +45,7 @@ import rv32i_types::*;
         .in(regfile_in),  
         .src_a(id_in.ir.r_inst.rs1),
         .src_b(id_in.ir.r_inst.rs2),
-        .dest(id_in.ir.r_inst.rd),
+        .dest(rd), // this is not correct
         .reg_a(id_out.rs1_out),
         .reg_b(id_out.rs2_out)
     );

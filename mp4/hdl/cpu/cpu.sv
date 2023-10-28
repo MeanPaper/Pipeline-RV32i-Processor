@@ -76,6 +76,7 @@ i_decode i_decode(
     .rst(rst),
     .id_in(if_to_id),
     .regfile_in(regfile_in),
+    .rd(mem_to_wb.rd),
     .load_regfile(load_regfile),
     //.regfilemux_sel(mem_to_wb.ctrl_wd.wb_ctrlwd.regfilemux_sel), 
 
