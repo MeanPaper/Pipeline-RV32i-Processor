@@ -35,6 +35,7 @@ always_comb begin : PC_MUX
         pcmux::pc_plus4: pcmux_out = if_output.pc + 4;
         pcmux::alu_out: pcmux_out = alu_out;
         pcmux::alu_mod2: pcmux_out = {alu_out[31:1], 1'b0};
+        default: pcmux_out = if_output.pc + 4;
     endcase
 end
 

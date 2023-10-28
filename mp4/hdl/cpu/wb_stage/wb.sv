@@ -37,7 +37,7 @@ import rv32i_types::*;
     always_comb begin : MUX
         unique case (wb_in.ctrl_wd.wb_ctrlwd.regfilemux_sel)
             regfilemux::alu_out: regfilemux_out = wb_in.alu_out;
-            regfilemux::br_en: regfilemux_out = {31'b0, wb_in.cmp_out};
+            regfilemux::br_en: regfilemux_out = {31'b0, wb_in.cmp_out[0]};
             regfilemux::u_imm: regfilemux_out = wb_in.u_imm;
             regfilemux::lw: regfilemux_out = wb_in.mdr;
             regfilemux::lb: regfilemux_out = {{24{mdrreg_b[7]}}, mdrreg_b};

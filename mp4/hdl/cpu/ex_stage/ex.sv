@@ -6,7 +6,7 @@ import rv32i_types::*;
 
     /* output to EX/MEM buffer */
     output EX_MEM_stage_t ex_out,
-    output logic [1:0] pcmux_sel
+    output pcmux::pcmux_sel_t pcmux_sel
 );
     /* intermidiate variables */
     /* ALU signals */
