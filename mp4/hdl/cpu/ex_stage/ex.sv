@@ -19,21 +19,22 @@ import rv32i_types::*;
     logic is_jlar;
     /* MAR signals */
     rv32i_word marmux_out;
+    rv32i_word rvfi_pc_wdata_ex;
 
     /* signals that pass down to the next stage */
-    assign ex_out.cmp_out = br_en;
+
     assign is_jlar = (ex_in.ctrl_wd.opcode == op_jalr);
-    assign ex_out.ctrl_wd = ex_in.ctrl_wd;
-    assign ex_out.alu_out = alu_out;
-    assign ex_out.mar = marmux_out;
-    assign ex_out.mem_data_out = ex_in.rs2_out << (8 * marmux_out[1:0]); 
-    assign ex_out.u_imm = ex_in.u_imm;
-    assign ex_out.rd = ex_in.rd;
+    // assign ex_out.cmp_out = br_en;
+    // assign ex_out.ctrl_wd = ex_in.ctrl_wd;
+    // assign ex_out.alu_out = alu_out;
+    // assign ex_out.mar = marmux_out;
+    // assign ex_out.mem_data_out = ex_in.rs2_out << (8 * marmux_out[1:0]); 
+    // assign ex_out.u_imm = ex_in.u_imm;
+    // assign ex_out.rd = ex_in.rd;
 
-    /* rvfi signals */
-    assign ex_out.rvfi_d = ex_in.rvfi_d;
+    // /* rvfi signals */
+    // assign ex_out.rvfi_d = ex_in.rvfi_d;
 
-    
 
     alu ALU(
         .aluop(ex_in.ctrl_wd.ex_ctrlwd.aluop),
@@ -51,6 +52,9 @@ import rv32i_types::*;
 
     /*********** EX Muxes **********/
     always_comb begin : EX_MUXES
+
+        rvfi_pc_wdata_ex = ex_in.ctrl_wd.pc + 4;
+
         unique case (ex_in.ctrl_wd.ex_ctrlwd.alumux1_sel)
             alumux::rs1_out: alumux1_out = ex_in.rs1_out;
             alumux::pc_out: alumux1_out = ex_in.ctrl_wd.pc;
@@ -74,12 +78,26 @@ import rv32i_types::*;
             1'b0: 
             begin
                 pcmux_sel = {1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch}; // TODO: not sure if this is valid
+
+                // for rvfi
+                // rvfi_pc_wdata_ex = ex_in.ctrl_wd.pc;
+                if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin // if there is a branch
+                    rvfi_pc_wdata_ex = alu_out;
+                end
             end
             1'b1:
             begin
                 pcmux_sel = pcmux::alu_mod2;
+                rvfi_pc_wdata_ex = {alu_out[31:1], 1'b0};
             end
-            default: pcmux_sel = {1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch};
+            default: begin 
+                pcmux_sel = {1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch};
+                // for rvfi
+                // rvfi_pc_wdata_ex = ex_in.ctrl_wd.pc; 
+                if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin
+                    rvfi_pc_wdata_ex = alu_out;
+                end
+            end 
         endcase
 
         unique case (ex_in.ctrl_wd.ex_ctrlwd.marmux_sel)
@@ -89,5 +107,18 @@ import rv32i_types::*;
 
 
     end : EX_MUXES
+
+
+    always_comb begin
+        ex_out.cmp_out = br_en;
+        ex_out.ctrl_wd = ex_in.ctrl_wd;
+        ex_out.alu_out = alu_out;
+        ex_out.mar = marmux_out;
+        ex_out.mem_data_out = ex_in.rs2_out << (8 * marmux_out[1:0]); 
+        ex_out.u_imm = ex_in.u_imm;
+        ex_out.rd = ex_in.rd;
+        ex_out.rvfi_d = ex_in.rvfi_d;
+        ex_out.rvfi_d.rvfi_pc_wdata = rvfi_pc_wdata_ex; // something wrong here, causing pc_wdata to be wrong
+    end
 
 endmodule

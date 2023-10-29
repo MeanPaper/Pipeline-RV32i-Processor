@@ -36,6 +36,7 @@ import rv32i_types::*;
             regfilemux::lh: regfilemux_out = {{16{mdrreg_h[15]}}, mdrreg_h};
             regfilemux::lhu: regfilemux_out = {{16{1'b0}}, mdrreg_h};
             regfilemux::pc_plus4: regfilemux_out = wb_in.ctrl_wd.pc + 4;
+            default: regfilemux_out = wb_in.alu_out;
         endcase
     end : MUX
 

@@ -53,7 +53,7 @@ import rv32i_types::*;
     // rv32i_word rs2_out_mem, rs2_out_wb;
     // logic [3:0] commit_rmask, commit_wmask;
     
-    always_ff @(posedge clk or posedge rst) begin
+    always_ff @(posedge clk) begin
         if(rst) begin
             order <= '0;
         end

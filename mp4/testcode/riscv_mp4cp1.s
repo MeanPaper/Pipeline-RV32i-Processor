@@ -4,25 +4,32 @@
     # Refer to the RISC-V ISA Spec for the functionality of
     # the instructions in this test program.
 _start:
-    la x31, threshold
+    # la x2, threshold
+    auipc x2, 0
+    # add x3, x1, x2
     nop
     nop
     nop
     nop
     nop
-    lw x1, (x31)
+    nop
+    # lw x1, (x2)
+    addi x2, x2, 120
     nop
     nop
     nop
     nop
     nop    
-    # lw x2, bad    
-    # lw x3, result       
-    # lw x4, good
+    nop
+
+    # lw x1, (x2)
     # nop
     # nop
     # nop
     # nop
+    # nop
+    # nop
+
     add x3, x1, x2
     nop
     nop
@@ -34,10 +41,10 @@ _start:
 
 
 
-    li  t0, 1
-    la  t1, tohost
-    sw  t0, 0(t1)
-    sw  x0, 4(t1)
+    # li  t0, 1
+    # la  t1, tohost
+    # sw  t0, 0(t1)
+    # sw  x0, 4(t1)
 halt:                 # Infinite loop to keep the processor
     beq x0, x0, halt  # from trying to execute the data below.
                       # Your own programs should also make use

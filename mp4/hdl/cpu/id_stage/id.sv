@@ -26,25 +26,6 @@ import rv32i_types::*;
     assign id_out.j_imm = {{12{id_in.ir.word[31]}}, id_in.ir.word[19:12], id_in.ir.word[20], id_in.ir.word[30:21], 1'b0};
     assign id_out.rd = id_in.ir.r_inst.rd;
 
-    /* setting up rvfi signals */
-    always_comb begin
-        id_out.rvfi_d = id_in.rvfi_d;
-
-        /* some other signals that I need to turn on */
-        id_out.rvfi_d.rvfi_inst = id_in.ir.word;
-        id_out.rvfi_d.rvfi_rs1_addr = id_in.ir.r_inst.rs1;
-        id_out.rvfi_d.rvfi_rs2_addr = id_in.ir.r_inst.rs2;
-        id_out.rvfi_d.rvfi_rs1_rdata = id_out.rs1_out;
-        id_out.rvfi_d.rvfi_rs2_rdata = id_out.rs2_out;
-        id_out.rvfi_d.rvfi_rd_addr = id_in.ir.r_inst.rd;
-    end 
-
-
-    
-    /* assignments */
-    
-
-
     /* control word */
     control_word ControlWord (
         .pc_i(id_in.pc),
@@ -67,7 +48,18 @@ import rv32i_types::*;
     
     /* possible Hazard Detection Unit in forwarding */
     /* save for cp2 */
+    /* setting up rvfi signals */
+    always_comb begin
+        id_out.rvfi_d = id_in.rvfi_d;
 
+        /* some other signals that I need to turn on */
+        id_out.rvfi_d.rvfi_inst = id_in.ir.word;
+        id_out.rvfi_d.rvfi_rs1_addr = id_in.ir.r_inst.rs1;
+        id_out.rvfi_d.rvfi_rs2_addr = id_in.ir.r_inst.rs2;
+        id_out.rvfi_d.rvfi_rs1_rdata = id_out.rs1_out;
+        id_out.rvfi_d.rvfi_rs2_rdata = id_out.rs2_out;
+        id_out.rvfi_d.rvfi_rd_addr = id_in.ir.r_inst.rd;
+    end 
 
 
 
