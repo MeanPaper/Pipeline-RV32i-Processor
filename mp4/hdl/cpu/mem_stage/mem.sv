@@ -10,7 +10,7 @@ import rv32i_types::*;
 
     /* input signals from EX/MEM buffer */
     input EX_MEM_stage_t mem_in,
-    // input logic dmem_resp,
+    input logic dmem_resp,
 
     /* output to EX/MEM buffer */
     output MEM_WB_stage_t mem_out,
@@ -30,41 +30,18 @@ import rv32i_types::*;
 
 logic [3:0] wmask;
 logic [3:0] rmask;
-
-/*****transfer to next stage******/
-// always_ff @(posedge clk ) begin : transfer_to_next
-//     mem_out.cmp_out <= mem_in.cmp_out;
-//     mem_out.u_imm <= mem_in.u_imm;
-//     mem_out.rd <= mem_in.rd;
-//     mem_out.alu_out <= mem_in.alu_out;
-// end: transfer_to_next
-
-// /**************mdr_out************/
-// always_ff @(posedge clk) begin : mdr
-//     if (rst) begin
-//         mem_out.mdr <= '0;
-//     end else if (load_mdr) begin 
-//         mem_out.mdr <= dmem_rdata;
-//     end
-// end: mdr
-
-/*****transfer to next stage******/
-always_comb begin : transfer_to_next
-    mem_out.ctrl_wd = mem_in.ctrl_wd;
-    mem_out.cmp_out = mem_in.cmp_out;
-    mem_out.u_imm = mem_in.u_imm;
-    mem_out.rd = mem_in.rd;
-    mem_out.alu_out = mem_in.alu_out;
-    mem_out.mar = mem_in.mar;
-    mem_out.mdr = dmem_rdata;   // mdr next value
-end: transfer_to_next
+load_funct3_t load_funct3;
+store_funct3_t store_funct3;
+assign load_funct3 = load_funct3_t'(mem_in.ctrl_wd.mem_ctrlwd.funct3);
+assign store_funct3 = store_funct3_t'(mem_in.ctrl_wd.mem_ctrlwd.funct3);
 
 /**********dmem_address***********/
 assign dmem_address = {mem_in.mar[31:2], 2'b0};
 
 /**********dmem_wdata*************/
 always_comb begin: dmem_write_data
-    case(mem_in.ctrl_wd.mem_ctrlwd.store_funct3)
+
+    case(store_funct3)
         sw: dmem_wdata = mem_in.mem_data_out;
         sh: begin 
             unique case(mem_in.mar[1])
@@ -88,8 +65,9 @@ end: dmem_write_data
 /***************** wmask & rmask ******************************/
 always_comb begin
     wmask = '0;
+    rmask = '0;
     if(mem_in.ctrl_wd.opcode == op_store) begin
-        case (mem_in.ctrl_wd.mem_ctrlwd.store_funct3)
+        case (store_funct3)
             sw: wmask = 4'b1111;
             sh: 
             begin
@@ -111,6 +89,29 @@ always_comb begin
             end 
         endcase
     end
+    else if(mem_in.ctrl_wd.opcode == op_load) begin
+        case (load_funct3)
+            lw: rmask = 4'b1111;
+            lh, lhu: 
+            begin
+                case(dmem_address[1:0])
+                    2'b00: rmask = 4'b0011;
+                    2'b01: rmask = 4'bxxxx;
+                    2'b10: rmask = 4'b1100;
+                    2'b11: rmask = 4'bxxxx;
+                endcase
+            end
+            lb, lbu:
+            begin
+                case(dmem_address[1:0])
+                    2'b00: rmask = 4'b0001;
+                    2'b01: rmask = 4'b0010;
+                    2'b10: rmask = 4'b0100;
+                    2'b11: rmask = 4'b1000;
+                endcase
+            end
+        endcase
+    end
 end
 
 /********** mem_byte_enable & dmem_read & dmem_write **************/
@@ -118,6 +119,33 @@ assign mem_byte_enable = wmask;
 assign dmem_write = mem_in.ctrl_wd.mem_ctrlwd.mem_write;
 assign dmem_read = mem_in.ctrl_wd.mem_ctrlwd.mem_read;
 
+
+/*****transfer to next stage******/
+always_comb begin : transfer_to_next
+    mem_out.ctrl_wd = mem_in.ctrl_wd;
+    mem_out.cmp_out = mem_in.cmp_out;
+    mem_out.u_imm = mem_in.u_imm;
+    mem_out.rd = mem_in.rd;
+    mem_out.alu_out = mem_in.alu_out;
+    mem_out.mar = mem_in.mar;
+    mem_out.mdr = '0;   // mdr next value    
+    if(dmem_resp) mem_out.mdr = dmem_rdata;   // mdr next value    
+    
+    // rvfi section
+    mem_out.rvfi_d                  = mem_in.rvfi_d;
+    
+    mem_out.rvfi_d.rvfi_mem_addr    = {mem_in.mar[31:2], 2'b0};
+    mem_out.rvfi_d.rvfi_mem_rmask   = rmask; 
+    mem_out.rvfi_d.rvfi_mem_wmask   = wmask;
+    mem_out.rvfi_d.rvfi_mem_rdata = '0;
+    mem_out.rvfi_d.rvfi_mem_wdata = '0;
+    if(dmem_resp) mem_out.rvfi_d.rvfi_mem_rdata   = dmem_rdata;
+    if(dmem_write) mem_out.rvfi_d.rvfi_mem_wdata   = dmem_wdata; 
+
+end: transfer_to_next
+
+
+endmodule
 
 /*
 always_comb begin : trap_check
@@ -190,5 +218,3 @@ always_comb begin : trap_check
     endcase
 end
 */
-
-endmodule

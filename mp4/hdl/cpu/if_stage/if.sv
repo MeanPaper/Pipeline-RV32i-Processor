@@ -18,9 +18,24 @@ import rv32i_types::*;
 );
 /******************* Signals Needed for RVFI Monitor *************************/
 rv32i_word pcmux_out;
+
 /*****************************************************************************/
 assign imem_address = if_output.pc;
 assign imem_read = 1'b1; //for CP1
+
+// setting up rvfi signal
+always_comb begin    
+    pcmux_out = if_output.pc + 4;
+    case (pcmux_sel)
+        pcmux::pc_plus4: pcmux_out = if_output.pc + 4;
+        pcmux::alu_out: pcmux_out = alu_out;
+        pcmux::alu_mod2: pcmux_out = {alu_out[31:1], 1'b0};
+        default: ;
+    endcase
+    
+    if_output.rvfi_d.rvfi_pc_wdata = pcmux_out;
+    if_output.rvfi_d.rvfi_pc_rdata = if_output.pc;
+end
 
 pc PC (
     .clk(clk),
@@ -29,16 +44,6 @@ pc PC (
     .in(pcmux_out),
     .out(if_output.pc)
 );
-
-always_comb begin : PC_MUX
-    unique case (pcmux_sel)
-        pcmux::pc_plus4: pcmux_out = if_output.pc + 4;
-        pcmux::alu_out: pcmux_out = alu_out;
-        pcmux::alu_mod2: pcmux_out = {alu_out[31:1], 1'b0};
-        default: pcmux_out = if_output.pc + 4;
-    endcase
-end
-
 
 
 endmodule

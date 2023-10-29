@@ -31,7 +31,7 @@ assign funct7 = instr_i.r_inst.funct7;              // instruction funct7
 // type casting
 assign opcode = rv32i_opcode'(instr_i.word[6:0]);   // opcode lower 7 bits 
 assign branch_funct3 = branch_funct3_t'(funct3);
-assign store_funct3 = store_funct3_t'(funct3); 
+// assign store_funct3 = store_funct3_t'(funct3); 
 assign load_funct3 = load_funct3_t'(funct3);
 assign arith_funct3 = arith_funct3_t'(funct3);
 
@@ -84,8 +84,9 @@ function automatic void set_op_store_ctrl();
     ex_ctrls.alumux1_sel = alumux::rs1_out;
     ex_ctrls.alumux2_sel = alumux::s_imm;
     ex_ctrls.aluop = alu_add;
+    ex_ctrls.marmux_sel = marmux::alu_out;
     mem_ctrls.mem_write = 1'b1;
-    mem_ctrls.store_funct3 = store_funct3;
+    mem_ctrls.funct3 = funct3;
 endfunction
 
 // op_load control word
@@ -93,7 +94,9 @@ function automatic void set_op_load_ctrl();
     ex_ctrls.alumux1_sel = alumux::rs1_out;
     ex_ctrls.alumux2_sel = alumux::i_imm;
     ex_ctrls.aluop = alu_add;
+    ex_ctrls.marmux_sel = marmux::alu_out;
     mem_ctrls.mem_read = 1'b1;
+    mem_ctrls.funct3 = funct3;
     wb_ctrls.load_regfile = 1'b1;
     unique case(load_funct3)
         lw: wb_ctrls.regfilemux_sel = regfilemux::lw;
@@ -184,98 +187,51 @@ always_comb begin
     ex_ctrls = '0;
     mem_ctrls = '0;
     wb_ctrls = '0;
-    ctrl_word.valid = 1'b1; 
+    
+    unique case(opcode) 
+        op_lui: begin
+            ctrl_word.valid = 1'b1; 
+            set_op_lui_ctrl();
+        end
+        op_auipc: begin
+            ctrl_word.valid = 1'b1; 
+            set_op_auipc_ctrl();
+        end
+        op_jal: begin
+            ctrl_word.valid = 1'b1; 
+            set_op_jal_ctrl();
+        end
+        op_jalr: begin
+            ctrl_word.valid = 1'b1; 
+            set_op_jalr_ctrl();
+        end
+        op_br: begin
+            ctrl_word.valid = 1'b1; 
+            set_op_br_ctrl();
+        end
+        op_store: begin
+            ctrl_word.valid = 1'b1; 
+            set_op_store_ctrl();
+        end
+        op_load: begin
+            ctrl_word.valid = 1'b1; 
+            set_op_load_ctrl();
+        end
+        op_imm: begin
+            ctrl_word.valid = 1'b1; 
+            set_op_imm_ctrl();
+        end
+        op_reg: begin
+            ctrl_word.valid = 1'b1; 
+            set_op_reg_ctrl();
+        end
+        default:;
+    endcase
+
     ctrl_word.pc = pc_i;
     ctrl_word.opcode = opcode;
     ctrl_word.ex_ctrlwd = ex_ctrls;
     ctrl_word.mem_ctrlwd = mem_ctrls;
     ctrl_word.wb_ctrlwd = wb_ctrls;
-    
-    unique case(opcode) 
-        op_lui: begin
-            set_op_lui_ctrl();
-        end
-        op_auipc: begin
-            set_op_auipc_ctrl();
-        end
-        op_jal: begin
-            set_op_jal_ctrl();
-        end
-        op_jalr: begin
-            set_op_jalr_ctrl();
-        end
-        op_br: begin
-            set_op_br_ctrl();
-        end
-        op_store: begin
-            set_op_store_ctrl();
-        end
-        op_load: begin
-            set_op_load_ctrl();
-        end
-        op_imm: begin
-            set_op_imm_ctrl();
-        end
-        op_reg: begin
-            set_op_reg_ctrl();
-        end
-        default:;
-    endcase
 end
 endmodule 
-
-// op_lui   = 7'b0110111, //load upper immediate (U type)
-// op_auipc = 7'b0010111, //add upper immediate PC (U type)
-// op_jal   = 7'b1101111, //jump and link (J type)
-// op_jalr  = 7'b1100111, //jump and link register (I type)
-// op_br    = 7'b1100011, //branch (B type)
-// op_load  = 7'b0000011, //load (I type)
-// op_store = 7'b0100011, //store (S type)
-// op_imm   = 7'b0010011, //arith ops with register/immediate operands (I type)
-// op_reg   = 7'b0110011, //arith ops with register operands (R type)
-// op_csr   = 7'b1110011  //control and status register (I type)
-
-// typedef struct packed{
-//     logic           is_branch;  
-//     alu_ops         aluop;
-//     branch_funct3_t cmpop;
-//     cmpmux_sel_t    cmpmux_sel;
-//     alumux1_sel_t   alumux1_sel;
-//     alumux2_sel_t   alumux2_sel;
-//     // TODO: double check this, seems like it is part of both IF and EXE, do we still need this?
-//     // not really in my opinion
-//     marmux_sel_t    marmux_sel;
-// }EX_ctrl_t;
-
-// typedef struct packed{
-//     logic               mem_read;
-//     logic               mem_write;
-//     rv32i_mem_wmask     wmask;
-// }MEM_ctrl_t;
-
-// typedef struct packed{
-//     logic               load_regfile;   
-//     regfilemux_sel_t    regfilemux_sel;
-// }WB_ctrl_t;
-
-// typedef struct packed{
-//     logic           valid;
-//     rv32i_word      pc;
-//     rv32i_opcode    opcode;
-//     EX_ctrl_t       ex_ctrlwd;
-//     MEM_ctrl_t      mem_ctrlwd;
-//     WB_ctrl_t       wb_ctrlwd;  
-// }ctrl_word_t;
-
-// function void setALU(alumux::alumux1_sel_t sel1, alumux::alumux2_sel_t sel2, alu_ops op); 
-//     ex_ctrls.alumux1_sel = sel1;
-//     ex_ctrls.alumux2_sel = sel2;
-//     ex_ctrls.aluop = op;
-// endfunction
-// function void setCMP(cmpmux::cmpmux_sel_t sel, branch_funct3_t op);
-//     ex_ctrls.cmpmux_sel = sel;
-//     ex_ctrls.cmpop = op;
-// endfunction
-// function void setRegfileMux(regfilemux::regfilemux_sel_t sel);
-//     wb_ctrls.regfilemux_sel = sel;
-// endfunction

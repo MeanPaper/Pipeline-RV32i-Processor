@@ -3,67 +3,6 @@
  */
 
 /*********************** the followings are given in mp2 ***********************/
-// package instr_field; // just a name for import
-    
-// typedef enum logic [6:0] {
-//     op_lui   = 7'b0110111, //load upper immediate (U type)
-//     op_auipc = 7'b0010111, //add upper immediate PC (U type)
-//     op_jal   = 7'b1101111, //jump and link (J type)
-//     op_jalr  = 7'b1100111, //jump and link register (I type)
-//     op_br    = 7'b1100011, //branch (B type)
-//     op_load  = 7'b0000011, //load (I type)
-//     op_store = 7'b0100011, //store (S type)
-//     op_imm   = 7'b0010011, //arith ops with register/immediate operands (I type)
-//     op_reg   = 7'b0110011, //arith ops with register operands (R type)
-//     op_csr   = 7'b1110011  //control and status register (I type)
-// } rv32i_opcode;
-
-// typedef enum logic [2:0] {
-//     beq  = 3'b000,
-//     bne  = 3'b001,
-//     blt  = 3'b100,
-//     bge  = 3'b101,
-//     bltu = 3'b110,
-//     bgeu = 3'b111
-// } branch_funct3_t;
-
-// typedef enum logic [2:0] {
-//     lb  = 3'b000,
-//     lh  = 3'b001,
-//     lw  = 3'b010,
-//     lbu = 3'b100,
-//     lhu = 3'b101
-// } load_funct3_t;
-
-// typedef enum logic [2:0] {
-//     sb = 3'b000,
-//     sh = 3'b001,
-//     sw = 3'b010
-// } store_funct3_t;
-
-// typedef enum logic [2:0] {
-//     add  = 3'b000, //check bit30 for sub if op_reg opcode
-//     sll  = 3'b001,
-//     slt  = 3'b010,
-//     sltu = 3'b011,
-//     axor = 3'b100,
-//     sr   = 3'b101, //check bit30 for logical/arithmetic
-//     aor  = 3'b110,
-//     aand = 3'b111
-// } arith_funct3_t;
-
-// typedef enum logic [2:0] {
-//     alu_add = 3'b000,
-//     alu_sll = 3'b001,
-//     alu_sra = 3'b010,
-//     alu_sub = 3'b011,
-//     alu_xor = 3'b100,
-//     alu_srl = 3'b101,
-//     alu_or  = 3'b110,
-//     alu_and = 3'b111
-// } alu_ops;
-// endpackage
-
 package pcmux;
 typedef enum logic [1:0] {
     pc_plus4  = 2'b00
@@ -278,7 +217,7 @@ typedef struct packed{
 typedef struct packed{
     logic               mem_read;
     logic               mem_write;
-    store_funct3_t      store_funct3;
+    logic [2:0]         funct3;
 }MEM_ctrl_t;
 
 typedef struct packed{
@@ -296,10 +235,32 @@ typedef struct packed{
 }ctrl_word_t;
 
 /************** intermediate stages **************/
+typedef struct packed {
+    logic           rvfi_valid;
+    logic   [63:0]  rvfi_order;
+    logic   [31:0]  rvfi_inst;
+    logic   [4:0]   rvfi_rs1_addr;
+    logic   [4:0]   rvfi_rs2_addr;
+    logic   [31:0]  rvfi_rs1_rdata;
+    logic   [31:0]  rvfi_rs2_rdata;
+    logic   [4:0]   rvfi_rd_addr;
+    logic   [31:0]  rvfi_rd_wdata;
+    logic   [31:0]  rvfi_pc_rdata;
+    logic   [31:0]  rvfi_pc_wdata;
+    logic   [31:0]  rvfi_mem_addr;
+    logic   [3:0]   rvfi_mem_rmask;
+    logic   [3:0]   rvfi_mem_wmask;
+    logic   [31:0]  rvfi_mem_rdata;
+    logic   [31:0]  rvfi_mem_wdata;
+} rvfi_data_t;
+
 // the struct use to store the stage registers
 typedef struct packed {
     rv32i_word      pc;     // program counter
     rv32i_inst_t    ir;     // instruction reg
+
+    // rvfi signal (verification thing)
+    rvfi_data_t     rvfi_d;
 }IF_ID_stage_t;
 
 //TODO: double check the imms
@@ -314,6 +275,9 @@ typedef struct packed {
     rv32i_word  u_imm;       
     rv32i_word  j_imm;
     rv32i_reg   rd;          // dest reg
+
+    // rvfi signal (verification thing)
+    rvfi_data_t     rvfi_d;
 }ID_EX_stage_t;
 
 // TODO: double check
@@ -326,6 +290,9 @@ typedef struct packed {
     rv32i_word  mem_data_out;    
     rv32i_word  u_imm;   
     rv32i_reg   rd;
+
+    // rvfi signal (verification thing)
+    rvfi_data_t     rvfi_d;
 }EX_MEM_stage_t;
 
 // TODO: double check
@@ -338,6 +305,9 @@ typedef struct packed {
     rv32i_word  mar;        
     rv32i_word  u_imm;   
     rv32i_reg   rd;
+
+    // rvfi signal (verification thing)
+    rvfi_data_t     rvfi_d;
 }MEM_WB_stage_t;
 
 endpackage

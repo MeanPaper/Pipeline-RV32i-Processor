@@ -29,6 +29,10 @@ import rv32i_types::*;
     assign ex_out.mem_data_out = ex_in.rs2_out << (8 * marmux_out[1:0]); 
     assign ex_out.u_imm = ex_in.u_imm;
     assign ex_out.rd = ex_in.rd;
+
+    /* rvfi signals */
+    assign ex_out.rvfi_d = ex_in.rvfi_d;
+
     
 
     alu ALU(

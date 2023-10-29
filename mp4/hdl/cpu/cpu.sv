@@ -1,15 +1,6 @@
 module cpu
 import rv32i_types::*;
 (
-    // input logic clk,
-    // input logic rst,
-    // input log mem_resp,//todo, input to which stage? mem?
-    // input rv32i_word mem_rdata,
-    // output logic mem_read,//todo, how to output? from control word?
-    // output logic mem_write,//todo,how to output? from control word?
-    // output logic [3:0] mem_byte_enable,//todo, ensure correctness
-    // output rv32i_word mem_address,
-    // output rv32i_word mem_wdata
     input   logic           clk,
     input   logic           rst,
 
@@ -106,6 +97,7 @@ mem mem(
 
     /* output to EX/MEM buffer */
     .mem_out(mem_to_wb_next),
+    .dmem_resp(dmem_resp),
 
     /* output to Magic Memory */
     .dmem_wdata(dmem_wdata),
@@ -119,6 +111,7 @@ mem mem(
 /******************************* WB stage ***********************************/
 write_back write_back(
     .wb_in(mem_to_wb),
+    // .dmem_rdata(dmem_rdata),
 
     /* output to regfile */
     .regfile_in(regfile_in),
@@ -134,74 +127,28 @@ always_ff @(posedge clk) begin
         mem_to_wb <= '0;
     end
     else begin
-
-        // if_id pipeline reg
-        if_to_id.pc <= if_to_id_next.pc;
-        if(imem_resp == 1'b1) begin
+        if(dmem_resp == 1'b0) begin
+            // if_id pipeline reg
+            if_to_id.pc <= if_to_id_next.pc;
+            if_to_id.rvfi_d <= if_to_id_next.rvfi_d;
             if_to_id.ir <= imem_rdata;
-        end
 
-        // id_ex pipeline reg
-        
-        // ex_mem pipeline reg
-        ex_to_mem <= ex_to_mem_next;
+            // id_ex pipeline reg
+            id_to_ex <= id_to_ex_next;
 
-        // mem_wb pipeline reg
-        mem_to_wb.ctrl_wd <= mem_to_wb_next.ctrl_wd;
-        mem_to_wb.cmp_out <= mem_to_wb_next.cmp_out;
-        mem_to_wb.u_imm <= mem_to_wb_next.u_imm;
-        mem_to_wb.rd <= mem_to_wb_next.rd;
-        mem_to_wb.alu_out <= mem_to_wb_next.alu_out;
-        mem_to_wb.mar <= mem_to_wb_next.mar;
-        if(dmem_resp == 1'b1) begin
-            mem_to_wb.mdr <= mem_to_wb_next.mdr;
-        end
-             
+            // ex_mem pipeline reg
+            ex_to_mem <= ex_to_mem_next;
+
+            // mem_wb pipeline reg
+            // mem_to_wb.ctrl_wd <= mem_to_wb_next.ctrl_wd;
+            // mem_to_wb.cmp_out <= mem_to_wb_next.cmp_out;
+            // mem_to_wb.u_imm <= mem_to_wb_next.u_imm;
+            // mem_to_wb.rd <= mem_to_wb_next.rd;
+            // mem_to_wb.alu_out <= mem_to_wb_next.alu_out;
+            // mem_to_wb.mar <= mem_to_wb_next.mar;
+            // mem_to_wb.mdr <= mem_to_wb_next.mdr;
+            mem_to_wb <= mem_to_wb_next;
+        end 
     end
 end
 endmodule
-
-/*
-// the struct use to store the stage registers
-typedef struct packed {
-    rv32i_word      pc;     // program counter
-    rv32i_inst_t    ir;     // instruction reg
-}IF_ID_stage_t;
-
-//TODO: double check the imms
-typedef struct packed {
-    // control signal blocks
-    ctrl_word_t ctrl_wd;
-    rv32i_word  rs1_out;     // src reg 1 output
-    rv32i_word  rs2_out;     // src reg 2 output
-    rv32i_word  i_imm; 
-    rv32i_word  s_imm;      
-    rv32i_word  b_imm;
-    rv32i_word  u_imm;       
-    rv32i_word  j_imm;
-    rv32i_reg   rd;          // dest reg
-}ID_EX_stage_t;
-
-// TODO: double check
-typedef struct packed {
-    // control signal blocks
-    ctrl_word_t ctrl_wd;
-    rv32i_word  cmp_out;        
-    rv32i_word  alu_out;         
-    rv32i_word  mar;         
-    rv32i_word  mem_data_out;    
-    rv32i_word  u_imm;   
-    rv32i_reg   rd;
-}EX_MEM_stage_t;
-
-// TODO: double check
-typedef struct packed {
-    // control signal blocks
-    ctrl_word_t ctrl_wd;
-    rv32i_word  alu_out;
-    rv32i_word  cmp_out;    
-    rv32i_word  mdr;        
-    rv32i_word  u_imm;   
-    rv32i_reg   rd;
-}MEM_WB_stage_t;
-*/

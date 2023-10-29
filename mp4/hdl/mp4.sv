@@ -45,30 +45,70 @@ import rv32i_types::*;
 
     /* My coding style */
     logic commit;
-    
     logic [63:0] order;
 
-    assign commit = cpu.load_pc;
+    // rv32i_inst_t inst_ex, inst_mem, inst_wb;
+    // rv32i_word pc_wdata_id, pc_wdata_ex, pc_wdata_mem, pc_wdata_wb, commit_addr;
+    // rv32i_word rs1_out_mem, rs1_out_wb;
+    // rv32i_word rs2_out_mem, rs2_out_wb;
+    // logic [3:0] commit_rmask, commit_wmask;
+    
+    always_ff @(posedge clk or posedge rst) begin
+        if(rst) begin
+            order <= '0;
+        end
+        else begin 
+            if(commit == 1'b1) order <= order + 1;
+        
+            // // instruction commit tracking
+            // inst_ex <= cpu.if_to_id.ir;
+            // inst_mem <= inst_ex;
+            // inst_wb <= inst_mem;
+
+            // // pc wdata commit tracking
+            // pc_wdata_id <= cpu.i_fetch.pcmux_out;
+            // pc_wdata_ex <= pc_wdata_id;
+            // pc_wdata_mem <= pc_wdata_ex;
+            // pc_wdata_wb <= pc_wdata_mem;
+
+            // // r and w mask
+            // commit_rmask <= cpu.mem.rmask;
+            // commit_wmask <= cpu.mem.wmask;
+            
+            // // addr tracking
+            // commit_addr <= cpu.mem.dmem_address;
+
+            // // rs1 and rs2 value tracking
+            // rs1_out_mem <= cpu.id_to_ex.rs1_out;
+            // rs1_out_wb <= rs1_out_mem;
+            // rs2_out_mem <= cpu.id_to_ex.rs2_out;
+            // rs2_out_wb <= rs2_out_mem;
+        end
+    end
+
+
+
+    assign commit = cpu.mem_to_wb.ctrl_wd.valid;
 
     // Fill this out
     // Only use hierarchical references here for verification
     // **DO NOT** use hierarchical references in the actual design!
     assign monitor_valid     = commit;
     assign monitor_order     = order;
-    assign monitor_inst      = cpu.if_to_id.ir;
-    assign monitor_rs1_addr  = cpu.if_to_id.ir.r_inst.rs1;
-    assign monitor_rs2_addr  = cpu.if_to_id.ir.r_inst.rs2;
-    assign monitor_rs1_rdata = cpu.id_to_ex.rs1_out;
-    assign monitor_rs2_rdata = cpu.id_to_ex.rs2_out;
-    assign monitor_rd_addr   = cpu.id_to_ex.rd;
-    assign monitor_rd_wdata  = cpu.regfile_in; 
-    assign monitor_pc_rdata  = imem_address;
-    assign monitor_pc_wdata  = cpu.i_fetch.pcmux_out;
-    assign monitor_mem_addr  = dmem_address;
-    assign monitor_mem_rmask = cpu.write_back.rmask; // ???
-    assign monitor_mem_wmask = dmem_wmask;
-    assign monitor_mem_rdata = dmem_rdata;
-    assign monitor_mem_wdata = dmem_wdata;
+    assign monitor_inst      = cpu.mem_to_wb.rvfi_d.rvfi_inst;
+    assign monitor_rs1_addr  = cpu.mem_to_wb.rvfi_d.rvfi_rs1_addr;
+    assign monitor_rs2_addr  = cpu.mem_to_wb.rvfi_d.rvfi_rs2_addr;
+    assign monitor_rs1_rdata = cpu.mem_to_wb.rvfi_d.rvfi_rs1_rdata;
+    assign monitor_rs2_rdata = cpu.mem_to_wb.rvfi_d.rvfi_rs2_rdata;
+    assign monitor_rd_addr   = cpu.mem_to_wb.rvfi_d.rvfi_rd_addr;
+    assign monitor_rd_wdata  = cpu.regfile_in;  
+    assign monitor_pc_rdata  = cpu.mem_to_wb.rvfi_d.rvfi_pc_rdata;
+    assign monitor_pc_wdata  = cpu.mem_to_wb.rvfi_d.rvfi_pc_wdata;
+    assign monitor_mem_addr  = cpu.mem_to_wb.rvfi_d.rvfi_mem_addr;        
+    assign monitor_mem_rmask = cpu.mem_to_wb.rvfi_d.rvfi_mem_rmask; 
+    assign monitor_mem_wmask = cpu.mem_to_wb.rvfi_d.rvfi_mem_wmask;
+    assign monitor_mem_rdata = cpu.mem_to_wb.rvfi_d.rvfi_mem_rdata;
+    assign monitor_mem_wdata = cpu.mem_to_wb.rvfi_d.rvfi_mem_wdata;
     
     cpu cpu(
         .clk,
@@ -86,10 +126,4 @@ import rv32i_types::*;
         .dmem_resp //tbd
     );
 
-    always_ff @(posedge clk) begin
-        if(rst) begin
-            order <= '0;
-        end
-        if(commit == 1'b1) order <= order + 1;
-    end
 endmodule : mp4
