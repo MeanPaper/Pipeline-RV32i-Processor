@@ -53,7 +53,7 @@ import rv32i_types::*;
     /*********** EX Muxes **********/
     always_comb begin : EX_MUXES
 
-        rvfi_pc_wdata_ex = ex_in.ctrl_wd.pc + 4;
+        rvfi_pc_wdata_ex = ex_in.rvfi_d.rvfi_pc_wdata;
 
         unique case (ex_in.ctrl_wd.ex_ctrlwd.alumux1_sel)
             alumux::rs1_out: alumux1_out = ex_in.rs1_out;

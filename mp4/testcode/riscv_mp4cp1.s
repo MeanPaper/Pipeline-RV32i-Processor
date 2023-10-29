@@ -6,45 +6,51 @@
 _start:
     # la x2, threshold
     auipc x2, 0
-    # add x3, x1, x2
     nop
     nop
     nop
-    nop
-    nop
-    nop
+    
     # lw x1, (x2)
     addi x2, x2, 120
+    addi x1, x1, 120
+    addi x3, x3, 120
     nop
     nop
     nop
-    nop
-    nop    
-    nop
+    add x4, x3, x2
 
-    # lw x1, (x2)
-    # nop
-    # nop
-    # nop
-    # nop
-    # nop
-    # nop
+    lw x1, (x2)
+    nop
+    nop
+    nop
+    nop
+    nop
 
     add x3, x1, x2
     nop
     nop
     nop
     nop
-    nop   
+       
     # addi x2, x2, 3 
     # mv x7, x4
+    
+    li  t0, 1
+    # # add   t0, x0, 1
+    la  t1, tohost
+    # auipc t1, 0 
+    # nop
+    # nop
+    # nop
+    # nop
 
-
-
-    # li  t0, 1
-    # la  t1, tohost
-    # sw  t0, 0(t1)
-    # sw  x0, 4(t1)
+    # addi t1, t1, 48
+    # nop
+    # nop
+    # nop
+    # nop
+    sw  t0, 0(t1)
+    sw  x0, 4(t1)
 halt:                 # Infinite loop to keep the processor
     beq x0, x0, halt  # from trying to execute the data below.
                       # Your own programs should also make use

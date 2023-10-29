@@ -25,12 +25,11 @@ assign imem_read = 1'b1; //for CP1
 
 // setting up rvfi signal
 always_comb begin    
-    pcmux_out = if_output.pc + 4;
     case (pcmux_sel)
         pcmux::pc_plus4: pcmux_out = if_output.pc + 4;
         pcmux::alu_out: pcmux_out = alu_out;
         pcmux::alu_mod2: pcmux_out = {alu_out[31:1], 1'b0};
-        default: ;
+        default: pcmux_out = if_output.pc + 4;
     endcase
     
     if_output.rvfi_d.rvfi_pc_wdata = pcmux_out;
