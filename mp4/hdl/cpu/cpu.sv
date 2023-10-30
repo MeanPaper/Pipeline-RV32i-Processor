@@ -99,6 +99,7 @@ mem mem(
 
     /* input signals from EX/MEM buffer */
     .mem_in(ex_to_mem),
+    .mem_in_next(ex_to_mem_next),
 
     /* output to EX/MEM buffer */
     .mem_out(mem_to_wb_next),

@@ -15,12 +15,27 @@ _start:
     # la x2, threshold
     auipc x2, 0
     auipc x10, 0
+    auipc x1, 0
+    addi x3, x3, 100
+    addi x4, x4, 128
     nop
     nop
     nop
     nop
-    lh   x10, 2(x10)
-    
+    add x4, x3, x4
+    lh   x13, (x10)
+    lh   x11, 2(x10)
+    lb   x12, -1(x10)
+    nop
+    nop
+    nop
+    sb  x4, 228(x2) 
+    sw  x10, 232(x2)
+    sh  x10, 242(x2)
+    # sw
+    # sh
+
+
     # lw x1, (x2)
     not  x1, x1
     xor  x3, x3, x3
@@ -64,7 +79,7 @@ _start:
     nop                 # 8
     nop                 # 12
     nop                 # 16
-    addi t1, t1, 96     # 20 used to be 84
+    addi t1, t1, 100    # 20 used to be 84
     nop                 # 24
     nop                 # 28
     nop                 # 32

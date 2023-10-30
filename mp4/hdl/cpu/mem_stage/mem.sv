@@ -10,6 +10,7 @@ import rv32i_types::*;
 
     /* input signals from EX/MEM buffer */
     input EX_MEM_stage_t mem_in,
+    input EX_MEM_stage_t mem_in_next,
     input logic dmem_resp,
 
     /* output to EX/MEM buffer */
@@ -29,39 +30,44 @@ import rv32i_types::*;
 //done: pass control_wd store_funct3 into stage
 // MEM_WB_stage_t mem_mid_reg;
 
+rv32i_word data_to_dmem;
 logic [3:0] wmask;
 logic [3:0] rmask;
 logic [1:0] shift;
 load_funct3_t load_funct3;
 store_funct3_t store_funct3;
+
+
 assign load_funct3 = load_funct3_t'(mem_in.ctrl_wd.mem_ctrlwd.funct3);
 assign store_funct3 = store_funct3_t'(mem_in.ctrl_wd.mem_ctrlwd.funct3);
 
 /**********dmem_address***********/
 assign dmem_address = {mem_in.mar[31:2], 2'b0};
+assign dmem_wdata = mem_in.mem_data_out;
 assign shift = mem_in.mar[1:0];
-/**********dmem_wdata*************/
-always_comb begin: dmem_write_data
 
-    case(store_funct3)
-        sw: dmem_wdata = mem_in.mem_data_out;
-        sh: begin 
-            unique case(mem_in.mar[1])
-                1'b1: dmem_wdata = mem_in.mem_data_out << 16;
-                1'b0: dmem_wdata = mem_in.mem_data_out;
-        endcase
-        end
-        sb: begin
-            unique case(mem_in.mar[1:0])
-                2'b00: dmem_wdata = mem_in.mem_data_out;
-                2'b01: dmem_wdata = mem_in.mem_data_out << 8;
-                2'b10: dmem_wdata = mem_in.mem_data_out << 16;
-                2'b11: dmem_wdata = mem_in.mem_data_out << 24;
-            endcase
-        end
-        default: dmem_wdata = mem_in.mem_data_out;
-    endcase
-end: dmem_write_data 
+// /**********dmem_wdata*************/
+// always_comb begin: dmem_write_data
+
+//     case(store_funct3)
+//         sw: dmem_wdata = mem_in.mem_data_out;
+//         sh: begin 
+//             unique case(mem_in.mar[1])
+//                 1'b1: dmem_wdata = mem_in.mem_data_out << 16;
+//                 1'b0: dmem_wdata = mem_in.mem_data_out;
+//         endcase
+//         end
+//         sb: begin
+//             unique case(mem_in.mar[1:0])
+//                 2'b00: dmem_wdata = mem_in.mem_data_out;
+//                 2'b01: dmem_wdata = mem_in.mem_data_out << 8;
+//                 2'b10: dmem_wdata = mem_in.mem_data_out << 16;
+//                 2'b11: dmem_wdata = mem_in.mem_data_out << 24;
+//             endcase
+//         end
+//         default: dmem_wdata = mem_in.mem_data_out;
+//     endcase
+// end: dmem_write_data 
  
 
 /***************** wmask & rmask ******************************/
@@ -178,6 +184,9 @@ assign dmem_read = mem_in.ctrl_wd.mem_ctrlwd.mem_read;
 //     if(dmem_write) mem_out.rvfi_d.rvfi_mem_wdata   = dmem_wdata; 
 // end
 
+/* TODO: we need to use dmem_resp for cp2. Now we just skip dmem_resp for w/r dmem. 
+*  SRAM is skipping MEM_to_WB, we should change it to skipping EX_to_MEM.
+*/
 
 // use for later
 always_comb begin : transfer_to_next
@@ -196,9 +205,8 @@ always_comb begin : transfer_to_next
     mem_out.rvfi_d.rvfi_mem_rmask   = rmask; 
     mem_out.rvfi_d.rvfi_mem_wmask   = wmask;
     mem_out.rvfi_d.rvfi_mem_rdata = '0; // TODO: need to fix later: CP2
-    mem_out.rvfi_d.rvfi_mem_wdata = '0;
     if(dmem_resp) mem_out.rvfi_d.rvfi_mem_rdata   = dmem_rdata; // for later part
-    if(dmem_write) mem_out.rvfi_d.rvfi_mem_wdata   = dmem_wdata; 
+    mem_out.rvfi_d.rvfi_mem_wdata   = dmem_wdata; 
 
 end: transfer_to_next
 
