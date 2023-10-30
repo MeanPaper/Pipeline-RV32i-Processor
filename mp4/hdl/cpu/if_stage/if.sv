@@ -8,7 +8,7 @@ import rv32i_types::*;
     input pcmux::pcmux_sel_t pcmux_sel,
     input logic load_pc,
     // input logic stall_pc,
-    // input logic imem_resp, /* response from icache */
+    input logic imem_resp, /* response from icache */
 
     /* outputs to IF/ID buffer */
     output IF_ID_stage_t if_output,
@@ -19,14 +19,16 @@ import rv32i_types::*;
 );
 /******************* Signals Needed for RVFI Monitor *************************/
 rv32i_word pcmux_out, imemmux_out;
+logic imemmux_sel;
 
 /*****************************************************************************/
 // assign imem_address = if_output.pc;
 assign imem_read = 1'b1; //for CP1
 assign imem_address = imemmux_out;
-
+assign imemmux_sel = imem_resp & load_pc;
 // setting up rvfi signal
 always_comb begin    
+    // if_output = '0;
     case (pcmux_sel)
         pcmux::pc_plus4: pcmux_out = if_output.pc + 4;
         pcmux::alu_out: pcmux_out = alu_out;
@@ -35,9 +37,9 @@ always_comb begin
     endcase
     
     // imem_addr selection
-    unique case(load_pc)
-        1'b1: imemmux_out = pcmux_out;      // use pcmux_out to fetch inst when load_pc is on
-        1'b0: imemmux_out = if_output.pc;   // use pc to keep fetching the same instruction
+    unique case(imemmux_sel)                  // a stalling problem, 1
+        1'b1: imemmux_out = pcmux_out;      // 
+        1'b0: imemmux_out = if_output.pc;   //
         default: imemmux_out = pcmux_out;
     endcase
 

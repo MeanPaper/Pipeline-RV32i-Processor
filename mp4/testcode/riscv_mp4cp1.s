@@ -9,9 +9,10 @@ _start:
     nop
     nop
     nop
+    nop
     
     # lw x1, (x2)
-    addi x2, x2, 120
+    addi x2, x2, 132
     addi x1, x1, 120
     addi x3, x3, 120
     nop

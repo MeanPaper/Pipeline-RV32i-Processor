@@ -59,6 +59,7 @@ i_fetch i_fetch(
     .if_output(if_to_id_next),
 
     /* outputs to Magic Memory */
+    .imem_resp(imem_resp),
     .imem_address(imem_address),
     .imem_read(imem_read) //hardcode to 1 for CP1
     // .imem_resp(imem_resp)//tbd, from control_wd
@@ -125,6 +126,9 @@ write_back write_back(
 
 always_comb begin
     load_pc = 1'b1;
+    if(rst) begin
+        load_pc = 1'b0;
+    end
     // if(dmem_resp == 1'b1) begin // use for later part 
     //     load_pc = 1'b0;
     // end
