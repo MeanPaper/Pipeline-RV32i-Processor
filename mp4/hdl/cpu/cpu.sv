@@ -126,7 +126,7 @@ write_back write_back(
 
 always_comb begin
     load_pc = 1'b1;
-    if(rst || imem_resp == 1'b0) begin
+    if(rst) begin
         load_pc = 1'b0;
     end
     // if(dmem_resp == 1'b1) begin // use for later part 

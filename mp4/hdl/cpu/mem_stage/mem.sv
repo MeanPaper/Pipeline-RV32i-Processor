@@ -31,6 +31,7 @@ import rv32i_types::*;
 
 logic [3:0] wmask;
 logic [3:0] rmask;
+logic [1:0] shift;
 load_funct3_t load_funct3;
 store_funct3_t store_funct3;
 assign load_funct3 = load_funct3_t'(mem_in.ctrl_wd.mem_ctrlwd.funct3);
@@ -38,7 +39,7 @@ assign store_funct3 = store_funct3_t'(mem_in.ctrl_wd.mem_ctrlwd.funct3);
 
 /**********dmem_address***********/
 assign dmem_address = {mem_in.mar[31:2], 2'b0};
-
+assign shift = mem_in.mar[1:0];
 /**********dmem_wdata*************/
 always_comb begin: dmem_write_data
 
@@ -72,7 +73,7 @@ always_comb begin
             sw: wmask = 4'b1111;
             sh: 
             begin
-                case(dmem_address[1:0])
+                case(shift)
                     2'b00: wmask = 4'b0011;
                     2'b01: wmask = 4'bxxxx;
                     2'b10: wmask = 4'b1100;
@@ -81,7 +82,7 @@ always_comb begin
             end
             sb:
             begin
-                case(dmem_address[1:0])
+                case(shift)
                     2'b00: wmask = 4'b0001;
                     2'b01: wmask = 4'b0010;
                     2'b10: wmask = 4'b0100;
@@ -95,7 +96,7 @@ always_comb begin
             lw: rmask = 4'b1111;
             lh, lhu: 
             begin
-                case(dmem_address[1:0])
+                case(shift)
                     2'b00: rmask = 4'b0011;
                     2'b01: rmask = 4'bxxxx;
                     2'b10: rmask = 4'b1100;
@@ -104,7 +105,7 @@ always_comb begin
             end
             lb, lbu:
             begin
-                case(dmem_address[1:0])
+                case(shift)
                     2'b00: rmask = 4'b0001;
                     2'b01: rmask = 4'b0010;
                     2'b10: rmask = 4'b0100;

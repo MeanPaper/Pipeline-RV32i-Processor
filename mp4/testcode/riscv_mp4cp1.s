@@ -1,4 +1,12 @@
 .align 4
+
+.section .rodata
+
+a:          .word 0x900d900d     # 52
+ab:         .word 0x00000010     # 56
+abc:        .word 0x00000000     # 60
+abcd:       .word 0x600d600d     # 64
+
 .section .text
 .globl _start
     # Refer to the RISC-V ISA Spec for the functionality of
@@ -6,15 +14,23 @@
 _start:
     # la x2, threshold
     auipc x2, 0
+    auipc x10, 0
     nop
     nop
     nop
     nop
+    lh   x10, 2(x10)
     
     # lw x1, (x2)
+    not  x1, x1
+    xor  x3, x3, x3
+    addi x8, x8, 1
+    addi x4, x4, 1
     addi x2, x2, 132
     addi x1, x1, 120
     addi x3, x3, 120
+    and  x9, x9, 0
+    or   x8, x8, 1
     nop
     nop
     nop
@@ -48,7 +64,7 @@ _start:
     nop                 # 8
     nop                 # 12
     nop                 # 16
-    addi t1, t1, 84     # 20
+    addi t1, t1, 96     # 20 used to be 84
     nop                 # 24
     nop                 # 28
     nop                 # 32
