@@ -48,7 +48,7 @@ _start:
     nop                 # 8
     nop                 # 12
     nop                 # 16
-    addi t1, t1, 68     # 20
+    addi t1, t1, 84     # 20
     nop                 # 24
     nop                 # 28
     nop                 # 32

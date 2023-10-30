@@ -25,7 +25,7 @@ logic imemmux_sel;
 // assign imem_address = if_output.pc;
 assign imem_read = 1'b1; //for CP1
 assign imem_address = imemmux_out;
-assign imemmux_sel = imem_resp & load_pc;
+assign imemmux_sel = imem_resp & load_pc; // TODO: cp2
 // setting up rvfi signal
 always_comb begin    
     // if_output = '0;
@@ -51,7 +51,7 @@ pc PC (
     .clk(clk),
     .rst(rst), //may need flsuh
     .load(load_pc), //may use for stall
-    .in(pcmux_out),
+    .in(pcmux_out),   // sync with imem_address
     .out(if_output.pc)
 );
 

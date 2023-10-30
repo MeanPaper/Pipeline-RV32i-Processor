@@ -126,7 +126,7 @@ write_back write_back(
 
 always_comb begin
     load_pc = 1'b1;
-    if(rst) begin
+    if(rst || imem_resp == 1'b0) begin
         load_pc = 1'b0;
     end
     // if(dmem_resp == 1'b1) begin // use for later part 
@@ -144,12 +144,12 @@ always_ff @(posedge clk) begin
     else begin
         // if(dmem_resp == 1'b0) begin // stalling, for latter part
         // end 
-
-        // if_id pipeline reg
-        if_to_id.pc <= if_to_id_next.pc;
-        if_to_id.rvfi_d <= if_to_id_next.rvfi_d;
-        if_to_id.ir <= imem_rdata;
-
+        if(imem_resp) begin
+            // if_id pipeline reg
+            if_to_id.pc <= if_to_id_next.pc;
+            if_to_id.rvfi_d <= if_to_id_next.rvfi_d;
+            if_to_id.ir <= imem_rdata;
+        end
         // id_ex pipeline reg
         id_to_ex <= id_to_ex_next;
 

@@ -186,7 +186,7 @@ always_comb begin : transfer_to_next
     mem_out.rd = mem_in.rd;
     mem_out.alu_out = mem_in.alu_out;
     mem_out.mar = mem_in.mar;
-    mem_out.mdr = '0;   // mdr next value    
+    mem_out.mdr = dmem_rdata;   // mdr next value TODO: need to fix in CP2 
     // if(dmem_resp) mem_out.mdr = dmem_rdata;   // mdr next value, for later part
     
     // rvfi section
@@ -194,9 +194,9 @@ always_comb begin : transfer_to_next
     mem_out.rvfi_d.rvfi_mem_addr    = {mem_in.mar[31:2], 2'b0};
     mem_out.rvfi_d.rvfi_mem_rmask   = rmask; 
     mem_out.rvfi_d.rvfi_mem_wmask   = wmask;
-    mem_out.rvfi_d.rvfi_mem_rdata = '0;
+    mem_out.rvfi_d.rvfi_mem_rdata = '0; // TODO: need to fix later: CP2
     mem_out.rvfi_d.rvfi_mem_wdata = '0;
-    // if(dmem_resp) mem_out.rvfi_d.rvfi_mem_rdata   = dmem_rdata; // for later part
+    if(dmem_resp) mem_out.rvfi_d.rvfi_mem_rdata   = dmem_rdata; // for later part
     if(dmem_write) mem_out.rvfi_d.rvfi_mem_wdata   = dmem_wdata; 
 
 end: transfer_to_next
