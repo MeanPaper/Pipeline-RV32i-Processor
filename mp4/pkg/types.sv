@@ -229,6 +229,8 @@ typedef struct packed{
     logic           valid;
     rv32i_word      pc;
     rv32i_opcode    opcode;
+    rv32i_reg       rs1;
+    rv32i_reg       rs2;
     EX_ctrl_t       ex_ctrlwd;
     MEM_ctrl_t      mem_ctrlwd;
     WB_ctrl_t       wb_ctrlwd;  
@@ -309,6 +311,12 @@ typedef struct packed {
     // rvfi signal (verification thing)
     rvfi_data_t     rvfi_d;
 }MEM_WB_stage_t;
+
+typedef enum logic[1:0] {
+    id_ex_fd = 2'b00,
+    ex_mem_fd = 2'b10,
+    mem_wb_fd = 2'b01
+}data_forward_t;
 
 endpackage
 

@@ -46,12 +46,6 @@ import rv32i_types::*;
     /* My coding style */
     logic commit;
     logic [63:0] order;
-
-    // rv32i_inst_t inst_ex, inst_mem, inst_wb;
-    // rv32i_word pc_wdata_id, pc_wdata_ex, pc_wdata_mem, pc_wdata_wb, commit_addr;
-    // rv32i_word rs1_out_mem, rs1_out_wb;
-    // rv32i_word rs2_out_mem, rs2_out_wb;
-    // logic [3:0] commit_rmask, commit_wmask;
     
     always_ff @(posedge clk) begin
         if(rst) begin
@@ -59,34 +53,8 @@ import rv32i_types::*;
         end
         else begin 
             if(commit == 1'b1) order <= order + 1;
-        
-            // // instruction commit tracking
-            // inst_ex <= cpu.if_to_id.ir;
-            // inst_mem <= inst_ex;
-            // inst_wb <= inst_mem;
-
-            // // pc wdata commit tracking
-            // pc_wdata_id <= cpu.i_fetch.pcmux_out;
-            // pc_wdata_ex <= pc_wdata_id;
-            // pc_wdata_mem <= pc_wdata_ex;
-            // pc_wdata_wb <= pc_wdata_mem;
-
-            // // r and w mask
-            // commit_rmask <= cpu.mem.rmask;
-            // commit_wmask <= cpu.mem.wmask;
-            
-            // // addr tracking
-            // commit_addr <= cpu.mem.dmem_address;
-
-            // // rs1 and rs2 value tracking
-            // rs1_out_mem <= cpu.id_to_ex.rs1_out;
-            // rs1_out_wb <= rs1_out_mem;
-            // rs2_out_mem <= cpu.id_to_ex.rs2_out;
-            // rs2_out_wb <= rs2_out_mem;
         end
     end
-
-
 
     assign commit = cpu.mem_to_wb.ctrl_wd.valid;
 

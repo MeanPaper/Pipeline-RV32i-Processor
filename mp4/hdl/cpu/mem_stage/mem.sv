@@ -127,65 +127,18 @@ assign mem_byte_enable = wmask;
 assign dmem_write = mem_in.ctrl_wd.mem_ctrlwd.mem_write;
 assign dmem_read = mem_in.ctrl_wd.mem_ctrlwd.mem_read;
 
-// always_ff @(posedge clk) begin
-//     if(rst) begin
-//         mem_mid_reg <= '0;
-//     end
-//     else begin
-//         mem_mid_reg.ctrl_wd <= mem_in.ctrl_wd;
-//         mem_mid_reg.cmp_out <= mem_in.cmp_out;
-//         mem_mid_reg.u_imm <= mem_in.u_imm;
-//         mem_mid_reg.rd <= mem_in.rd;
-//         mem_mid_reg.alu_out <= mem_in.alu_out;
-//         mem_mid_reg.mar <= mem_in.mar;
-//         mem_mid_reg.mdr <= '0;   // mdr next value
-
-//         mem_mid_reg.rvfi_d.rvfi_valid       <= mem_in.rvfi_d.rvfi_valid;
-//         mem_mid_reg.rvfi_d.rvfi_order       <= mem_in.rvfi_d.rvfi_order;
-//         mem_mid_reg.rvfi_d.rvfi_inst        <= mem_in.rvfi_d.rvfi_inst;
-//         mem_mid_reg.rvfi_d.rvfi_rs1_addr    <= mem_in.rvfi_d.rvfi_rs1_addr;
-//         mem_mid_reg.rvfi_d.rvfi_rs2_addr    <= mem_in.rvfi_d.rvfi_rs2_addr;
-//         mem_mid_reg.rvfi_d.rvfi_rs1_rdata   <= mem_in.rvfi_d.rvfi_rs1_rdata;
-//         mem_mid_reg.rvfi_d.rvfi_rs2_rdata   <= mem_in.rvfi_d.rvfi_rs2_rdata;
-//         mem_mid_reg.rvfi_d.rvfi_rd_addr     <= mem_in.rvfi_d.rvfi_rd_addr;
-//         mem_mid_reg.rvfi_d.rvfi_rd_wdata    <= mem_in.rvfi_d.rvfi_rd_wdata;
-//         mem_mid_reg.rvfi_d.rvfi_pc_rdata    <= mem_in.rvfi_d.rvfi_pc_rdata;
-//         mem_mid_reg.rvfi_d.rvfi_pc_wdata    <= mem_in.rvfi_d.rvfi_pc_wdata;
-//         mem_mid_reg.rvfi_d.rvfi_mem_addr    <= {mem_in.mar[31:2], 2'b0};
-//         mem_mid_reg.rvfi_d.rvfi_mem_rmask   <= rmask;
-//         mem_mid_reg.rvfi_d.rvfi_mem_wmask   <= wmask;
-//         mem_mid_reg.rvfi_d.rvfi_mem_rdata   <= '0;
-//         mem_mid_reg.rvfi_d.rvfi_mem_wdata   <= '0;
-    
-//     end
-// end 
-
-
 // used by pass at this checkpoint
 /*****transfer to next stage******/
 // always_comb begin
-//     mem_out.ctrl_wd = mem_mid_reg.ctrl_wd;
-//     mem_out.cmp_out = mem_mid_reg.cmp_out;
-//     mem_out.u_imm = mem_mid_reg.u_imm;
-//     mem_out.rd = mem_mid_reg.rd;
-//     mem_out.alu_out = mem_mid_reg.alu_out;
 //     mem_out.mar = mem_mid_reg.mar;
 //     mem_out.mdr = mem_mid_reg.mdr;   // mdr next value
 //     if(dmem_resp) mem_out.mdr = dmem_rdata;   // mdr next value    
-    
-//     // rvfi section
-//     mem_out.rvfi_d                  = mem_mid_reg.rvfi_d;
-//     mem_out.rvfi_d.rvfi_mem_addr    = {mem_mid_reg.mar[31:2], 2'b0};
-//     mem_out.rvfi_d.rvfi_mem_rmask   = mem_mid_reg.rvfi_d.rvfi_mem_rmask; 
-//     mem_out.rvfi_d.rvfi_mem_wmask   = mem_mid_reg.rvfi_d.rvfi_mem_wmask;
-//     mem_out.rvfi_d.rvfi_mem_rdata   = mem_mid_reg.rvfi_d.rvfi_mem_rdata;
-//     mem_out.rvfi_d.rvfi_mem_wdata   = mem_mid_reg.rvfi_d.rvfi_mem_wdata;
 //     if(dmem_resp) mem_out.rvfi_d.rvfi_mem_rdata   = dmem_rdata;
 //     if(dmem_write) mem_out.rvfi_d.rvfi_mem_wdata   = dmem_wdata; 
 // end
 
 /* TODO: we need to use dmem_resp for cp2. Now we just skip dmem_resp for w/r dmem. 
-*  SRAM is skipping MEM_to_WB, we should change it to skipping EX_to_MEM.
+ *  SRAM is skipping MEM_to_WB, we should change it to skipping EX_to_MEM.
 */
 
 // use for later
@@ -212,75 +165,3 @@ end: transfer_to_next
 
 
 endmodule
-
-/*
-always_comb begin : trap_check
-    trap = '0;
-    rmask = '0;
-    wmask = '0;
-
-    case (mem_in.ctrl_wd.opcode)
-        op_lui, op_auipc, op_imm, op_reg, op_jal, op_jalr:;
-
-        op_br: begin
-            case (branch_funct3)
-                beq, bne, blt, bge, bltu, bgeu:;
-                default: trap = '1;
-            endcase
-        end
-
-        op_load: begin
-            case (load_funct3)
-                lw: rmask = 4'b1111;
-                lh, lhu: 
-                begin
-                    case(dmem_address[1:0])d
-                        2'b00: rmask = 4'b0011;
-                        2'b01: rmask = 4'bxxxx;
-                        2'b10: rmask = 4'b1100;
-                        2'b11: rmask = 4'bxxxx;
-                    endcase
-                end
-                lb, lbu:
-                begin
-                    case(dmem_address[1:0])
-                        2'b00: rmask = 4'b0001;
-                        2'b01: rmask = 4'b0010;
-                        2'b10: rmask = 4'b0100;
-                        2'b11: rmask = 4'b1000;
-                    endcase
-                end
-                default: trap = '1;
-            endcase
-        end
-
-        op_store: begin
-            mem_byte_enable = wmask; //not sure right or not
-            case (store_funct3)
-                sw: wmask = 4'b1111;
-                sh: 
-                begin
-                    case(dmem_address[1:0])
-                        2'b00: wmask = 4'b0011;
-                        2'b01: wmask = 4'bxxxx;
-                        2'b10: wmask = 4'b1100;
-                        2'b11: wmask = 4'bxxxx;
-                    endcase
-                end
-                sb:
-                begin
-                    case(dmem_address[1:0])
-                        2'b00: wmask = 4'b0001;
-                        2'b01: wmask = 4'b0010;
-                        2'b10: wmask = 4'b0100;
-                        2'b11: wmask = 4'b1000;
-                    endcase
-                end
-                default: trap = '1;
-            endcase
-        end
-
-        default: trap = '1;
-    endcase
-end
-*/

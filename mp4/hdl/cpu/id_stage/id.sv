@@ -16,7 +16,8 @@ import rv32i_types::*;
 
     rv32i_reg rs1, rs2, dest_reg;
     /* control word signals */
-
+    assign rs1 = id_out.ctrl_wd.rs1;
+    assign rs2 = id_out.ctrl_wd.rs2;
 
     /* signals to send out to next stage */
     assign id_out.i_imm = {{21{id_in.ir.word[31]}}, id_in.ir.word[30:20]};
@@ -31,8 +32,8 @@ import rv32i_types::*;
         .pc_i(id_in.pc),
         .instr_i(id_in.ir.word),
         .dest_r(dest_reg),
-        .src_1(rs1),
-        .src_2(rs2),
+        // .src_1(rs1),
+        // .src_2(rs2),
         .control_words_o(id_out.ctrl_wd)
     );
 
@@ -51,6 +52,8 @@ import rv32i_types::*;
     
     /* possible Hazard Detection Unit in forwarding */
     /* save for cp2 */
+
+
     /* setting up rvfi signals */
     always_comb begin
         id_out.rvfi_d = id_in.rvfi_d;
@@ -63,7 +66,5 @@ import rv32i_types::*;
         id_out.rvfi_d.rvfi_rs2_rdata = id_out.rs2_out;
         id_out.rvfi_d.rvfi_rd_addr = dest_reg;
     end 
-
-
 
 endmodule 

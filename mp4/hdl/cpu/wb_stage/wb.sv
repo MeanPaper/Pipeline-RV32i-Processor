@@ -31,13 +31,14 @@ import rv32i_types::*;
             regfilemux::alu_out: regfilemux_out = wb_in.alu_out;
             regfilemux::br_en: regfilemux_out = {31'b0, wb_in.cmp_out[0]};
             regfilemux::u_imm: regfilemux_out = wb_in.u_imm;
+            regfilemux::pc_plus4: regfilemux_out = wb_in.ctrl_wd.pc + 4;
+
             // regfilemux::lw: regfilemux_out = wb_in.mdr;
             regfilemux::lw: regfilemux_out = dmem_rdata;
             regfilemux::lb: regfilemux_out = {{24{mdrreg_b[7]}}, mdrreg_b};
             regfilemux::lbu: regfilemux_out = {{24{1'b0}}, mdrreg_b};
             regfilemux::lh: regfilemux_out = {{16{mdrreg_h[15]}}, mdrreg_h};
             regfilemux::lhu: regfilemux_out = {{16{1'b0}}, mdrreg_h};
-            regfilemux::pc_plus4: regfilemux_out = wb_in.ctrl_wd.pc + 4;
             default: regfilemux_out = wb_in.alu_out;
         endcase
     end : MUX
