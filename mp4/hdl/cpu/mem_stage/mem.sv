@@ -27,6 +27,7 @@ import rv32i_types::*;
 //to do: figure out when to output dmem_read and dmem_write
 //not declare load_mdr in version 10.20 9:13
 //done: pass control_wd store_funct3 into stage
+// MEM_WB_stage_t mem_mid_reg;
 
 logic [3:0] wmask;
 logic [3:0] rmask;
@@ -119,8 +120,65 @@ assign mem_byte_enable = wmask;
 assign dmem_write = mem_in.ctrl_wd.mem_ctrlwd.mem_write;
 assign dmem_read = mem_in.ctrl_wd.mem_ctrlwd.mem_read;
 
+// always_ff @(posedge clk) begin
+//     if(rst) begin
+//         mem_mid_reg <= '0;
+//     end
+//     else begin
+//         mem_mid_reg.ctrl_wd <= mem_in.ctrl_wd;
+//         mem_mid_reg.cmp_out <= mem_in.cmp_out;
+//         mem_mid_reg.u_imm <= mem_in.u_imm;
+//         mem_mid_reg.rd <= mem_in.rd;
+//         mem_mid_reg.alu_out <= mem_in.alu_out;
+//         mem_mid_reg.mar <= mem_in.mar;
+//         mem_mid_reg.mdr <= '0;   // mdr next value
 
+//         mem_mid_reg.rvfi_d.rvfi_valid       <= mem_in.rvfi_d.rvfi_valid;
+//         mem_mid_reg.rvfi_d.rvfi_order       <= mem_in.rvfi_d.rvfi_order;
+//         mem_mid_reg.rvfi_d.rvfi_inst        <= mem_in.rvfi_d.rvfi_inst;
+//         mem_mid_reg.rvfi_d.rvfi_rs1_addr    <= mem_in.rvfi_d.rvfi_rs1_addr;
+//         mem_mid_reg.rvfi_d.rvfi_rs2_addr    <= mem_in.rvfi_d.rvfi_rs2_addr;
+//         mem_mid_reg.rvfi_d.rvfi_rs1_rdata   <= mem_in.rvfi_d.rvfi_rs1_rdata;
+//         mem_mid_reg.rvfi_d.rvfi_rs2_rdata   <= mem_in.rvfi_d.rvfi_rs2_rdata;
+//         mem_mid_reg.rvfi_d.rvfi_rd_addr     <= mem_in.rvfi_d.rvfi_rd_addr;
+//         mem_mid_reg.rvfi_d.rvfi_rd_wdata    <= mem_in.rvfi_d.rvfi_rd_wdata;
+//         mem_mid_reg.rvfi_d.rvfi_pc_rdata    <= mem_in.rvfi_d.rvfi_pc_rdata;
+//         mem_mid_reg.rvfi_d.rvfi_pc_wdata    <= mem_in.rvfi_d.rvfi_pc_wdata;
+//         mem_mid_reg.rvfi_d.rvfi_mem_addr    <= {mem_in.mar[31:2], 2'b0};
+//         mem_mid_reg.rvfi_d.rvfi_mem_rmask   <= rmask;
+//         mem_mid_reg.rvfi_d.rvfi_mem_wmask   <= wmask;
+//         mem_mid_reg.rvfi_d.rvfi_mem_rdata   <= '0;
+//         mem_mid_reg.rvfi_d.rvfi_mem_wdata   <= '0;
+    
+//     end
+// end 
+
+
+// used by pass at this checkpoint
 /*****transfer to next stage******/
+// always_comb begin
+//     mem_out.ctrl_wd = mem_mid_reg.ctrl_wd;
+//     mem_out.cmp_out = mem_mid_reg.cmp_out;
+//     mem_out.u_imm = mem_mid_reg.u_imm;
+//     mem_out.rd = mem_mid_reg.rd;
+//     mem_out.alu_out = mem_mid_reg.alu_out;
+//     mem_out.mar = mem_mid_reg.mar;
+//     mem_out.mdr = mem_mid_reg.mdr;   // mdr next value
+//     if(dmem_resp) mem_out.mdr = dmem_rdata;   // mdr next value    
+    
+//     // rvfi section
+//     mem_out.rvfi_d                  = mem_mid_reg.rvfi_d;
+//     mem_out.rvfi_d.rvfi_mem_addr    = {mem_mid_reg.mar[31:2], 2'b0};
+//     mem_out.rvfi_d.rvfi_mem_rmask   = mem_mid_reg.rvfi_d.rvfi_mem_rmask; 
+//     mem_out.rvfi_d.rvfi_mem_wmask   = mem_mid_reg.rvfi_d.rvfi_mem_wmask;
+//     mem_out.rvfi_d.rvfi_mem_rdata   = mem_mid_reg.rvfi_d.rvfi_mem_rdata;
+//     mem_out.rvfi_d.rvfi_mem_wdata   = mem_mid_reg.rvfi_d.rvfi_mem_wdata;
+//     if(dmem_resp) mem_out.rvfi_d.rvfi_mem_rdata   = dmem_rdata;
+//     if(dmem_write) mem_out.rvfi_d.rvfi_mem_wdata   = dmem_wdata; 
+// end
+
+
+// use for later
 always_comb begin : transfer_to_next
     mem_out.ctrl_wd = mem_in.ctrl_wd;
     mem_out.cmp_out = mem_in.cmp_out;
@@ -129,17 +187,16 @@ always_comb begin : transfer_to_next
     mem_out.alu_out = mem_in.alu_out;
     mem_out.mar = mem_in.mar;
     mem_out.mdr = '0;   // mdr next value    
-    if(dmem_resp) mem_out.mdr = dmem_rdata;   // mdr next value    
+    // if(dmem_resp) mem_out.mdr = dmem_rdata;   // mdr next value, for later part
     
     // rvfi section
     mem_out.rvfi_d                  = mem_in.rvfi_d;
-    
     mem_out.rvfi_d.rvfi_mem_addr    = {mem_in.mar[31:2], 2'b0};
     mem_out.rvfi_d.rvfi_mem_rmask   = rmask; 
     mem_out.rvfi_d.rvfi_mem_wmask   = wmask;
     mem_out.rvfi_d.rvfi_mem_rdata = '0;
     mem_out.rvfi_d.rvfi_mem_wdata = '0;
-    if(dmem_resp) mem_out.rvfi_d.rvfi_mem_rdata   = dmem_rdata;
+    // if(dmem_resp) mem_out.rvfi_d.rvfi_mem_rdata   = dmem_rdata; // for later part
     if(dmem_write) mem_out.rvfi_d.rvfi_mem_wdata   = dmem_wdata; 
 
 end: transfer_to_next

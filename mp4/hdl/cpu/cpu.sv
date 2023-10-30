@@ -40,6 +40,10 @@ logic load_pc;
 logic load_mdr; 
 logic load_regfile;
 rv32i_word regfile_in;
+
+// intermediate register, use to sync with dmem, use in mem stage
+// MEM_WB_stage_t mem_mid_reg;
+
 // assign load_pc = 1'b1; //For CP1
 assign load_mdr = 1'b1; // For CP1
 /******************************* IF stage ************************************/
@@ -88,7 +92,7 @@ execute execute(
 mem mem(
     .clk(clk),
     .rst(rst),
-    .load_mdr(load_mdr), //todo: also hardcode?
+    .load_mdr(load_mdr),        //todo: also hardcode?
     /* input signals from Magic Memory */
     .dmem_rdata(dmem_rdata), 
 
@@ -111,7 +115,7 @@ mem mem(
 /******************************* WB stage ***********************************/
 write_back write_back(
     .wb_in(mem_to_wb),
-    // .dmem_rdata(dmem_rdata),
+    .dmem_rdata(dmem_rdata),    //TODO: directly passing to wb, need to change for cp2
 
     /* output to regfile */
     .regfile_in(regfile_in),
@@ -121,7 +125,7 @@ write_back write_back(
 
 always_comb begin
     load_pc = 1'b1;
-    // if(dmem_resp == 1'b1) begin // 
+    // if(dmem_resp == 1'b1) begin // use for later part 
     //     load_pc = 1'b0;
     // end
 end
@@ -134,41 +138,24 @@ always_ff @(posedge clk) begin
         mem_to_wb <= '0;
     end
     else begin
-        if(dmem_resp == 1'b0) begin
-            // // if_id pipeline reg
-            // if_to_id.pc <= if_to_id_next.pc;
-            // if_to_id.rvfi_d <= if_to_id_next.rvfi_d;
-            // if_to_id.ir <= imem_rdata;
+        // if(dmem_resp == 1'b0) begin // stalling, for latter part
+        // end 
 
-            // id_ex pipeline reg
-            // id_to_ex <= id_to_ex_next;
-
-            // ex_mem pipeline reg
-            // ex_to_mem <= ex_to_mem_next;
-
-            // mem_wb pipeline reg
-            // mem_to_wb.ctrl_wd <= mem_to_wb_next.ctrl_wd;
-            // mem_to_wb.cmp_out <= mem_to_wb_next.cmp_out;
-            // mem_to_wb.u_imm <= mem_to_wb_next.u_imm;
-            // mem_to_wb.rd <= mem_to_wb_next.rd;
-            // mem_to_wb.alu_out <= mem_to_wb_next.alu_out;
-            // mem_to_wb.mar <= mem_to_wb_next.mar;
-            // mem_to_wb.mdr <= mem_to_wb_next.mdr;
-        end 
+        // if_id pipeline reg
         if_to_id.pc <= if_to_id_next.pc;
         if_to_id.rvfi_d <= if_to_id_next.rvfi_d;
         if_to_id.ir <= imem_rdata;
 
+        // id_ex pipeline reg
         id_to_ex <= id_to_ex_next;
+
+        // ex_mem pipeline reg
         ex_to_mem <= ex_to_mem_next;
+
+        // mem_wb pipline reg
         mem_to_wb <= mem_to_wb_next;
 
-        // else begin
-        //     mem_to_wb <= mem_to_wb_next;
-        // end
     end
 end
 endmodule
 
-//                   dmem stall     
-// if  | -> id  | -> ex  | -> mem   | -> wb

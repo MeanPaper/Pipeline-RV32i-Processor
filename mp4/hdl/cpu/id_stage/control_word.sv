@@ -3,6 +3,9 @@ import rv32i_types::*;
 (   
     input rv32i_word    pc_i,
     input rv32i_inst_t  instr_i,
+    output rv32i_reg    dest_r,
+    output rv32i_reg    src_1,
+    output rv32i_reg    src_2,
     output ctrl_word_t  control_words_o
 );
 
@@ -187,41 +190,60 @@ always_comb begin
     ex_ctrls = '0;
     mem_ctrls = '0;
     wb_ctrls = '0;
+    dest_r = '0;
+    src_1 = '0;
+    src_2 = '0;
     
     unique case(opcode) 
         op_lui: begin
+            dest_r = instr_i.u_inst.rd;
             ctrl_word.valid = 1'b1; 
             set_op_lui_ctrl();
         end
         op_auipc: begin
+            dest_r = instr_i.u_inst.rd;
             ctrl_word.valid = 1'b1; 
             set_op_auipc_ctrl();
         end
         op_jal: begin
+            dest_r = instr_i.j_inst.rd;
             ctrl_word.valid = 1'b1; 
             set_op_jal_ctrl();
         end
         op_jalr: begin
+            dest_r = instr_i.i_inst.rd;
+            src_1 = instr_i.i_inst.rs1;
             ctrl_word.valid = 1'b1; 
             set_op_jalr_ctrl();
         end
         op_br: begin
+            src_1 = instr_i.b_inst.rs1;
+            src_2 = instr_i.b_inst.rs2;
             ctrl_word.valid = 1'b1; 
             set_op_br_ctrl();
         end
         op_store: begin
+            src_1 = instr_i.s_inst.rs1;
+            src_2 = instr_i.s_inst.rs2;
             ctrl_word.valid = 1'b1; 
             set_op_store_ctrl();
         end
         op_load: begin
+            src_1 = instr_i.i_inst.rs1;
+            dest_r = instr_i.i_inst.rd;
             ctrl_word.valid = 1'b1; 
             set_op_load_ctrl();
         end
         op_imm: begin
+            src_1 = instr_i.i_inst.rs1;
+            dest_r = instr_i.i_inst.rd;
             ctrl_word.valid = 1'b1; 
             set_op_imm_ctrl();
         end
         op_reg: begin
+            src_1 = instr_i.r_inst.rs1;
+            src_2 = instr_i.r_inst.rs2;
+            dest_r = instr_i.r_inst.rd;
             ctrl_word.valid = 1'b1; 
             set_op_reg_ctrl();
         end
