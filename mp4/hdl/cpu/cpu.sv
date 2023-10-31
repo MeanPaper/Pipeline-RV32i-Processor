@@ -40,6 +40,7 @@ logic load_pc;
 logic load_mdr; 
 logic load_regfile;
 rv32i_word regfile_in;
+rv32i_word ex_to_mem_rd_data;
 
 logic ex_to_mem_load_regfile;
 logic mem_to_wb_load_regfile;
@@ -96,7 +97,7 @@ execute execute(
     .ex_to_mem_load_regfile(ex_to_mem_load_regfile),
     .mem_to_wb_load_regfile(mem_to_wb_load_regfile),
     .mem_to_wb_rd_data(regfile_in),
-    .ex_to_mem_rd_data(),
+    .ex_to_mem_rd_data(ex_to_mem_rd_data), // alu out ?????
 
     /* output to EX/MEM buffer */
     .ex_out(ex_to_mem_next),
@@ -118,6 +119,8 @@ mem mem(
     /* output to EX/MEM buffer */
     .mem_out(mem_to_wb_next),
     .dmem_resp(dmem_resp),
+    .ex_to_mem_rd_data(ex_to_mem_rd_data),
+
 
     /* output to Magic Memory */
     .dmem_wdata(dmem_wdata),

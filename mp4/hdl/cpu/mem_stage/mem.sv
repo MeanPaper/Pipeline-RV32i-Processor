@@ -13,6 +13,7 @@ import rv32i_types::*;
     input EX_MEM_stage_t mem_in_next,
     input logic dmem_resp,
 
+    output rv32i_word ex_to_mem_rd_data,
     /* output to EX/MEM buffer */
     output MEM_WB_stage_t mem_out,
 
@@ -29,46 +30,36 @@ import rv32i_types::*;
 //not declare load_mdr in version 10.20 9:13
 //done: pass control_wd store_funct3 into stage
 // MEM_WB_stage_t mem_mid_reg;
-
+rv32i_word rd_data;
 rv32i_word data_to_dmem;
 logic [3:0] wmask;
 logic [3:0] rmask;
 logic [1:0] shift;
 load_funct3_t load_funct3;
 store_funct3_t store_funct3;
+regfilemux_sel_t reg_mux_sel;
 
 
 assign load_funct3 = load_funct3_t'(mem_in.ctrl_wd.mem_ctrlwd.funct3);
 assign store_funct3 = store_funct3_t'(mem_in.ctrl_wd.mem_ctrlwd.funct3);
+assign reg_mux_sel = mem_in.control_wd.wb_ctrlwd.regfilemux_sel;        // regfile mux selection
 
 /**********dmem_address***********/
 assign dmem_address = {mem_in.mar[31:2], 2'b0};
 assign dmem_wdata = mem_in.mem_data_out;
 assign shift = mem_in.mar[1:0];
-
-// /**********dmem_wdata*************/
-// always_comb begin: dmem_write_data
-
-//     case(store_funct3)
-//         sw: dmem_wdata = mem_in.mem_data_out;
-//         sh: begin 
-//             unique case(mem_in.mar[1])
-//                 1'b1: dmem_wdata = mem_in.mem_data_out << 16;
-//                 1'b0: dmem_wdata = mem_in.mem_data_out;
-//         endcase
-//         end
-//         sb: begin
-//             unique case(mem_in.mar[1:0])
-//                 2'b00: dmem_wdata = mem_in.mem_data_out;
-//                 2'b01: dmem_wdata = mem_in.mem_data_out << 8;
-//                 2'b10: dmem_wdata = mem_in.mem_data_out << 16;
-//                 2'b11: dmem_wdata = mem_in.mem_data_out << 24;
-//             endcase
-//         end
-//         default: dmem_wdata = mem_in.mem_data_out;
-//     endcase
-// end: dmem_write_data 
+assign ex_to_mem_rd_data = rd_data;
  
+// use by forwarding path
+always_comb begin
+    unique case (reg_mux_sel) // use the control word from mem_in
+        regfilemux::alu_out: rd_data = mem_in.alu_out;
+        regfilemux::br_en: rd_data = {31'b0, mem_in.cmp_out[0]};
+        regfilemux::u_imm: rd_data = mem_in.u_imm;
+        regfilemux::pc_plus4: rd_data = mem_in.ctrl_wd.pc + 4;
+        default: rd_data = mem_in.alu_out;
+    endcase
+end 
 
 /***************** wmask & rmask ******************************/
 always_comb begin

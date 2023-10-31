@@ -52,12 +52,12 @@ import rv32i_types::*;
 
     forward_unit forward_unit(
         // input
-        .ex_to_mem_rd(),
-        .mem_to_wb_rd(),
+        .ex_to_mem_rd(ex_to_mem_rd),
+        .mem_to_wb_rd(mem_to_wb_rd),
         .id_to_ex_rs1(ex_in.ctrl_wd.rs1),
         .id_to_ex_rs2(ex_in.ctrl_wd.rs2),
-        .ex_to_mem_load_regfile(),
-        .mem_to_wb_load_regfile(),
+        .ex_to_mem_load_regfile(ex_to_mem_load_regfile),
+        .mem_to_wb_load_regfile(mem_to_wb_load_regfile),
         
         // output
         .forwardA_o(forwardA_sel),
@@ -68,14 +68,14 @@ import rv32i_types::*;
     always_comb begin : F_MUX
         unique case (forwardA_sel)
             id_ex_fd: forward_rs1 = ex_in.rs1_out;
-            // ex_mem_fd: forward_rs1 = ex_mem_rd_data;
-            // mem_wb_fd: forward_rs1 = mem_wb_rd_data;
+            ex_mem_fd: forward_rs1 = ex_mem_rd_data;
+            mem_wb_fd: forward_rs1 = mem_wb_rd_data;
         endcase
 
         unique case (forwardB_sel)
             id_ex_fd: forward_rs2 = ex_in.rs2_out;
-            // ex_mem_fd: forward_rs2 = ex_mem_rd_data;
-            // mem_wb_fd: forward_rs2 = mem_wb_rd_data;
+            ex_mem_fd: forward_rs2 = ex_mem_rd_data;
+            mem_wb_fd: forward_rs2 = mem_wb_rd_data;
         endcase
     end : F_MUX
     always_comb begin : EX_MUXES
@@ -83,7 +83,7 @@ import rv32i_types::*;
         rvfi_pc_wdata_ex = ex_in.rvfi_d.rvfi_pc_wdata;
 
         unique case (ex_in.ctrl_wd.ex_ctrlwd.alumux1_sel)
-            alumux::rs1_out: alumux1_out = ex_in.rs1_out;
+            alumux::rs1_out: alumux1_out = forward_rs1;     // seem like this
             alumux::pc_out: alumux1_out = ex_in.ctrl_wd.pc;
         endcase
 
@@ -93,11 +93,11 @@ import rv32i_types::*;
             alumux::b_imm: alumux2_out = ex_in.b_imm;
             alumux::s_imm: alumux2_out = ex_in.s_imm;
             alumux::j_imm: alumux2_out = ex_in.j_imm;
-            alumux::rs2_out: alumux2_out = ex_in.rs2_out;
+            alumux::rs2_out: alumux2_out = forward_rs2;
         endcase
 
         unique case (ex_in.ctrl_wd.ex_ctrlwd.cmpmux_sel)
-            cmpmux::rs2_out: cmpmux_out = ex_in.rs2_out;
+            cmpmux::rs2_out: cmpmux_out = ex_in.rs2_out;    // seem like this
             cmpmux::i_imm: cmpmux_out = ex_in.i_imm;
         endcase
 
