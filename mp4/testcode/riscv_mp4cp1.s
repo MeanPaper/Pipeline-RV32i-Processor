@@ -18,11 +18,13 @@ _start:
     auipc x1, 0
     addi x3, x3, 100
     addi x4, x4, 128
-    nop
-    nop
-    nop
-    nop
     add x4, x3, x4
+    and x3, x2, x3
+    # or x1, x3, x2
+    nop
+    nop
+    nop
+    nop
     lh   x13, (x10)
     lh   x11, 2(x10)
     lb   x12, -1(x10)
