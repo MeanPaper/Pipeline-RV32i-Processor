@@ -40,6 +40,13 @@ logic load_pc;
 logic load_mdr; 
 logic load_regfile;
 rv32i_word regfile_in;
+rv32i_word ex_to_mem_rd_data;
+
+logic ex_to_mem_load_regfile;
+logic mem_to_wb_load_regfile;
+
+assign ex_to_mem_load_regfile = ex_to_mem.ctrl_wd.wb_ctrlwd.load_regfile;
+assign mem_to_wb_load_regfile = mem_to_wb.ctrl_wd.wb_ctrlwd.load_regfile;
 
 // intermediate register, use to sync with dmem, use in mem stage
 // MEM_WB_stage_t mem_mid_reg;
@@ -84,6 +91,14 @@ i_decode i_decode(
 execute execute(
     /* input signals from ID/EX buffer */
     .ex_in(id_to_ex),
+    
+    .ex_to_mem_rd(ex_to_mem.rd),
+    .mem_to_wb_rd(mem_to_wb.rd),
+    .ex_to_mem_load_regfile(ex_to_mem_load_regfile),
+    .mem_to_wb_load_regfile(mem_to_wb_load_regfile),
+    .mem_to_wb_rd_data(regfile_in),
+    .ex_to_mem_rd_data(ex_to_mem_rd_data), // alu out ?????
+
     /* output to EX/MEM buffer */
     .ex_out(ex_to_mem_next),
     .pcmux_sel(pcmux_sel)
@@ -104,6 +119,8 @@ mem mem(
     /* output to EX/MEM buffer */
     .mem_out(mem_to_wb_next),
     .dmem_resp(dmem_resp),
+    .ex_to_mem_rd_data(ex_to_mem_rd_data),
+
 
     /* output to Magic Memory */
     .dmem_wdata(dmem_wdata),
@@ -162,5 +179,4 @@ always_ff @(posedge clk) begin
 
     end
 end
-endmodule
-
+endmodule 

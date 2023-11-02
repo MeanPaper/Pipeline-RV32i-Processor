@@ -4,37 +4,37 @@ import rv32i_types::*;
     /* input signals from ID/EX buffer */
     input ID_EX_stage_t ex_in,
 
+    input rv32i_reg ex_to_mem_rd,
+    input rv32i_reg mem_to_wb_rd,
+    input logic ex_to_mem_load_regfile,
+    input logic mem_to_wb_load_regfile,
+    input rv32i_word mem_to_wb_rd_data,
+    input rv32i_word ex_to_mem_rd_data,
+
     /* output to EX/MEM buffer */
     output EX_MEM_stage_t ex_out,
     output pcmux::pcmux_sel_t pcmux_sel
 );
-    /* intermidiate variables */
     /* ALU signals */
     rv32i_word alumux1_out;
     rv32i_word alumux2_out;
     rv32i_word alu_out;
+
     /* CMP signals */
     logic br_en;
     rv32i_word cmpmux_out;
     logic is_jlar;
+
     /* MAR signals */
     rv32i_word marmux_out;
     rv32i_word rvfi_pc_wdata_ex;
 
-    /* signals that pass down to the next stage */
+    /* data forwarding mux signals */
+    data_forward_t forwardA_sel, forwardB_sel;
+    rv32i_word forword_rs1;
+    rv32i_word forward_rs2;
 
     assign is_jlar = (ex_in.ctrl_wd.opcode == op_jalr);
-    // assign ex_out.cmp_out = br_en;
-    // assign ex_out.ctrl_wd = ex_in.ctrl_wd;
-    // assign ex_out.alu_out = alu_out;
-    // assign ex_out.mar = marmux_out;
-    // assign ex_out.mem_data_out = ex_in.rs2_out << (8 * marmux_out[1:0]); 
-    // assign ex_out.u_imm = ex_in.u_imm;
-    // assign ex_out.rd = ex_in.rd;
-
-    // /* rvfi signals */
-    // assign ex_out.rvfi_d = ex_in.rvfi_d;
-
 
     alu ALU(
         .aluop(ex_in.ctrl_wd.ex_ctrlwd.aluop),
@@ -50,13 +50,40 @@ import rv32i_types::*;
         .br_en(br_en)
     );
 
+    forward_unit forward_unit(
+        // input
+        .ex_to_mem_rd(ex_to_mem_rd),
+        .mem_to_wb_rd(mem_to_wb_rd),
+        .id_to_ex_rs1(ex_in.ctrl_wd.rs1),
+        .id_to_ex_rs2(ex_in.ctrl_wd.rs2),
+        .ex_to_mem_load_regfile(ex_to_mem_load_regfile),
+        .mem_to_wb_load_regfile(mem_to_wb_load_regfile),
+        
+        // output
+        .forwardA_o(forwardA_sel),
+        .forwardB_o(forwardB_sel)
+    );
+
     /*********** EX Muxes **********/
+    always_comb begin : F_MUX
+        unique case (forwardA_sel)
+            id_ex_fd: forward_rs1 = ex_in.rs1_out;
+            ex_mem_fd: forward_rs1 = ex_mem_rd_data;
+            mem_wb_fd: forward_rs1 = mem_wb_rd_data;
+        endcase
+
+        unique case (forwardB_sel)
+            id_ex_fd: forward_rs2 = ex_in.rs2_out;
+            ex_mem_fd: forward_rs2 = ex_mem_rd_data;
+            mem_wb_fd: forward_rs2 = mem_wb_rd_data;
+        endcase
+    end : F_MUX
     always_comb begin : EX_MUXES
 
         rvfi_pc_wdata_ex = ex_in.rvfi_d.rvfi_pc_wdata;
 
         unique case (ex_in.ctrl_wd.ex_ctrlwd.alumux1_sel)
-            alumux::rs1_out: alumux1_out = ex_in.rs1_out;
+            alumux::rs1_out: alumux1_out = forward_rs1;     // seem like this
             alumux::pc_out: alumux1_out = ex_in.ctrl_wd.pc;
         endcase
 
@@ -66,21 +93,19 @@ import rv32i_types::*;
             alumux::b_imm: alumux2_out = ex_in.b_imm;
             alumux::s_imm: alumux2_out = ex_in.s_imm;
             alumux::j_imm: alumux2_out = ex_in.j_imm;
-            alumux::rs2_out: alumux2_out = ex_in.rs2_out;
+            alumux::rs2_out: alumux2_out = forward_rs2;
         endcase
 
         unique case (ex_in.ctrl_wd.ex_ctrlwd.cmpmux_sel)
-            cmpmux::rs2_out: cmpmux_out = ex_in.rs2_out;
+            cmpmux::rs2_out: cmpmux_out = ex_in.rs2_out;    // seem like this
             cmpmux::i_imm: cmpmux_out = ex_in.i_imm;
         endcase
 
         unique case (is_jlar)
             1'b0: 
             begin
-                pcmux_sel = {1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch}; // TODO: not sure if this is valid
-
-                // for rvfi
-                // rvfi_pc_wdata_ex = ex_in.ctrl_wd.pc;
+                pcmux_sel = {1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch}; 
+                
                 if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin // if there is a branch
                     rvfi_pc_wdata_ex = alu_out;
                 end
@@ -92,8 +117,6 @@ import rv32i_types::*;
             end
             default: begin 
                 pcmux_sel = {1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch};
-                // for rvfi
-                // rvfi_pc_wdata_ex = ex_in.ctrl_wd.pc; 
                 if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin
                     rvfi_pc_wdata_ex = alu_out;
                 end
@@ -109,6 +132,11 @@ import rv32i_types::*;
     end : EX_MUXES
 
 
+/* 
+ * signal are now pass to the next stage
+ * always_comb has repect the order of the signal
+ * that's why we leave it to the end
+ */
     always_comb begin
         ex_out.cmp_out = br_en;
         ex_out.ctrl_wd = ex_in.ctrl_wd;

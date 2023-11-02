@@ -7,7 +7,6 @@ import rv32i_types::*;
     input rv32i_word alu_out,
     input pcmux::pcmux_sel_t pcmux_sel,
     input logic load_pc,
-    // input logic stall_pc,
     input logic imem_resp, /* response from icache */
 
     /* outputs to IF/ID buffer */
@@ -37,7 +36,7 @@ always_comb begin
     endcase
     
     // imem_addr selection
-    unique case(imemmux_sel)                  // a stalling problem, 1
+    unique case(imemmux_sel)                  // TODO: a stalling problem, 1
         1'b1: imemmux_out = pcmux_out;      // 
         1'b0: imemmux_out = if_output.pc;   //
         default: imemmux_out = pcmux_out;
