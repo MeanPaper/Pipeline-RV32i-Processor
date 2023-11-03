@@ -44,6 +44,8 @@ rv32i_word ex_to_mem_rd_data;
 
 logic ex_to_mem_load_regfile;
 logic mem_to_wb_load_regfile;
+/****************************** Branch Signals ********************************/
+logic branch_miss;
 
 assign ex_to_mem_load_regfile = ex_to_mem.ctrl_wd.wb_ctrlwd.load_regfile;
 assign mem_to_wb_load_regfile = mem_to_wb.ctrl_wd.wb_ctrlwd.load_regfile;
@@ -64,6 +66,7 @@ i_fetch i_fetch(
 
     /* outputs to IF/ID buffer */
     .if_output(if_to_id_next),
+    .branch_take(branch_miss),
 
     /* outputs to Magic Memory */
     .imem_resp(imem_resp),
@@ -81,6 +84,7 @@ i_decode i_decode(
     .regfile_in(regfile_in),
     .rd(mem_to_wb.rd),
     .load_regfile(load_regfile),
+    .branch_take(branch_miss),
     //.regfilemux_sel(mem_to_wb.ctrl_wd.wb_ctrlwd.regfilemux_sel), 
 
     /* outputs to ID/EX buffer*/
@@ -101,7 +105,8 @@ execute execute(
 
     /* output to EX/MEM buffer */
     .ex_out(ex_to_mem_next),
-    .pcmux_sel(pcmux_sel)
+    .pcmux_sel(pcmux_sel),
+    .branch_take(branch_miss)
 );
 
 /******************************* MEM stage ***********************************/
@@ -162,7 +167,10 @@ always_ff @(posedge clk) begin
     else begin
         // if(dmem_resp == 1'b0) begin // stalling, for latter part
         // end 
-        if(imem_resp) begin
+        if(branch_miss) begin
+            if_to_id <= '0;
+        end
+        else if(imem_resp) begin
             // if_id pipeline reg
             if_to_id.pc <= if_to_id_next.pc;
             if_to_id.rvfi_d <= if_to_id_next.rvfi_d;

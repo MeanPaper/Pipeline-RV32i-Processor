@@ -9,11 +9,12 @@ import rv32i_types::*;
     input rv32i_word        regfile_in,
     input logic             load_regfile,
     input rv32i_reg         rd,
+    input logic             branch_take,
     /* outputs to ID/EX buffer*/
     output ID_EX_stage_t    id_out
 );
     /* RegFile signals */
-
+    ctrl_word_t control_word;
     rv32i_reg rs1, rs2, dest_reg;
     /* control word signals */
     assign rs1 = id_out.ctrl_wd.rs1;
@@ -34,7 +35,7 @@ import rv32i_types::*;
         .dest_r(dest_reg),
         // .src_1(rs1),
         // .src_2(rs2),
-        .control_words_o(id_out.ctrl_wd)
+        .control_words_o(control_word)
     );
 
     /* regfile */
@@ -57,7 +58,7 @@ import rv32i_types::*;
     /* setting up rvfi signals */
     always_comb begin
         id_out.rvfi_d = id_in.rvfi_d;
-
+        id_out.ctrl_wd = control_word;
         /* some other signals that I need to turn on */
         id_out.rvfi_d.rvfi_inst = id_in.ir.word;
         id_out.rvfi_d.rvfi_rs1_addr = rs1;
@@ -65,6 +66,11 @@ import rv32i_types::*;
         id_out.rvfi_d.rvfi_rs1_rdata = id_out.rs1_out;
         id_out.rvfi_d.rvfi_rs2_rdata = id_out.rs2_out;
         id_out.rvfi_d.rvfi_rd_addr = dest_reg;
+
+        if(branch_take) begin
+            id_out.ctrl_wd = '0;
+            // TODO: RVFI might complaint
+        end
     end 
 
 endmodule 
