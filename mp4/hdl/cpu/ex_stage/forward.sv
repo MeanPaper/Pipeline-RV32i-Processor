@@ -32,12 +32,11 @@ always_comb begin
     if(ex_to_mem_load_regfile && ex_to_mem_rd != 0 && ex_to_mem_rd == id_to_ex_rs2)begin
         fd_B = 2'b10;
     end
-
-    if(mem_to_wb_load_regfile && mem_to_wb_rd != 0 && mem_to_wb_rd == id_to_ex_rs1)begin
+    if(mem_to_wb_load_regfile && mem_to_wb_rd != 0 && !(ex_to_mem_load_regfile && ex_to_mem_rd != 0 && ex_to_mem_rd == id_to_ex_rs1) && mem_to_wb_rd == id_to_ex_rs1)begin
         fd_A = 2'b01;
     end
 
-    if(mem_to_wb_load_regfile && mem_to_wb_rd != 0 && mem_to_wb_rd == id_to_ex_rs2)begin
+    if(mem_to_wb_load_regfile && mem_to_wb_rd != 0 && !(ex_to_mem_load_regfile && ex_to_mem_rd != 0 && ex_to_mem_rd == id_to_ex_rs2) && mem_to_wb_rd == id_to_ex_rs2)begin
         fd_B = 2'b01;
     end
 
