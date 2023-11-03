@@ -97,7 +97,6 @@ import my_types::*;         // import my datatypes
     
 
     /*============================== Modules begin ==============================*/
-    // TODO: filling the signals
     // generate 4 data_array
     generate for (genvar i = 0; i < 4; i++) begin : data_arrays
         mp3_data_array data_array (
@@ -111,7 +110,6 @@ import my_types::*;         // import my datatypes
         );
     end endgenerate
 
-    // TODO: filling the signals
     // generate 4 tag array
     generate for (genvar i = 0; i < 4; i++) begin : tag_arrays
         mp3_tag_array tag_array(
@@ -124,7 +122,6 @@ import my_types::*;         // import my datatypes
         );
     end endgenerate
 
-    // TODO: filling the signals
     // generate 4 valid arrays and 4 dirty arrays
     generate for (genvar i = 0; i < 4; i++) begin
         ff_array valid_array (
@@ -161,7 +158,7 @@ import my_types::*;         // import my datatypes
 
 
     /*======================== load data handling begin ========================*/
-    always_comb begin //TODO: double check this
+    always_comb begin 
         data_web_arr = 4'hF;
         tag_web_arr = 4'hF;
         valid_web_arr = 4'hF;
@@ -239,7 +236,6 @@ import my_types::*;         // import my datatypes
     // L1    L2
     // 12    34
 
-    //TODO: 4-way parallel tag check
     always_comb begin
         is_hit = 1'b0;
         for(int idx = 0; idx < 4; idx++) begin
@@ -259,7 +255,7 @@ import my_types::*;         // import my datatypes
         endcase
     end 
     
-    //TODO: MUXES
+    //MUXES
     always_comb begin
 
         // cache selection ord write back data selection  

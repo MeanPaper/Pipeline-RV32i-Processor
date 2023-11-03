@@ -49,7 +49,7 @@ import rv32i_types::*;
         .cmpop(ex_in.ctrl_wd.ex_ctrlwd.cmpop),
         .br_en(br_en) 
     );
-    /* TODO: this is the earliest point we know that the branch is going to be taken */
+    /* This is the earliest point we know that the branch is going to be taken */
 
     forward_unit forward_unit(
         // input
@@ -112,7 +112,6 @@ import rv32i_types::*;
                 
                 if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin // if there is a branch
                     rvfi_pc_wdata_ex = alu_out;
-                    // TODO: I need to pass out the signal that there's a misprediction or jump here
                     branch_take = 1'b1;
                 end
             end
@@ -120,14 +119,12 @@ import rv32i_types::*;
             begin
                 pcmux_sel = pcmux::alu_mod2;
                 rvfi_pc_wdata_ex = {alu_out[31:1], 1'b0};
-                // TODO: I need to pass out the signal that there's a misprediction or jump here
                 branch_take = 1'b1;
             end
             default: begin 
                 pcmux_sel = {1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch};
                 if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin
                     rvfi_pc_wdata_ex = alu_out;
-                    // TODO: I need to pass out the signal that there's a misprediction or jump here
                     branch_take = 1'b1;
                 end
             end 

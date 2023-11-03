@@ -111,7 +111,7 @@ always_comb begin
                 if(is_hit == 1'b1) begin
                     next_states = IDLE;
                 end
-                else begin //TODO: for cp1, only cache read is in use, need to modify later on
+                else begin 
                     if(is_dirty == 1'b1) begin
                         next_states = WRITE_BACK;
                     end
