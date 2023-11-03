@@ -1,4 +1,4 @@
-module cache(
+module icache(
     input clk,
     input rst,
 
@@ -28,7 +28,7 @@ module cache(
     logic hit_signal;
     logic [1:0] w_mask;  
 
-    /***** signals between but_adapter and CPU *****/
+    /***** signals between bus_adapter and CPU *****/
     // logic [255:0] mem_wdata_cpu_to_bus;
     // logic [255:0] mem_rdata_bus_to_cpu;
     // logic [31:0] mem_byte_enable_cpu_to_bus;
