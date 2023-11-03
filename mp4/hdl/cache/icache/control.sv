@@ -52,18 +52,20 @@ always_comb begin
                 mem_resp = hit_signal;
                 dirty_web = !(hit_signal && mem_write);
                 dirty_in = hit_signal && mem_write;
-                w_mask = 2'b01;
+                w_mask = (hit_signal && mem_write)? 2'b01 : 2'b00;
                 pmem_write  = (!hit_signal) && dirty_out;
+            end else begin
+                ;
             end
         end
 
         READ_MEMORY: begin
             pmem_read = 1'b1;
             w_mask = 2'b00;
-            tag_web = !pmem_resp;
-            valid_web = !pmem_resp;
             dirty_web = 1'b0;
             dirty_in = 1'b0;
+            tag_web = !pmem_resp;
+            valid_web = !pmem_resp;
         end
     endcase
 end

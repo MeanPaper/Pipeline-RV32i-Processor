@@ -3,9 +3,9 @@ module arbiter(
     input rst,
 
     /**** with ICACHE ****/
-    input logic icahce_read,
-    input logic [31:0] icahce_address,
-    output logic icahce_resp,
+    input logic icache_read,
+    input logic [31:0] icache_address,
+    output logic icache_resp,
     output logic [255:0] icache_rdata,
 
     /**** with DCACHE ****/
@@ -14,7 +14,7 @@ module arbiter(
     input logic [31:0] dcache_address,
     input logic [255:0] dcache_wdata,
     output logic dcache_resp,
-    output logic dcache_rdata
+    output logic [255:0] dcache_rdata,
 
     /**** with cacheline_adapter ****/
     input logic adapter_resp,
@@ -29,12 +29,13 @@ module arbiter(
         IDLE, ICACHE, DCACHE
     } state, next_state;
 
+    /**** initialization ***/
     function void initialization();
-        icahce_resp = 1'b0;
+        icache_resp = 1'b0;
         icache_rdata = 256'b0;
 
         dcache_resp = 1'b0;
-        dcache_rdata = 1'b0;
+        dcache_rdata = 256'b0;
 
         adapter_read = 1'b0;
         adapter_write = 1'b0;
@@ -42,24 +43,34 @@ module arbiter(
         adapter_wdata = 256'b0;
     endfunction
 
+    /**** icache actions ****/
     function void icache_action();
-        icahce_resp = adapter_resp? 1'b1:1'b0;
+        icache_resp = adapter_resp;
         icache_rdata = adapter_rdata;
         
-        adapter_read = icahce_read;
-        adapter_address = icahce_address;
+        adapter_read = 1'b1;
+        adapter_address = icache_address;
         adapter_write = 1'b0;
         adapter_wdata = 256'b0;
     endfunction
 
+    /**** dcache actions ****/
     function void dcache_action();
-        dcache_resp = adapter_resp? 1'b1:1'b0;
-        dcache_rdata = adapter_rdata;
-
-        adapter_read = dcache_read;
+        dcache_resp = adapter_resp;
         adapter_address = dcache_address;
-        adapter_write = dcache_write;
-        adapter_wdata = dcache_wdata;
+        // adapter_read = dcache_read;
+        // adapter_write = dcache_write;
+        // dcache_rdata = dcache_read? adapter_rdata;
+        // adapter_wdata = dcache_write? dcache_wdata;
+        if (dcache_read) begin
+            adapter_read = 1'b1;
+            dcache_rdata = adapter_rdata;
+        end else if (dcache_write) begin
+            adapter_write = 1'b1;
+            adapter_wdata = dcache_wdata;
+        end else begin
+            ;
+        end
     endfunction
 
     /**** state actions ****/
@@ -85,10 +96,19 @@ module arbiter(
        next_state = state;
         case (state)
             IDLE: begin
-                if (icahce_read) begin
-                    next_state = ICACHE;
-                end else if (dcache_read || dcache_write) begin
+                // if (icache_read) begin
+                //     next_state = ICACHE;
+                // end else if (dcache_read || dcache_write) begin
+                //     next_state = DCACHE;
+                // end else begin
+                //     next_state = IDLE;
+                // end
+
+                //do DCACHE first
+                if (dcache_read || dcache_write) begin
                     next_state = DCACHE;
+                end else if (icache_read) begin
+                    next_state = ICACHE;
                 end else begin
                     next_state = IDLE;
                 end
