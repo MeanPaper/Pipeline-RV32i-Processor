@@ -13,7 +13,8 @@ import rv32i_types::*;
 
     /* output to EX/MEM buffer */
     output EX_MEM_stage_t ex_out,
-    output pcmux::pcmux_sel_t pcmux_sel
+    output pcmux::pcmux_sel_t pcmux_sel,
+    output logic branch_take // 0 if there's not taking branch, 1 if we are taking branch
 );
     /* ALU signals */
     rv32i_word alumux1_out;
@@ -47,8 +48,9 @@ import rv32i_types::*;
         .a(ex_in.rs1_out),
         .b(cmpmux_out),
         .cmpop(ex_in.ctrl_wd.ex_ctrlwd.cmpop),
-        .br_en(br_en)
+        .br_en(br_en) 
     );
+    /* TODO: this is the earliest point we know that the branch is going to be taken */
 
     forward_unit forward_unit(
         // input
@@ -81,6 +83,7 @@ import rv32i_types::*;
     always_comb begin : EX_MUXES
 
         rvfi_pc_wdata_ex = ex_in.rvfi_d.rvfi_pc_wdata;
+        branch_take = 1'b0;
 
         unique case (ex_in.ctrl_wd.ex_ctrlwd.alumux1_sel)
             alumux::rs1_out: alumux1_out = forward_rs1;     // seem like this
@@ -108,17 +111,23 @@ import rv32i_types::*;
                 
                 if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin // if there is a branch
                     rvfi_pc_wdata_ex = alu_out;
+                    // TODO: I need to pass out the signal that there's a misprediction or jump here
+                    branch_take = 1'b1;
                 end
             end
             1'b1:
             begin
                 pcmux_sel = pcmux::alu_mod2;
                 rvfi_pc_wdata_ex = {alu_out[31:1], 1'b0};
+                // TODO: I need to pass out the signal that there's a misprediction or jump here
+                branch_take = 1'b1;
             end
             default: begin 
                 pcmux_sel = {1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch};
                 if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin
                     rvfi_pc_wdata_ex = alu_out;
+                    // TODO: I need to pass out the signal that there's a misprediction or jump here
+                    branch_take = 1'b1;
                 end
             end 
         endcase
