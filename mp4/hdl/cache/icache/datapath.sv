@@ -95,7 +95,7 @@ module simple_cache_datapath #(
         if (w_mask = 2'b00) begin
             write_mask = {32{1'b1}};
             data_in = pmem_rdata;
-        end else if (w_mask = 2'b01) begin
+        end else if (w_mask == 2'b01) begin
             write_mask = mem_byte_enable;
             data_in = mem_wdata;
         end else begin
