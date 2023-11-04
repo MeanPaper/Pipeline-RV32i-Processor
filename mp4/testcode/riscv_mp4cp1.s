@@ -25,67 +25,55 @@ _start:
     nop
     nop
     nop
-    lh   x13, (x10)
-    lh   x11, 2(x10)
-    lb   x12, -1(x10)
-    nop
-    nop
-    nop
-    sb  x4, 228(x2) 
-    sw  x10, 232(x2)
-    sh  x10, 242(x2)
-    # sw
-    # sh
+    # lh   x13, (x10)
+    # lh   x11, 2(x10)
+    # lb   x12, -1(x10)
+    # nop
+    # nop
+    # nop
+    # sb  x4, 228(x2) 
+    # sw  x10, 232(x2)
+    # sh  x10, 242(x2)
+    # # sw
+    # # sh
 
 
-    # lw x1, (x2)
-    not  x1, x1
-    xor  x3, x3, x3
-    addi x8, x8, 1
-    addi x4, x4, 1
-    addi x2, x2, 132
-    addi x1, x1, 120
-    addi x3, x3, 120
-    and  x9, x9, 0
-    or   x8, x8, 1
-    nop
-    nop
-    nop
-    nop
-    add x4, x3, x2
-    nop
-    lw x1, (x2) # strange rd_wdata error
-    nop
-    nop
-    nop
-    nop
-    add x3, x1, x2
+    # # lw x1, (x2)
+    # not  x1, x1
+    # xor  x3, x3, x3
+    # addi x8, x8, 1
+    # addi x4, x4, 1
+    # addi x2, x2, 132
+    # addi x1, x1, 120
+    # addi x3, x3, 120
+    # and  x9, x9, 0
+    # or   x8, x8, 1
     # nop
     # nop
     # nop
     # nop
-       
-    # addi x2, x2, 3 
-    # addi x4, x5, 0    
+    # add x4, x3, x2
+    # nop
+    # lw x1, (x2) # strange rd_wdata error
     # nop
     # nop
     # nop
     # nop
+    # add x3, x1, x2
+
+    andi x3, x3, 0
+    andi x2, x2, 0
+    addi x2, x2, 5     
+LOOP1:
+    beq x3, x2, END_LOOP1 
+    addi x3, x3, 1
+    jal LOOP1   
+END_LOOP1:
 
 
     # for golden spike to stall
     li  t0, 1     
     la  t1, tohost
-    # auipc t1, 0         # 0
-    # nop                 # 4
-    # nop                 # 8
-    # nop                 # 12
-    # nop                 # 16
-    # addi t1, t1, 100    # 20 used to be 84
-    # nop                 # 24
-    # nop                 # 28
-    # nop                 # 32
-    # nop                 # 36
     sw  t0, 0(t1)       # 40
     sw  x0, 4(t1)       # 44
 halt:                 # Infinite loop to keep the processor

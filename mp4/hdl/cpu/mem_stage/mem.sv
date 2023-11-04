@@ -1,9 +1,9 @@
 module mem
 import rv32i_types::*;
 (   
-    input clk,
-    input rst,
-    input logic load_mdr,
+    // input clk,
+    // input rst,
+    // input logic load_mdr,
 
     /* input signals from Magic Memory */
     input logic [31:0] dmem_rdata, 
