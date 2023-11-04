@@ -1,5 +1,5 @@
 module cache_datapath 
-import my_types::*;         // import my datatypes
+import rv32i_types::*;         // import my datatypes
 #(
             parameter       s_offset = 5,
             parameter       s_index  = 4,

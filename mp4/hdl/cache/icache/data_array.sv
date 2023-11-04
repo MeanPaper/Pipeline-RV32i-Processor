@@ -1,6 +1,6 @@
 module simple_data_array #(
-    parameter s_index = 4;
-    parameter s_offset = 5;
+    parameter s_index = 4,
+    parameter s_offset = 5
 )(
     input clk0,
     input logic rst0,
@@ -17,7 +17,7 @@ module simple_data_array #(
 
     /****** read *******/
     always_comb begin 
-        for (i = 0 ; i < s_mask ; i++) begin
+        for (int i = 0 ; i < s_mask ; i++) begin
             if (wmask0[i]) begin
                 dout0[8*i +: 8] = din0[8*i +: 8];
             end else begin
@@ -28,11 +28,11 @@ module simple_data_array #(
 
     always_ff @(posedge clk0) begin
         if (rst0) begin
-            for (i = 0 ; i < s_mask ; i++ ) begin
+            for (int i = 0 ; i < s_mask ; i++ ) begin
                 data_line[i] <= '0;
             end
         end else begin
-            for (i = 0 ; i < s_mask ; i++ ) begin
+            for (int i = 0 ; i < s_mask ; i++ ) begin
                 if (wmask0[i]) begin
                     data_line[addr0][8*i +: 8] <= din0[8*i +: 8];
                 end else begin

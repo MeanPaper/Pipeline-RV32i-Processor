@@ -236,9 +236,9 @@ import rv32i_types::*;
 
 
 
-    cacheline_adapter cacheline_adapter(
+    cacheline_adaptor cacheline_adapter(
         .clk(clk),
-        .reset_n(!rst),
+        .reset_n(~rst),
 
     // Port to arbiter
         .line_i(adapter_wdata),

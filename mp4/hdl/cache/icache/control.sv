@@ -102,4 +102,4 @@ always_ff @(posedge clk) begin
         state <= next_state;
     end
 end
-endmodule: simple_i_cache_control
+endmodule

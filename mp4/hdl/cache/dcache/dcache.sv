@@ -1,4 +1,4 @@
-module cache #(
+module dcache #(
             parameter       s_offset = 5,
             parameter       s_index  = 4,
             parameter       s_tag    = 32 - s_offset - s_index,
@@ -45,4 +45,4 @@ cache_control control(.*);
 
 cache_datapath datapath(.*);
 
-endmodule : cache
+endmodule : dcache
