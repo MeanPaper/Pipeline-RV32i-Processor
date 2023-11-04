@@ -60,6 +60,7 @@ function automatic void set_op_jal_ctrl();
     ex_ctrls.aluop = alu_add;
     wb_ctrls.load_regfile = 1'b1;
     wb_ctrls.regfilemux_sel = regfilemux::pc_plus4;
+    ex_ctrls.is_branch = 1'b1;
 endfunction
 
 // op_jalr control word
@@ -70,6 +71,7 @@ function automatic void set_op_jalr_ctrl();
     ex_ctrls.aluop = alu_add;
     wb_ctrls.load_regfile = 1'b1;
     wb_ctrls.regfilemux_sel = regfilemux::pc_plus4;
+    ex_ctrls.is_branch = 1'b1;
 endfunction
 
 // op_br control word

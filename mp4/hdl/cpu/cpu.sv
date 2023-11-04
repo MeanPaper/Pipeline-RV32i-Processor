@@ -66,13 +66,13 @@ i_fetch i_fetch(
     /* inputs */
     .clk(clk),
     .rst(rst),
-    .alu_out(mem_to_wb.alu_out),
+    .alu_out(ex_to_mem_next.alu_out),
     .pcmux_sel(pcmux_sel),
     .load_pc(load_pc),//hardcode to 1 for CP1
 
     /* outputs to IF/ID buffer */
     .if_output(if_to_id_next),
-    .branch_take(branch_miss),
+    // .branch_take(branch_miss),
 
     /* outputs to Magic Memory */
     .imem_resp(imem_resp),
@@ -117,9 +117,9 @@ execute execute(
 
 /******************************* MEM stage ***********************************/
 mem mem(
-    .clk(clk),
-    .rst(rst),
-    .load_mdr(load_mdr),       
+    // .clk(clk),
+    // .rst(rst),
+    // .load_mdr(load_mdr),        //todo: also hardcode?
     /* input signals from Magic Memory */
     .dmem_rdata(dmem_rdata), 
 

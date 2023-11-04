@@ -8,7 +8,7 @@ import rv32i_types::*;
     input pcmux::pcmux_sel_t pcmux_sel,
     input logic load_pc,
     input logic imem_resp, /* response from icache */
-    input logic branch_take,
+    // input logic branch_take,
 
     /* outputs to IF/ID buffer */
     output IF_ID_stage_t if_output,
