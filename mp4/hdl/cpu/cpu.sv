@@ -100,8 +100,8 @@ execute execute(
     .mem_to_wb_rd(mem_to_wb.rd),
     .ex_to_mem_load_regfile(ex_to_mem_load_regfile),
     .mem_to_wb_load_regfile(mem_to_wb_load_regfile),
-    .mem_to_wb_rd_data(regfile_in),
-    .ex_to_mem_rd_data(ex_to_mem_rd_data), // alu out ?????
+    .ex_mem_rd_data(ex_to_mem_rd_data), 
+    .mem_wb_rd_data(regfile_in),
 
     /* output to EX/MEM buffer */
     .ex_out(ex_to_mem_next),

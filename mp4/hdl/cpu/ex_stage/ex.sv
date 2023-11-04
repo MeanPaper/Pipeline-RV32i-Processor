@@ -3,13 +3,12 @@ import rv32i_types::*;
 (
     /* input signals from ID/EX buffer */
     input ID_EX_stage_t ex_in,
-
     input rv32i_reg ex_to_mem_rd,
     input rv32i_reg mem_to_wb_rd,
     input logic ex_to_mem_load_regfile,
     input logic mem_to_wb_load_regfile,
-    input rv32i_word mem_to_wb_rd_data,
-    input rv32i_word ex_to_mem_rd_data,
+    input rv32i_word ex_mem_rd_data,
+    input rv32i_word mem_wb_rd_data,
 
     /* output to EX/MEM buffer */
     output EX_MEM_stage_t ex_out,
@@ -32,7 +31,7 @@ import rv32i_types::*;
 
     /* data forwarding mux signals */
     data_forward_t forwardA_sel, forwardB_sel;
-    rv32i_word forword_rs1;
+    rv32i_word forward_rs1;
     rv32i_word forward_rs2;
 
     assign is_jlar = (ex_in.ctrl_wd.opcode == op_jalr);
@@ -72,12 +71,14 @@ import rv32i_types::*;
             id_ex_fd: forward_rs1 = ex_in.rs1_out;
             ex_mem_fd: forward_rs1 = ex_mem_rd_data;
             mem_wb_fd: forward_rs1 = mem_wb_rd_data;
+            default: forward_rs1 = ex_in.rs1_out;
         endcase
 
         unique case (forwardB_sel)
             id_ex_fd: forward_rs2 = ex_in.rs2_out;
             ex_mem_fd: forward_rs2 = ex_mem_rd_data;
             mem_wb_fd: forward_rs2 = mem_wb_rd_data;
+            default: forward_rs2 = ex_in.rs2_out;
         endcase
     end : F_MUX
     always_comb begin : EX_MUXES
@@ -156,6 +157,12 @@ import rv32i_types::*;
         ex_out.rd = ex_in.rd;
         ex_out.rvfi_d = ex_in.rvfi_d;
         ex_out.rvfi_d.rvfi_pc_wdata = rvfi_pc_wdata_ex; // something wrong here, causing pc_wdata to be wrong
+        if(forwardA_sel != id_ex_fd) begin
+            ex_out.rvfi_d.rvfi_rs1_rdata = forward_rs1;
+        end
+        if(forwardB_sel != id_ex_fd) begin
+            ex_out.rvfi_d.rvfi_rs2_rdata = forward_rs2;
+        end
     end
 
 endmodule

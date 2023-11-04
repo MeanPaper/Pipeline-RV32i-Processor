@@ -18,11 +18,13 @@ _start:
     auipc x1, 0
     addi x3, x3, 100
     addi x4, x4, 128
-    nop
-    nop
-    nop
-    nop
     add x4, x3, x4
+    and x3, x2, x3
+    # or x1, x3, x2
+    nop
+    nop
+    nop
+    nop
     lh   x13, (x10)
     lh   x11, 2(x10)
     lb   x12, -1(x10)
@@ -73,17 +75,17 @@ _start:
 
     # for golden spike to stall
     li  t0, 1     
-    # la  t1, tohost
-    auipc t1, 0         # 0
-    nop                 # 4
-    nop                 # 8
-    nop                 # 12
-    nop                 # 16
-    addi t1, t1, 100    # 20 used to be 84
-    nop                 # 24
-    nop                 # 28
-    nop                 # 32
-    nop                 # 36
+    la  t1, tohost
+    # auipc t1, 0         # 0
+    # nop                 # 4
+    # nop                 # 8
+    # nop                 # 12
+    # nop                 # 16
+    # addi t1, t1, 100    # 20 used to be 84
+    # nop                 # 24
+    # nop                 # 28
+    # nop                 # 32
+    # nop                 # 36
     sw  t0, 0(t1)       # 40
     sw  x0, 4(t1)       # 44
 halt:                 # Infinite loop to keep the processor

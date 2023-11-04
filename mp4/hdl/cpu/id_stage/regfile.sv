@@ -30,6 +30,8 @@ always_comb
 begin
     reg_a = src_a ? data[src_a] : 0;
     reg_b = src_b ? data[src_b] : 0;
+    if(src_a == dest) reg_a = in;    // forwarding  for concurrent r & w
+    if(src_b == dest) reg_b = in;    // forwarding, for concurrent r & w 
 end
 
 endmodule : regfile
