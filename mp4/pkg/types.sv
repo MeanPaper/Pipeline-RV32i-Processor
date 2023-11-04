@@ -72,6 +72,9 @@ typedef logic [4:0]     rv32i_reg;          // register index
 typedef logic [3:0]     rv32i_mem_wmask;    
 typedef logic [6:0]     funct7_t;           // instruction funct7 field    
 typedef logic [2:0]     funct3_t;           // instruction funct3 field
+typedef logic [22:0]   tag_word_t;
+typedef logic [255:0]  cacheline_t;
+typedef logic [2:0]    plru_word_t;
 
 
 typedef enum logic [6:0] {

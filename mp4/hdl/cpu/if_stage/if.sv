@@ -38,8 +38,8 @@ always_comb begin
     
     // imem_addr selection
     unique case(imemmux_sel)                  // TODO: a stalling problem, 1
-        1'b1: imemmux_out = pcmux_out;      // 
-        1'b0: imemmux_out = if_output.pc;   //
+        1'b1: imemmux_out = pcmux_out;      
+        1'b0: imemmux_out = if_output.pc;   
         default: imemmux_out = pcmux_out;
     endcase
 
