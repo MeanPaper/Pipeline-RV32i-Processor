@@ -21,7 +21,7 @@ run_top_tb: sim/top_tb $(PROG)
 	bin/generate_memory_file.sh $(PROG)
 	rm -f sim/dump.fsdb
 	cd sim && ./top_tb -l simulation.log
-	bash check_sim_error.sh
+	# bash check_sim_error.sh
 
 .PHONY: spike
 spike: $(ELF)

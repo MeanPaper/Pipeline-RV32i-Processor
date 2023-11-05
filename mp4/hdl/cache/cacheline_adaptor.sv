@@ -83,7 +83,7 @@ module cacheline_adaptor
                                 2'b11: line_temp[255:192] <= burst_i;
                                 default: line_temp <= '0;  
                         endcase
-                    counter <= counter + 1;
+                    counter <= counter + 2'b1;
                 end
                 
                 S4: begin
@@ -93,7 +93,7 @@ module cacheline_adaptor
                         ;
                     end
                     
-                    counter <= counter + 1;
+                    counter <= counter + 2'b1;
                 end
     
                 S5: begin

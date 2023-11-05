@@ -177,7 +177,7 @@ always_ff @(posedge clk) begin
     else begin
         // if(dmem_resp == 1'b0) begin // stalling, for latter part
         // end 
-        if(branch_miss) begin
+        if(branch_miss || ~imem_resp) begin
             if_to_id <= '0;
         end
         else if(imem_resp & load_if_id) begin

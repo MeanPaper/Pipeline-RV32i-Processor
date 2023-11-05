@@ -50,7 +50,7 @@ end
 pc PC (
     .clk(clk),
     .rst(rst), //may need flsuh
-    .load(imemmux_sel), //may use for stall
+    .load(imem_resp & load_pc), //may use for stall
     .in(pcmux_out),   // sync with imem_address
     .out(if_output.pc)
 );

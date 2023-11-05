@@ -115,10 +115,10 @@ import rv32i_types::*;
     logic   [31:0]  adapter_address;
     logic   [255:0] adapter_wdata;
 
-    //connections between icache and icache_bus_adapter
-    logic [255:0]  imem_wdata256_bus;//it's 0
-    logic [255:0]  imem_rdata256_bus;
-    logic [31:0]   imem_byte_enable256_bus;//it's 0
+    // //connections between icache and icache_bus_adapter
+    // logic [255:0]  imem_wdata256_bus;//it's 0
+    // logic [255:0]  imem_rdata256_bus;
+    // logic [31:0]   imem_byte_enable256_bus;//it's 0
 
     //connections between dcache and dcache_bus_adapter
     logic [255:0]   dmem_wdata256_bus;
@@ -141,15 +141,15 @@ import rv32i_types::*;
         .dmem_resp(dmem_resp)
     );
 
-    bus_adapter icache_bus_adapter(
-        .address(imem_address),
-        .mem_wdata256(imem_wdata256_bus),//it's 0
-        .mem_rdata256(imem_rdata256_bus),
-        .mem_wdata(32'b0),
-        .mem_rdata(imem_rdata),
-        .mem_byte_enable(4'b0000),
-        .mem_byte_enable256(imem_byte_enable256_bus)//it's 0
-    );
+    // bus_adapter icache_bus_adapter(
+    //     .address(imem_address),
+    //     .mem_wdata256(imem_wdata256_bus),//it's 0
+    //     .mem_rdata256(imem_rdata256_bus),
+    //     .mem_wdata(32'b0),
+    //     .mem_rdata(imem_rdata),
+    //     .mem_byte_enable(4'b0000),
+    //     .mem_byte_enable256(imem_byte_enable256_bus)//it's 0
+    // );
 
     bus_adapter dcache_bus_adapter(
         .address(dmem_address),
@@ -161,17 +161,15 @@ import rv32i_types::*;
         .mem_byte_enable256(dmem_byte_enable256_bus)
     );
 
-    icache icache(
+    icache_bk icache(
         .clk(clk),
         .rst(rst),
-
-        /* icacheline_adapter side signals */
+        /* cpu side signals */
         .mem_address(imem_address),
         .mem_read(imem_read),
-        .mem_write(1'b0),
-        .mem_byte_enable(imem_byte_enable256_bus),//it's 0
-        .mem_rdata(imem_rdata256_bus),
-        .mem_wdata(imem_wdata256_bus),//it's 0
+        // .mem_byte_enable_cpu(imem_byte_enable256_bus),//it's 0
+        .mem_rdata_cpu(imem_rdata),
+        // .mem_wdata_cpu(),//it's 0
         .mem_resp(imem_resp),
 
         /* Arbiter side signals */
@@ -181,6 +179,18 @@ import rv32i_types::*;
         .pmem_rdata(icache_rdata),
         //.pmem_wdata(),
         .pmem_resp(icache_resp)
+
+        /* CPU memory signals */
+        // input logic mem_read,
+        // input logic [31:0] mem_address,
+        // output logic mem_resp,
+        // output logic [31:0] mem_rdata_cpu,
+        
+        /* Physical memory signals */
+        // input logic pmem_resp,
+        // input logic [255:0] pmem_rdata,
+        // output logic [31:0] pmem_address,
+        // output logic pmem_read
     );
 
     dcache dcache(

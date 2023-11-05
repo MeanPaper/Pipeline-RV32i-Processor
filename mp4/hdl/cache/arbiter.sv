@@ -63,10 +63,10 @@ module arbiter(
         // dcache_rdata = dcache_read? adapter_rdata;
         // adapter_wdata = dcache_write? dcache_wdata;
         if (dcache_read) begin
-            adapter_read = 1'b1;
+            adapter_read = dcache_read;
             dcache_rdata = adapter_rdata;
         end else if (dcache_write) begin
-            adapter_write = 1'b1;
+            adapter_write = dcache_write;
             adapter_wdata = dcache_wdata;
         end else begin
             ;
@@ -80,7 +80,6 @@ module arbiter(
             IDLE: begin
                 ;
             end
-
             ICACHE: begin
                 icache_action();
             end
