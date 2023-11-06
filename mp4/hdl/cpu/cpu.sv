@@ -179,14 +179,16 @@ always_ff @(posedge clk) begin
     else begin
         // if(dmem_resp == 1'b0) begin // stalling, for latter part
         // end 
-        if(branch_miss || ~imem_resp) begin
-            if_to_id <= '0;
-        end
-        else if(imem_resp & load_if_id) begin
-            // if_id pipeline reg
-            if_to_id.pc <= if_to_id_next.pc;
-            if_to_id.rvfi_d <= if_to_id_next.rvfi_d;
-            if_to_id.ir <= imem_rdata;
+        if(load_if_id) begin
+            if(branch_miss || ~imem_resp) begin
+                if_to_id <= '0;
+            end
+            else if(imem_resp) begin
+                // if_id pipeline reg
+                if_to_id.pc <= if_to_id_next.pc;
+                if_to_id.rvfi_d <= if_to_id_next.rvfi_d;
+                if_to_id.ir <= imem_rdata;
+            end
         end
         // id_ex pipeline reg
         if(load_id_ex) id_to_ex <= id_to_ex_next;
