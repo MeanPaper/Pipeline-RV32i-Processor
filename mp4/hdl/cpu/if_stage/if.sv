@@ -8,7 +8,7 @@ import rv32i_types::*;
     input pcmux::pcmux_sel_t pcmux_sel,
     input logic load_pc,
     input logic imem_resp, /* response from icache */
-    // input logic branch_take,
+    input logic branch_take,
 
     /* outputs to IF/ID buffer */
     output IF_ID_stage_t if_output,
@@ -25,7 +25,7 @@ logic imemmux_sel;
 // assign imem_address = if_output.pc;
 assign imem_read = 1'b1; //for CP1
 assign imem_address = imemmux_out;
-assign imemmux_sel = imem_resp & load_pc; // TODO: cp2
+assign imemmux_sel = (imem_resp & load_pc) | branch_take; // TODO: cp2
 // setting up rvfi signal
 always_comb begin    
     // if_output = '0;
@@ -50,7 +50,7 @@ end
 pc PC (
     .clk(clk),
     .rst(rst), //may need flsuh
-    .load(imem_resp & load_pc), //may use for stall
+    .load(imemmux_sel), //may use for stall
     .in(pcmux_out),   // sync with imem_address
     .out(if_output.pc)
 );

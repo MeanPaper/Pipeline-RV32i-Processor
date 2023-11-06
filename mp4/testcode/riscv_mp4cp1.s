@@ -2,10 +2,28 @@
 
 .section .rodata
 
-a:          .word 0x900d900d     # 52
-ab:         .word 0x00000010     # 56
-abc:        .word 0x00000000     # 60
-abcd:       .word 0x600d600d     # 64
+a:              .word 0x900d900d     # ===== first set begin
+ab:             .word 0x00000010     # 64
+abc:            .word 0x00000000     # 96
+abcd:           .word 0x600d600d     # 128
+aa:             .word 0x900d900d     # 160
+bb:             .word 0x00000010     # 192
+cc:             .word 0x00000000     # 224
+dd:             .word 0x600d600d     # ===== first set end
+aaa:            .word 0x900d900d     # ===== second set begin
+bbb:            .word 0x00000010     # 
+ccc:            .word 0x00000000     # 
+ddd:            .word 0x600d600d     # 
+abcde:          .word 0x900d900d     # 
+abcdef:         .word 0x00000010     # 
+abcdefg:        .word 0x00000000     # 
+abcdefgh:       .word 0x600d600d     # ===== second set end
+Hardly_sleeping:            .word 0x900d900d     # third set begin
+Always_anxious:             .word 0x00000010     # 56
+Pretend_fine:               .word 0x00000000     # 60
+Pretty_dead_inside:         .word 0x600d600d     # 64
+Yelling_to_void:            .word 0x900d900d     # 52
+
 
 .section .text
 .globl _start
@@ -21,6 +39,12 @@ _start:
     add x4, x3, x4
     and x3, x2, x3
     # or x1, x3, x2
+    lw x10, abc
+    lw x11, abcd
+    lw x11, Yelling_to_void
+    # lw x12, Pretty_dead_inside
+    # la x1, aaa
+    # sb x10, (x1)
     nop
     nop
     nop

@@ -16,6 +16,7 @@ import rv32i_types::*;
     input   logic   [31:0]  dmem_rdata,
     output  logic   [31:0]  dmem_wdata,
     input   logic           dmem_resp //tbd
+    // output  logic           branch_is_take
 );
 
 /**************************** Control Signals ********************************/
@@ -53,6 +54,7 @@ logic dmem_stall;
 /****************************** Branch Signals ********************************/
 logic branch_miss;
 
+// assign branch_is_take = branch_miss;
 assign ex_to_mem_load_regfile = ex_to_mem.ctrl_wd.wb_ctrlwd.load_regfile;
 assign mem_to_wb_load_regfile = mem_to_wb.ctrl_wd.wb_ctrlwd.load_regfile;
 
@@ -72,7 +74,7 @@ i_fetch i_fetch(
 
     /* outputs to IF/ID buffer */
     .if_output(if_to_id_next),
-    // .branch_take(branch_miss),
+    .branch_take(branch_miss),
 
     /* outputs to Magic Memory */
     .imem_resp(imem_resp),
@@ -145,7 +147,7 @@ mem mem(
 /******************************* WB stage ***********************************/
 write_back write_back(
     .wb_in(mem_to_wb),
-    .dmem_rdata(dmem_rdata),   
+    .dmem_rdata(mem_to_wb.mdr),   
     /* output to regfile */
     .regfile_in(regfile_in),
     .load_regfile(load_regfile)

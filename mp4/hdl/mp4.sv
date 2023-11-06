@@ -124,6 +124,7 @@ import rv32i_types::*;
     logic [255:0]   dmem_wdata256_bus;
     logic [255:0]   dmem_rdata256_bus;
     logic [31:0]    dmem_byte_enable256_bus;
+    logic branch_is_take;
 
     cpu cpu(
         .clk(clk),
@@ -139,6 +140,7 @@ import rv32i_types::*;
         .dmem_rdata(dmem_rdata),
         .dmem_wdata(dmem_wdata),
         .dmem_resp(dmem_resp)
+        // .branch_is_take(branch_is_take)
     );
 
     // bus_adapter icache_bus_adapter(
@@ -164,6 +166,8 @@ import rv32i_types::*;
     icache_bk icache(
         .clk(clk),
         .rst(rst),
+
+        // .branch_is_take(branch_is_take),    // signal for address reg
         /* cpu side signals */
         .mem_address(imem_address),
         .mem_read(imem_read),

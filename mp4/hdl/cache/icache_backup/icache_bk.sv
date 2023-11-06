@@ -7,6 +7,7 @@ module icache_bk (
     input logic [31:0] mem_address,
     output logic mem_resp,
     output logic [31:0] mem_rdata_cpu,
+    // input logic branch_is_take,
     
     /* Physical memory signals */
     input logic pmem_resp,
@@ -30,7 +31,14 @@ assign load_tag     = load;
 assign load_valid   = load;
 assign mem_rdata_cpu = mem_rdata_line[(32*addr_reg[4:2]) +: 32];
 
-always_ff @(posedge clk) if(rst) addr_reg <= '0; else addr_reg <= mem_address;
+always_ff @(posedge clk) begin
+    if(rst) begin
+        addr_reg <= '0; 
+    end
+    else begin
+        addr_reg <= mem_address;
+    end 
+end 
 
 icache_bk_datapath icache_bk_datapath(
     .clk(clk),
