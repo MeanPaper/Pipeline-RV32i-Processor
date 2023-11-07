@@ -31,6 +31,8 @@ import rv32i_types::*;
 //done: pass control_wd store_funct3 into stage
 // MEM_WB_stage_t mem_mid_reg;
 rv32i_word rd_data;
+logic [7:0] mdrreg_b;
+logic [15:0] mdrreg_h;
 rv32i_word data_to_dmem;
 logic [3:0] wmask;
 logic [3:0] rmask;
@@ -49,7 +51,10 @@ assign dmem_address = {mem_in.mar[31:2], 2'b0};
 assign dmem_wdata = mem_in.mem_data_out;
 assign shift = mem_in.mar[1:0];
 assign ex_to_mem_rd_data = rd_data;
- 
+
+assign mdrreg_b = dmem_rdata[(shift * 8) +: 8];
+assign mdrreg_h = dmem_rdata[(shift * 8) +: 16];
+
 // use by forwarding path
 always_comb begin
     unique case (reg_mux_sel) // use the control word from mem_in
@@ -57,6 +62,11 @@ always_comb begin
         regfilemux::br_en: rd_data = {31'b0, mem_in.cmp_out[0]};
         regfilemux::u_imm: rd_data = mem_in.u_imm;
         regfilemux::pc_plus4: rd_data = mem_in.ctrl_wd.pc + 4;
+        regfilemux::lw: rd_data = dmem_rdata;
+        regfilemux::lb: rd_data = {{24{mdrreg_b[7]}}, mdrreg_b};
+        regfilemux::lbu: rd_data = {{24{1'b0}}, mdrreg_b};
+        regfilemux::lh: rd_data = {{16{mdrreg_h[15]}}, mdrreg_h};
+        regfilemux::lhu: rd_data = {{16{1'b0}}, mdrreg_h};
         default: rd_data = mem_in.alu_out;
     endcase
 end 

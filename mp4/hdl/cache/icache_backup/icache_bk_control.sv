@@ -6,7 +6,8 @@ module icache_bk_control(
     input logic hit,
     output logic load,
     output logic valid_in,
-
+    output logic addr_mux_sel,
+    
     // from cpu
     input logic mem_read,
 
@@ -31,6 +32,7 @@ always_comb begin
     mem_resp = 1'b0;
     load = 1'b0;
     valid_in = 1'b0;
+    addr_mux_sel = 1'b0;
     case(state)
         check_hit: begin
             if(mem_read) begin
@@ -44,6 +46,7 @@ always_comb begin
             if(pmem_resp) begin
                 load = 1'b1;
                 valid_in = 1'b1;
+                addr_mux_sel = 1'b1;
             end
         end
         default:;

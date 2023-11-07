@@ -56,11 +56,11 @@ import rv32i_types::*;
         end
     end
 
-    assign commit = cpu.mem_to_wb.ctrl_wd.valid;
 
     // Fill this out
     // Only use hierarchical references here for verification
     // **DO NOT** use hierarchical references in the actual design!
+    assign commit = cpu.mem_to_wb.ctrl_wd.valid;
     assign monitor_valid     = commit;
     assign monitor_order     = order;
     assign monitor_inst      = cpu.mem_to_wb.rvfi_d.rvfi_inst;

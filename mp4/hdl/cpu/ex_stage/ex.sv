@@ -44,7 +44,8 @@ import rv32i_types::*;
     );
 
     cmp CMP(
-        .a(ex_in.rs1_out),
+        .a(forward_rs1),
+        // .a(ex_in.rs1_out),
         .b(cmpmux_out),
         .cmpop(ex_in.ctrl_wd.ex_ctrlwd.cmpop),
         .br_en(br_en) 
@@ -101,7 +102,7 @@ import rv32i_types::*;
         endcase
 
         unique case (ex_in.ctrl_wd.ex_ctrlwd.cmpmux_sel)
-            cmpmux::rs2_out: cmpmux_out = ex_in.rs2_out;    // seem like this
+            cmpmux::rs2_out: cmpmux_out = forward_rs2; // ex_in.rs2_out;    // seem like this
             cmpmux::i_imm: cmpmux_out = ex_in.i_imm;
         endcase
 
@@ -149,17 +150,17 @@ import rv32i_types::*;
         ex_out.ctrl_wd = ex_in.ctrl_wd;
         ex_out.alu_out = alu_out;
         ex_out.mar = marmux_out;
-        ex_out.mem_data_out = ex_in.rs2_out << (8 * marmux_out[1:0]); 
+        ex_out.mem_data_out = forward_rs2 << (8 * marmux_out[1:0]); 
         ex_out.u_imm = ex_in.u_imm;
         ex_out.rd = ex_in.rd;
         ex_out.rvfi_d = ex_in.rvfi_d;
         ex_out.rvfi_d.rvfi_pc_wdata = rvfi_pc_wdata_ex; // something wrong here, causing pc_wdata to be wrong
-        if(forwardA_sel != id_ex_fd) begin
-            ex_out.rvfi_d.rvfi_rs1_rdata = forward_rs1;
-        end
-        if(forwardB_sel != id_ex_fd) begin
-            ex_out.rvfi_d.rvfi_rs2_rdata = forward_rs2;
-        end
+        // if(forwardA_sel != id_ex_fd) begin
+        ex_out.rvfi_d.rvfi_rs1_rdata = forward_rs1;
+        // end
+        // if(forwardB_sel != id_ex_fd) begin
+        ex_out.rvfi_d.rvfi_rs2_rdata = forward_rs2;
+        // end
     end
 
 endmodule

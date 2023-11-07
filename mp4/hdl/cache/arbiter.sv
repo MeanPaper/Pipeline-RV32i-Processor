@@ -62,15 +62,15 @@ module arbiter(
         // adapter_write = dcache_write;
         // dcache_rdata = dcache_read? adapter_rdata;
         // adapter_wdata = dcache_write? dcache_wdata;
-        if (dcache_read) begin
+        // if (dcache_read) begin
             adapter_read = dcache_read;
             dcache_rdata = adapter_rdata;
-        end else if (dcache_write) begin
+        // end else if (dcache_write) begin
             adapter_write = dcache_write;
             adapter_wdata = dcache_wdata;
-        end else begin
-            ;
-        end
+        // end else begin
+            // ;
+        // end
     endfunction
 
     /**** state actions ****/

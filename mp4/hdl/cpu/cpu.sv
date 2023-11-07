@@ -75,6 +75,8 @@ i_fetch i_fetch(
     /* outputs to IF/ID buffer */
     .if_output(if_to_id_next),
     .branch_take(branch_miss),
+    // .dmem_stall(dmem_stall),
+
 
     /* outputs to Magic Memory */
     .imem_resp(imem_resp),

@@ -24,28 +24,41 @@ logic load_data;
 logic load_tag;
 logic load_valid;
 logic [255:0] mem_rdata_line;
-logic [31:0] addr_reg;
+logic [31:0] addr_reg, prev_addr_reg;
+logic addr_mux_sel;
+logic [31:0] access_addr;
 
 assign load_data    = load;
 assign load_tag     = load;
 assign load_valid   = load;
-assign mem_rdata_cpu = mem_rdata_line[(32*addr_reg[4:2]) +: 32];
+// assign mem_rdata_cpu = mem_rdata_line[(32*access_addr[4:2]) +: 32];
 
 always_ff @(posedge clk) begin
     if(rst) begin
         addr_reg <= '0; 
+        prev_addr_reg <= '0;
     end
     else begin
-        addr_reg <= mem_address;
+        if(~addr_mux_sel) begin
+            addr_reg <= mem_address;
+        end
     end 
 end 
+
+always_comb begin
+    access_addr = addr_reg;
+    // if(addr_mux_sel == 1'b1) begin
+    //     access_addr = prev_addr_reg;
+    // end 
+    mem_rdata_cpu = mem_rdata_line[(32*access_addr[4:2]) +: 32];
+end
 
 icache_bk_datapath icache_bk_datapath(
     .clk(clk),
     .rst(rst),
 
     /* signals from CPU */
-    .mem_address(addr_reg),
+    .mem_address(access_addr),
     .mem_rdata256(mem_rdata_line),
     
     /* signals for main memory */
@@ -71,7 +84,9 @@ icache_bk_control  icache_bk_control(
     .mem_read(mem_read),
     .mem_resp(mem_resp),
     .pmem_resp(pmem_resp),
-    .pmem_read(pmem_read)
+    .pmem_read(pmem_read),
+    .addr_mux_sel(addr_mux_sel)
+    
 );
 
 
