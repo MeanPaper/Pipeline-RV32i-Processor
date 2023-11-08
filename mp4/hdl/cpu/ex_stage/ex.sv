@@ -9,11 +9,13 @@ import rv32i_types::*;
     input logic mem_to_wb_load_regfile,
     input rv32i_word ex_mem_rd_data,
     input rv32i_word mem_wb_rd_data,
+    input logic use_branch,  
 
     /* output to EX/MEM buffer */
     output EX_MEM_stage_t ex_out,
     output pcmux::pcmux_sel_t pcmux_sel,
     output logic branch_take // 0 if there's not taking branch, 1 if we are taking branch
+    // input logic branch_take
 );
     /* ALU signals */
     rv32i_word alumux1_out;
@@ -162,14 +164,22 @@ import rv32i_types::*;
         ex_out.mem_data_out = forward_rs2 << (8 * marmux_out[1:0]); 
         ex_out.u_imm = ex_in.u_imm;
         ex_out.rd = ex_in.rd;
+
+        ex_out.pcmux_sel = pcmux_sel;
+        ex_out.branch_take = branch_take;
+        
         ex_out.rvfi_d = ex_in.rvfi_d;
         ex_out.rvfi_d.rvfi_pc_wdata = rvfi_pc_wdata_ex; // something wrong here, causing pc_wdata to be wrong
         // if(forwardA_sel != id_ex_fd) begin
+
         ex_out.rvfi_d.rvfi_rs1_rdata = forward_rs1;
         // end
         // if(forwardB_sel != id_ex_fd) begin
         ex_out.rvfi_d.rvfi_rs2_rdata = forward_rs2;
         // end
+        if(use_branch) begin
+            ex_out = '0;
+        end
     end
 
 endmodule

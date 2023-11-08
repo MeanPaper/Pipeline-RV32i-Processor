@@ -10,7 +10,7 @@ import rv32i_types::*;
 
     /* input signals from EX/MEM buffer */
     input EX_MEM_stage_t mem_in,
-    input EX_MEM_stage_t mem_in_next,
+    // input EX_MEM_stage_t mem_in_next,
     input logic dmem_resp,
 
     output rv32i_word ex_to_mem_rd_data,
