@@ -96,6 +96,7 @@ i_decode i_decode(
     .rd(mem_to_wb.rd),
     .load_regfile(load_regfile),
     .branch_take(branch_miss),
+    .valid_forward(mem_to_wb.ctrl_wd.valid),
     //.regfilemux_sel(mem_to_wb.ctrl_wd.wb_ctrlwd.regfilemux_sel), 
 
     /* outputs to ID/EX buffer*/
@@ -192,14 +193,16 @@ always_ff @(posedge clk) begin
         end
 
         // id_ex pipeline reg
-        if(load_id_ex) id_to_ex <= id_to_ex_next;
-    
+        // if(load_id_ex & imem_resp) id_to_ex <= id_to_ex_next;
+
+        if(load_id_ex & imem_resp) id_to_ex <= id_to_ex_next;
+
         // ex_mem pipeline reg
-        if(load_ex_mem) ex_to_mem <= ex_to_mem_next;
+        if(load_ex_mem & imem_resp) ex_to_mem <= ex_to_mem_next;
 
         // mem_wb pipline reg
         if(load_mem_wb) begin
-            if(dmem_stall) mem_to_wb.ctrl_wd.valid <= 1'b0;
+            if(dmem_stall | ~imem_resp) mem_to_wb.ctrl_wd.valid <= 1'b0;
             else mem_to_wb <= mem_to_wb_next;
         end
 

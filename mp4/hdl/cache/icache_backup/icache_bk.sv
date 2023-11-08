@@ -24,7 +24,8 @@ logic load_data;
 logic load_tag;
 logic load_valid;
 logic [255:0] mem_rdata_line;
-logic [31:0] addr_reg, prev_addr_reg;
+logic [31:0] addr_reg;
+logic [31:0] current_address;
 logic addr_mux_sel;
 logic [31:0] access_addr;
 
@@ -33,14 +34,19 @@ assign load_tag     = load;
 assign load_valid   = load;
 // assign mem_rdata_cpu = mem_rdata_line[(32*access_addr[4:2]) +: 32];
 
+
+always_comb begin
+    if(~load) current_address = mem_address;
+    else current_address = addr_reg;
+end
+
 always_ff @(posedge clk) begin
     if(rst) begin
         addr_reg <= '0; 
-        prev_addr_reg <= '0;
     end
     else begin
-        // if(~load) begin // what the fuck is going on
-        addr_reg <= mem_address;
+        // if() begin // what the fuck is going on
+        addr_reg <= current_address;
         // end
     end 
 end 

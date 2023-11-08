@@ -5,6 +5,7 @@ module regfile
     input rst,
     input load,
     input [31:0] in,
+    input logic valid_forward,
     input [4:0] src_a, src_b, dest,
     output logic [31:0] reg_a, reg_b
 );
@@ -30,8 +31,8 @@ always_comb
 begin
     reg_a = src_a ? data[src_a] : 0;
     reg_b = src_b ? data[src_b] : 0;
-    if(dest != 5'b0 && src_a == dest) reg_a = in;    // forwarding  for concurrent r & w
-    if(dest != 5'b0 && src_b == dest) reg_b = in;    // forwarding, for concurrent r & w 
+    if(dest != 5'b0 && src_a == dest && valid_forward) reg_a = in;    // forwarding  for concurrent r & w
+    if(dest != 5'b0 && src_b == dest && valid_forward) reg_b = in;    // forwarding, for concurrent r & w 
 end
 
 endmodule : regfile
