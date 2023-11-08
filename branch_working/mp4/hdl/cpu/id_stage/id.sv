@@ -10,6 +10,7 @@ import rv32i_types::*;
     input logic             load_regfile,
     input rv32i_reg         rd,
     input logic             branch_take,
+    input logic             valid_forward,
     /* outputs to ID/EX buffer*/
     output ID_EX_stage_t    id_out
 );
@@ -43,7 +44,8 @@ import rv32i_types::*;
         .clk(clk),
         .rst(rst),
         .load(load_regfile),
-        .in(regfile_in),  
+        .in(regfile_in),
+        .valid_forward,  
         .src_a(rs1),
         .src_b(rs2),
         .dest(rd), // passed from write_back

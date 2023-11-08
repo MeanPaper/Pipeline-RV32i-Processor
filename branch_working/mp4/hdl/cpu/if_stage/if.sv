@@ -9,7 +9,7 @@ import rv32i_types::*;
     input logic load_pc,
     input logic imem_resp, /* response from icache */
     input logic branch_take,
-    // input logic dmem_stall,
+    input logic dmem_stall,
 
     /* outputs to IF/ID buffer */
     output IF_ID_stage_t if_output,
@@ -24,7 +24,7 @@ logic imemmux_sel;
 
 /*****************************************************************************/
 // assign imem_address = if_output.pc;
-assign imem_read = 1'b1; //for CP1
+assign imem_read = 1'b1 & (~dmem_stall); //for CP1
 assign imem_address = imemmux_out;
 assign imemmux_sel = (imem_resp & load_pc) | branch_take; // TODO: cp2
 // assign imemmux_sel = (imem_resp dda)

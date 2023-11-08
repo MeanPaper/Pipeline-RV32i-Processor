@@ -23,7 +23,8 @@ import rv32i_types::*;
     /* CMP signals */
     logic br_en;
     rv32i_word cmpmux_out;
-    logic is_jlar;
+    logic is_jalr;
+    logic is_jal;
 
     /* MAR signals */
     rv32i_word marmux_out;
@@ -34,7 +35,8 @@ import rv32i_types::*;
     rv32i_word forward_rs1;
     rv32i_word forward_rs2;
 
-    assign is_jlar = (ex_in.ctrl_wd.opcode == op_jalr);
+    assign is_jalr = (ex_in.ctrl_wd.opcode == op_jalr);
+    assign is_jal = (ex_in.ctrl_wd.opcode == op_jal);
 
     alu ALU(
         .aluop(ex_in.ctrl_wd.ex_ctrlwd.aluop),
@@ -106,18 +108,26 @@ import rv32i_types::*;
             cmpmux::i_imm: cmpmux_out = ex_in.i_imm;
         endcase
 
-        unique case (is_jlar)
-            1'b0: 
-            begin
-                pcmux_sel = {1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch}; 
-                
-                if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin // if there is a branch
+        unique case (is_jalr)
+            1'b0: begin
+                unique case (is_jal) // both jal & jalr are unconditional branch, so...
+                1'b0: begin
+                    // need to treat jal and br separately
+                    pcmux_sel = pcmux::pcmux_sel_t'({1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch}); 
+                    
+                    if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin // if there is a branch
+                        rvfi_pc_wdata_ex = alu_out;
+                        branch_take = 1'b1;
+                    end
+                end
+                1'b1: begin
+                    pcmux_sel = pcmux::alu_out;
                     rvfi_pc_wdata_ex = alu_out;
                     branch_take = 1'b1;
                 end
+                endcase
             end
-            1'b1:
-            begin
+            1'b1: begin
                 pcmux_sel = pcmux::alu_mod2;
                 rvfi_pc_wdata_ex = {alu_out[31:1], 1'b0};
                 branch_take = 1'b1;

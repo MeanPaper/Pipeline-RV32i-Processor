@@ -44,6 +44,13 @@ rv32i_word ex_to_mem_rd_data;
 
 logic ex_to_mem_load_regfile;
 logic mem_to_wb_load_regfile;
+
+/****************************** Signals for stage register ********************************/
+logic load_if_id;
+logic load_id_ex;
+logic load_ex_mem;
+logic load_mem_wb;
+logic dmem_stall;
 /****************************** Branch Signals ********************************/
 logic branch_miss;
 
@@ -67,7 +74,7 @@ i_fetch i_fetch(
     /* outputs to IF/ID buffer */
     .if_output(if_to_id_next),
     .branch_take(branch_miss),
-
+    .dmem_stall(dmem_stall),
     /* outputs to Magic Memory */
     .imem_resp(imem_resp),
     .imem_address(imem_address),
@@ -85,6 +92,7 @@ i_decode i_decode(
     .rd(mem_to_wb.rd),
     .load_regfile(load_regfile),
     .branch_take(branch_miss),
+    .valid_forward(mem_to_wb.ctrl_wd.valid),
     //.regfilemux_sel(mem_to_wb.ctrl_wd.wb_ctrlwd.regfilemux_sel), 
 
     /* outputs to ID/EX buffer*/
@@ -148,13 +156,18 @@ write_back write_back(
 
 
 always_comb begin
+    dmem_stall = (ex_to_mem.ctrl_wd.mem_ctrlwd.mem_read | ex_to_mem.ctrl_wd.mem_ctrlwd.mem_write) & (~dmem_resp);
     load_pc = 1'b1;
+    load_mem_wb = 1'b1;
     if(rst) begin
         load_pc = 1'b0;
-    end
-    // if(dmem_resp == 1'b1) begin // use for later part 
-    //     load_pc = 1'b0;
-    // end
+    end 
+    else if (dmem_stall) load_pc = 1'b0;
+
+    load_if_id = ~dmem_stall;
+    load_id_ex = ~dmem_stall;
+    load_ex_mem = ~dmem_stall;
+
 end
 //it seems that we do not have if_id anymore?
 always_ff @(posedge clk) begin
@@ -167,23 +180,29 @@ always_ff @(posedge clk) begin
     else begin
         // if(dmem_resp == 1'b0) begin // stalling, for latter part
         // end 
-        if(branch_miss || ~imem_resp) begin
-            if_to_id <= '0;
+        if(load_if_id) begin
+            if(branch_miss) begin
+                if_to_id <= '0;
+            end
+            else if(imem_resp) begin
+                // if_id pipeline reg
+                if_to_id.pc <= if_to_id_next.pc;
+                if_to_id.rvfi_d <= if_to_id_next.rvfi_d;
+                if_to_id.ir <= imem_rdata;
+            end
         end
-        else if(imem_resp) begin
-            // if_id pipeline reg
-            if_to_id.pc <= if_to_id_next.pc;
-            if_to_id.rvfi_d <= if_to_id_next.rvfi_d;
-            if_to_id.ir <= imem_rdata;
-        end
-        // id_ex pipeline reg
-        id_to_ex <= id_to_ex_next;
 
+        // id_ex pipeline reg
+        if(load_id_ex) id_to_ex <= id_to_ex_next;
+    
         // ex_mem pipeline reg
-        ex_to_mem <= ex_to_mem_next;
+        if(load_ex_mem) ex_to_mem <= ex_to_mem_next;
 
         // mem_wb pipline reg
-        mem_to_wb <= mem_to_wb_next;
+        if(load_mem_wb) begin
+            if(dmem_stall) mem_to_wb.ctrl_wd.valid <= 1'b0;
+            else mem_to_wb <= mem_to_wb_next;
+        end
 
     end
 end
