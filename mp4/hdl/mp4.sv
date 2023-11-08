@@ -76,7 +76,7 @@ import rv32i_types::*;
     assign monitor_mem_rmask = cpu.mem_to_wb.rvfi_d.rvfi_mem_rmask; 
     assign monitor_mem_wmask = cpu.mem_to_wb.rvfi_d.rvfi_mem_wmask;
     // assign monitor_mem_rdata = cpu.mem_to_wb.rvfi_d.rvfi_mem_rdata;
-    assign monitor_mem_rdata = cpu.write_back.dmem_rdata;           // this is somewhat bad, because cp1 use direct wire
+    assign monitor_mem_rdata = cpu.mem_to_wb.mdr;           // this is somewhat bad, because cp1 use direct wire
     assign monitor_mem_wdata = cpu.mem_to_wb.rvfi_d.rvfi_mem_wdata;
     
 
