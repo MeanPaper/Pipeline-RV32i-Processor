@@ -9,6 +9,7 @@ import rv32i_types::*;
     input logic load_pc,
     input logic imem_resp, /* response from icache */
     input logic branch_take,
+    input rv32i_word imem_rdata,
     // input logic dmem_stall,
 
     /* outputs to IF/ID buffer */
@@ -47,6 +48,7 @@ always_comb begin
 
     if_output.rvfi_d.rvfi_pc_wdata = pcmux_out;
     if_output.rvfi_d.rvfi_pc_rdata = if_output.pc;
+    if_output.ir = imem_rdata;
 end
 
 pc PC (

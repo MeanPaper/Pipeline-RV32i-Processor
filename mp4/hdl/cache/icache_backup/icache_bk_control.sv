@@ -43,10 +43,9 @@ always_comb begin
         end
         read_mem: begin
             pmem_read = 1'b1;
+            load = 1'b1;
             if(pmem_resp) begin
-                load = 1'b1;
                 valid_in = 1'b1;
-                addr_mux_sel = 1'b1;
             end
         end
         default:;

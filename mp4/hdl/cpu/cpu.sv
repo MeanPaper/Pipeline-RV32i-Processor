@@ -79,6 +79,7 @@ i_fetch i_fetch(
 
 
     /* outputs to Magic Memory */
+    .imem_rdata(imem_rdata),
     .imem_resp(imem_resp),
     .imem_address(imem_address),
     .imem_read(imem_read) //hardcode to 1 for CP1
@@ -186,12 +187,10 @@ always_ff @(posedge clk) begin
                 if_to_id <= '0;
             end
             else if(imem_resp) begin
-                // if_id pipeline reg
-                if_to_id.pc <= if_to_id_next.pc;
-                if_to_id.rvfi_d <= if_to_id_next.rvfi_d;
-                if_to_id.ir <= imem_rdata;
+                if_to_id <= if_to_id_next;
             end
         end
+
         // id_ex pipeline reg
         if(load_id_ex) id_to_ex <= id_to_ex_next;
     

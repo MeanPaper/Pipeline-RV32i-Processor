@@ -39,17 +39,15 @@ always_ff @(posedge clk) begin
         prev_addr_reg <= '0;
     end
     else begin
-        if(~addr_mux_sel) begin
-            addr_reg <= mem_address;
-        end
+        // if(~load) begin // what the fuck is going on
+        addr_reg <= mem_address;
+        // end
     end 
 end 
 
 always_comb begin
+    // access_addr = addr_reg;
     access_addr = addr_reg;
-    // if(addr_mux_sel == 1'b1) begin
-    //     access_addr = prev_addr_reg;
-    // end 
     mem_rdata_cpu = mem_rdata_line[(32*access_addr[4:2]) +: 32];
 end
 
@@ -86,7 +84,6 @@ icache_bk_control  icache_bk_control(
     .pmem_resp(pmem_resp),
     .pmem_read(pmem_read),
     .addr_mux_sel(addr_mux_sel)
-    
 );
 
 
