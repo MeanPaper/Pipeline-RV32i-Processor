@@ -15,6 +15,9 @@ module top_tb;
 
     int timeout = 10000000; // in cycles, change according to your needs
 
+    logic [63:0] dmem_stall_count;
+    logic [63:0] imem_stall_count;
+
     // CP1
     // mem_itf magic_itf_i(.*);
     // mem_itf magic_itf_d(.*);
@@ -80,6 +83,14 @@ module top_tb;
         rst <= 1'b0;
     end
 
+    final begin
+        // $display("%c[1;34m",27);
+        $display("\n============= Memory Stalls =============");
+        $display("imem stall total cycle: %0d", imem_stall_count);
+        $display("dmem stall total cycle: %0d\n", dmem_stall_count);
+        // $write("%c[0m",27);
+    end
+
     always @(posedge clk) begin
         if (mon_itf.halt) begin
             $finish;
@@ -103,6 +114,23 @@ module top_tb;
             $finish;
         end
         timeout <= timeout - 1;
+    end
+
+    // keep track of stalling ??
+    always_ff @(posedge clk) begin
+        if(rst) begin
+            dmem_stall_count <= '0;
+            imem_stall_count <= '0;
+        end
+        else begin
+            if(dut.cpu.imem_stall == 1'b1) begin
+                imem_stall_count <= imem_stall_count + 1'b1;
+            end 
+                
+            if(dut.cpu.dmem_stall == 1'b1) begin
+                dmem_stall_count <= dmem_stall_count + 1'b1;
+            end
+        end
     end
 
 endmodule
