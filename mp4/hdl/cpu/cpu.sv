@@ -121,9 +121,9 @@ execute execute(
     .use_branch(ex_to_mem.branch_take),
 
     /* output to EX/MEM buffer */
-    .ex_out(ex_to_mem_next),
-    .pcmux_sel(pcmux_sel),
-    .branch_take(branch_miss)
+    .ex_out(ex_to_mem_next)
+    // .pcmux_sel(pcmux_sel),
+    // .branch_take(branch_miss)
 );
 
 /******************************* MEM stage ***********************************/

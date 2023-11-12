@@ -12,9 +12,9 @@ import rv32i_types::*;
     input logic use_branch,  
 
     /* output to EX/MEM buffer */
-    output EX_MEM_stage_t ex_out,
-    output pcmux::pcmux_sel_t pcmux_sel,
-    output logic branch_take // 0 if there's not taking branch, 1 if we are taking branch
+    output EX_MEM_stage_t ex_out
+    // output pcmux::pcmux_sel_t pcmux_sel,
+    // output logic branch_take // 0 if there's not taking branch, 1 if we are taking branch
     // input logic branch_take
 );
     /* ALU signals */
@@ -35,6 +35,9 @@ import rv32i_types::*;
     data_forward_t forwardA_sel, forwardB_sel;
     rv32i_word forward_rs1;
     rv32i_word forward_rs2;
+
+    logic branch_take;
+    pcmux::pcmux_sel_t pcmux_sel;
 
     assign is_jalr = (ex_in.ctrl_wd.opcode == op_jalr);
     assign is_jal = (ex_in.ctrl_wd.opcode == op_jal);
