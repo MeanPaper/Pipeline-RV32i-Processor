@@ -15,8 +15,17 @@ module top_tb;
 
     int timeout = 10000000; // in cycles, change according to your needs
 
+    //  CPU metrics
     logic [63:0] dmem_stall_count;
     logic [63:0] imem_stall_count;
+    logic [63:0] pipeline_flushing;
+    logic get_is_branch;
+
+    // dcache metrics
+    logic [63:0] dcache_miss;
+    logic [63:0] dcache_evict;
+    logic miss_flag, evict_flag;
+    
 
     // CP1
     // mem_itf magic_itf_i(.*);
@@ -84,11 +93,19 @@ module top_tb;
     end
 
     final begin
-        // $display("%c[1;34m",27);
+        $display("%c[0;32m",27);
         $display("\n============= Memory Stalls =============");
         $display("imem stall total cycle: %0d", imem_stall_count);
         $display("dmem stall total cycle: %0d\n", dmem_stall_count);
-        // $write("%c[0m",27);
+        $display("============= Pipeline flush =============");
+        $display("pipline flush total count: %0d", pipeline_flushing);
+        
+        $display("%c[0;36m", 27);
+        $display("============= Data Cache =============");
+        $display("Data cache miss total count: %0d", dcache_miss);
+        $display("Data cache evict total count: %0d\n", dcache_evict);
+
+        $write("%c[0m",27);
     end
 
     always @(posedge clk) begin
@@ -116,11 +133,13 @@ module top_tb;
         timeout <= timeout - 1;
     end
 
-    // keep track of stalling ??
+    // keep track of stalling and jumping
     always_ff @(posedge clk) begin
         if(rst) begin
             dmem_stall_count <= '0;
             imem_stall_count <= '0;
+            pipeline_flushing <= '0;
+            get_is_branch <= '0;
         end
         else begin
             if(dut.cpu.imem_stall == 1'b1) begin
@@ -130,7 +149,42 @@ module top_tb;
             if(dut.cpu.dmem_stall == 1'b1) begin
                 dmem_stall_count <= dmem_stall_count + 1'b1;
             end
+            
+            // counting number of times that the pipeline is flushed due to branch and jump
+            if(get_is_branch == 1'b0) begin
+                if(dut.cpu.ex_to_mem.branch_take == 1'b1) begin
+                    get_is_branch <= 1'b1;
+                    pipeline_flushing <= pipeline_flushing + 1'b1;
+                end
+            end
+            else begin
+                if(dut.cpu.ex_to_mem.branch_take == 1'b0) begin
+                    get_is_branch <= 1'b0;
+                end
+            end
         end
     end
+
+    // cache metrics
+    always_ff @(posedge clk) begin
+        if(rst)begin
+            dcache_miss <= '0;
+            dcache_evict <= '0;
+            miss_flag <= '0;
+            evict_flag <= '0;
+        end
+        else begin
+            if(dut.dcache.datapath.is_hit == 1'b0) begin  // a miss
+                dcache_miss <= dcache_miss + 1'b1;
+                miss_flag <= 1'b1;
+            end 
+            else if(dut.dcache.datapath.is_hit == 1'b1) begin
+                miss_flag <= '0;
+            end
+
+            // if(dut.dcache.cache_datapath) begin 
+            // end
+        end
+    end 
 
 endmodule
