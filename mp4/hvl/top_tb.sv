@@ -174,11 +174,13 @@ module top_tb;
             evict_flag <= '0;
         end
         else begin
-            if(dut.dcache.datapath.is_hit == 1'b0) begin  // a miss
-                dcache_miss <= dcache_miss + 1'b1;
-                miss_flag <= 1'b1;
-            end 
-            else if(dut.dcache.datapath.is_hit == 1'b1) begin
+            if(miss_flag == 1'b0) begin
+                if(dut.dcache.control.is_allocate == 1'b1) begin  // a miss
+                    dcache_miss <= dcache_miss + 1'b1;
+                    miss_flag <= 1'b1;
+                end 
+            end
+            else if(dut.dcache.control.is_allocate == 1'b0) begin
                 miss_flag <= '0;
             end
 
