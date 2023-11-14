@@ -24,6 +24,9 @@ module top_tb;
     // dcache metrics
     logic [63:0] dcache_miss;
     logic [63:0] dcache_evict;
+    logic [63:0] allocate_cycle;
+    logic [63:0] write_back_cycle;
+    logic [63:0] dcache_nonhit_total_cycles;
     logic miss_flag, evict_flag;
     
 
@@ -95,8 +98,8 @@ module top_tb;
     final begin
         $display("%c[0;32m",27);
         $display("\n============= Memory Stalls =============");
-        $display("imem stall total cycle: %0d", imem_stall_count);
-        $display("dmem stall total cycle: %0d\n", dmem_stall_count);
+        $display("imem stall total cycles: %0d", imem_stall_count);
+        $display("dmem stall total cycles: %0d\n", dmem_stall_count);
         $display("============= Pipeline flush =============");
         $display("pipline flush total count: %0d", pipeline_flushing);
         
@@ -104,7 +107,9 @@ module top_tb;
         $display("============= Data Cache =============");
         $display("Data cache miss total count: %0d", dcache_miss);
         $display("Data cache evict total count: %0d\n", dcache_evict);
-
+        $display("Data cache allocate total cycles: %0d", allocate_cycle);
+        $display("Data cache writeback total cycles: %0d\n", write_back_cycle);
+        $display("Data cache total nonhit-waiting cycles: %0d\n", dcache_nonhit_total_cycles);
         $write("%c[0m",27);
     end
 
@@ -172,8 +177,25 @@ module top_tb;
             dcache_evict <= '0;
             miss_flag <= '0;
             evict_flag <= '0;
+            allocate_cycle <= '0;
+            write_back_cycle  <= '0;
+            dcache_nonhit_total_cycles <= '0;
         end
         else begin
+
+            if(dut.dcache.control.state.name() == "ALLOCATE") begin
+                allocate_cycle <= allocate_cycle + 1'b1;
+            end
+
+            if(dut.dcache.control.state.name() == "WRITE_BACK") begin
+                write_back_cycle <= write_back_cycle + 1'b1;
+            end
+
+            if(dut.dcache.control.state.name() inside {"ALLOCATE", "WRITE_BACK"}) begin
+                dcache_nonhit_total_cycles <= dcache_nonhit_total_cycles + 1'b1;
+            end
+
+
             if(miss_flag == 1'b0) begin
                 if(dut.dcache.control.is_allocate == 1'b1) begin  // a miss
                     dcache_miss <= dcache_miss + 1'b1;
@@ -184,8 +206,17 @@ module top_tb;
                 miss_flag <= '0;
             end
 
-            // if(dut.dcache.cache_datapath) begin 
-            // end
+            if(evict_flag == 1'b0) begin 
+                if(dut.dcache.control.state.name() == "WRITE_BACK") begin
+                    dcache_evict <= dcache_evict + 1'b1;
+                    evict_flag <= 1'b1;
+                end 
+            end
+            else if(dut.dcache.control.state.name() != "WRITE_BACK") begin
+                evict_flag <= 1'b0;
+            end
+
+            
         end
     end 
 
