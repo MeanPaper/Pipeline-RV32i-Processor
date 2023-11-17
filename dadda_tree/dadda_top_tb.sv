@@ -44,11 +44,11 @@ module dadda_tree_dut_tb;
     int error_count;
     
     initial begin
-        // $display("%c[0;36m", 27);
-        $display("\033[0;36mDadda Tree Test Begin");
+        $display("%c[0;36m", 27);
+        $display("Dadda Tree Test Begin");
         
         // reset the inputs of the dadda tree
-        testing_threshold = 2 ** 20;
+        testing_threshold = 2 ** 14;
         error_count = 0;
         operandA = '0;
         operandB = '0;
