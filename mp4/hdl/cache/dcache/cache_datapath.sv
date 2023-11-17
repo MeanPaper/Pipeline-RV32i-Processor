@@ -45,14 +45,14 @@ import rv32i_types::*;         // import my datatypes
     // logic   [255:0] data_d      [4];    // data array, wait why?
     // logic   [22:0]  tag_d       [4];    // tag array, wait why?
     // cacheline_t data_d;
-    // tag_word_t tag_d;
+    // logic[s_tag-1:0] tag_d;
 
     cacheline_t data_arr_in;
-    tag_word_t  tag_arr_in;  
+    logic[s_tag-1:0]  tag_arr_in;  
 
     // data array and tag array (4 ways)
     cacheline_t  data_arr_out  [4];     // data_out from 4 ways
-    tag_word_t   tag_arr_out   [4];     // tag_out from 4 ways
+    logic[s_tag-1:0]   tag_arr_out   [4];     // tag_out from 4 ways
     
     // plru array (one array for 4 way)
     plru_word_t  plru_data_out;
@@ -64,16 +64,16 @@ import rv32i_types::*;         // import my datatypes
 
     logic [3:0] hit;            // one hot hit vector
     
-    tag_word_t tag_from_addr;   // mem_addr[31:9]
+    logic[s_tag-1:0] tag_from_addr;   // mem_addr[31:9]
     logic [3:0] set_idx;        // mem_addr[8:5]      
 
     logic [1:0] hit_way, way_idx, replace_way;
     
-    tag_word_t tag_out;         // one of the tags in 4 ways
+    logic[s_tag-1:0] tag_out;         // one of the tags in 4 ways
     cacheline_t data_out;       // one of the data in 4 ways
 
     logic [31:0] write_mask;    // write mask for cacheline
-    tag_word_t final_tag_out;
+    logic[s_tag-1:0] final_tag_out;
 
 
     // write enable should active low 
@@ -85,10 +85,10 @@ import rv32i_types::*;         // import my datatypes
 
 
     /*============================== Assignments begin ==============================*/
-    assign tag_from_addr = mem_address[31:9];
-    assign tag_arr_in = mem_address[31:9];
-    assign set_idx = mem_address[8:5];
-    assign pmem_address = {final_tag_out, mem_address[8:5], 5'b0};
+    assign tag_from_addr = mem_address[31: (31-s_tag + 1)];
+    assign tag_arr_in = mem_address[31: (31-s_tag + 1)];
+    assign set_idx = mem_address[(31-s_tag): s_offset];
+    assign pmem_address = {final_tag_out, mem_address[(31-s_tag): s_offset], 5'b0};
     // assign is_hit = |hit;            // OR all the hit bit to see if a way is hit
 
     assign mem_rdata256 = data_out;
