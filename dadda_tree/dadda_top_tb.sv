@@ -1,5 +1,6 @@
+module dadda_tree_dut_tb
 import m_extension::*;
-module dadda_tree_dut_tb;
+();
 
     timeunit 1ns;
     timeprecision 1ns;

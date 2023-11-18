@@ -6,8 +6,8 @@ module HA(
     output logic c_out
 );
 
-assign S = A ^ B;
-assign c_out = A & B;
+assign S_o = A_i ^ B_i;
+assign c_out = A_i & B_i;
 
 endmodule
 
@@ -20,7 +20,8 @@ module FA(
     output logic c_out
 );
 
-assign S = A ^ B ^ c_in;
-assign c_out = (A & B) | (c_in & (A ^ B));
+assign S_o = A_i ^ B_i ^ c_in;
+// assign c_out = (A_i & B_i) | (c_in & (A_i ^ B_i));
+assign c_out = (A_i & B_i) | (A_i & c_in) | (B_i & c_in);
 
 endmodule
