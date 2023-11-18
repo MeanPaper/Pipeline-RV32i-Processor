@@ -36,7 +36,7 @@ always_comb begin
             if(rs1_data[31] == 1'b1) begin  // find the abs of rs1 if rs1 neg
                 op1 = (~rs1_data) + 1'b1;
             end 
-            
+
             if(rs2_data[31] == 1'b1) begin  // find the abs of rs2 if rs2 neg
                 op2 = (~rs2_data) + 1'b1;
             end
@@ -59,10 +59,11 @@ logic lower_partial_carry;
 
 // simple version, does not have 2's complement
 always_comb begin
-
+    
+    
     // bottom partial and 
-    lower_partial_sum = row_top[31:0] + row_bot[31:0];      // lower half of the product
-    lower_partial_carry = lower_partial_sum[32];            // the carry from the lower part 
+    lower_partial_sum = {1'b0, row_top[31:0]} + {1'b0, row_bot[31:0]};      // lower half of the product
+    lower_partial_carry = lower_partial_sum[32];                            // the carry from the lower part 
 
     upper_partial_sum = row_top[63:32] + row_bot[63:32] + lower_partial_carry;  // upper half of the product adds with partial
 
