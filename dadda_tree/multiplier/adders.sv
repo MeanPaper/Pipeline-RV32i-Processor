@@ -1,8 +1,8 @@
 // half adder, 1 bit
 module HA(  
-    input logic A,
-    input logic B,
-    output logic S,
+    input logic A_i,
+    input logic B_i,
+    output logic S_o,
     output logic c_out
 );
 
@@ -13,10 +13,10 @@ endmodule
 
 // full adder, 1 bit
 module FA(
-    input logic A,
-    input logic B,
+    input logic A_i,
+    input logic B_i,
     input logic c_in,
-    output logic S,
+    output logic S_o,
     output logic c_out
 );
 
