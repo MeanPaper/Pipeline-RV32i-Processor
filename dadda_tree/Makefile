@@ -1,13 +1,14 @@
 SHELL=/bin/bash -o pipefail
 
 # PKG_SRCS := $(PWD)/pkg/rv32i_mux_types.sv $(PWD)/pkg/rv32i_types.sv $(PWD)/pkg/my_types.sv
-# HDL_SRCS := $(shell find $(PWD)/hdl -name '*.sv')
+PKG_SRCS := $(PWD)/m_type.sv
+HDL_SRCS := $(shell find $(PWD)/multiplier -name '*.sv')
 # HVL_SRCS := $(shell find $(PWD)/hvl -name '*.sv' -o -name '*.v')
 # SRCS := $(PKG_SRCS) $(HDL_SRCS) $(HVL_SRCS)
 
-HDL_SRCS :=$(PWD)/dadda_tree.sv
+# HDL_SRCS :=$(PWD)/dadda_tree.sv
 HVL_SRCS :=$(PWD)/dadda_top_tb.sv
-SRCS := $(HDL_SRCS) $(HVL_SRCS)
+SRCS := $(PKG_SRCS) $(HDL_SRCS) $(HVL_SRCS)
 
 
 VCS_FLAGS= -full64 -lca -sverilog +lint=all,noNS -timescale=1ns/1ns -debug_acc+all -kdb -fsdb

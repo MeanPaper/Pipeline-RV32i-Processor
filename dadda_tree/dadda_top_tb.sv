@@ -1,3 +1,4 @@
+import m_extension::*;
 module dadda_tree_dut_tb;
 
     timeunit 1ns;
@@ -30,11 +31,17 @@ module dadda_tree_dut_tb;
     logic [63:0] correct_B;
     logic [63:0] correct_ans;
 
-    // dut initialization
-    dadda_tree dut(
-        .opA(operandA),
-        .opB(operandB),
-        .prodAB(productAB) 
+    // // dut initialization
+    // dadda_tree dut(
+    //     .opA(operandA),
+    //     .opB(operandB),
+    //     .prodAB(productAB) 
+    // );
+    multiplier dut(
+        .rs1_data(operandA),
+        .rs2_data(operandB),
+        .funct3(m_extension::mul),
+        .mul_out(productAB)
     );
 
     RandData rand_A = new;
@@ -43,6 +50,34 @@ module dadda_tree_dut_tb;
     int testing_threshold;
     int error_count;
     
+
+    // dadda tree unsigned multiplication
+    task unsigned_dadda_tree();
+      // testing loop
+        for(int i = 0; i < testing_threshold; ++i) begin
+            rand_A.randomize();
+            rand_B.randomize();
+
+            // correct ans
+            correct_A = {32'b0, rand_A.data};
+            correct_B = {32'b0, rand_B.data};
+            correct_ans = correct_A * correct_B;
+
+            operandA = rand_A.data;
+            operandB = rand_B.data;
+            @(posedge clk);
+            if(productAB !== correct_ans) begin
+                $display("%c[0;31m",27); 
+                $display("A: 0x%0h", operandA);
+                $display("B: 0x%0h", operandB);
+                $display("dadda:   0x%0h", productAB);
+                $display("correct: 0x%0h\n", correct_ans);
+                error_count += 1;
+            end
+        end
+        $write("%c[0m",27);
+    endtask
+
     initial begin
         $display("%c[0;36m", 27);
         $display("Dadda Tree Test Begin");
@@ -68,28 +103,7 @@ module dadda_tree_dut_tb;
         // operandB = rand_B.data;
         // repeat(2) @(posedge clk);
 
-        // testing loop
-        for(int i = 0; i < testing_threshold; ++i) begin
-            rand_A.randomize();
-            rand_B.randomize();
-
-            // correct ans
-            correct_A = {32'b0, rand_A.data};
-            correct_B = {32'b0, rand_B.data};
-            correct_ans = correct_A * correct_B;
-
-            operandA = rand_A.data;
-            operandB = rand_B.data;
-            @(posedge clk);
-            if(productAB !== correct_ans) begin
-                $display("%c[0;31m",27); 
-                $display("A: 0x%0h", operandA);
-                $display("B: 0x%0h", operandB);
-                $display("dadda:   0x%0h", productAB);
-                $display("correct: 0x%0h\n", correct_ans);
-                error_count += 1;
-            end
-        end 
+        unsigned_dadda_tree();
 
         // color display for pass and failed
         if(error_count === 0) begin
