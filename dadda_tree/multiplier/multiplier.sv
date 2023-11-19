@@ -7,7 +7,6 @@ import m_extension::*;
     input logic [31:0]  rs2_data,
     input m_funct3      funct3,
     output logic [31:0] mul_out
-    // output logic [63:0] mul_out
 );
 
 logic should_neg;                   // determine if one of the rs is negative
