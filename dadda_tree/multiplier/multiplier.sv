@@ -35,8 +35,8 @@ logic [31:0] lower_reg, upper_reg;
 
 // 4 case bit flip
 always_comb begin
-    op1 = rs1_data_tmp;
-    op2 = rs2_data_tmp;
+    op1 = rs1_data;
+    op2 = rs2_data;
     should_neg = '0;
     unique case(funct3)
         mul: begin
@@ -56,6 +56,9 @@ always_comb begin
     endcase
 end 
 
+assign op1_reg = op1;
+assign op2_reg = op2;
+
 // dadda_tree multiplier 
 dadda_tree dadda_tree(
     .opA(op1_reg),
@@ -64,15 +67,14 @@ dadda_tree dadda_tree(
     .row_bot(dadda_bot_o)
 );
 
-
 always_ff @(posedge clk) begin
     if(rst) begin    
         row_top <= '0;
         row_bot <= '0;
         rs1_data_tmp <= '0;
         rs2_data_tmp <= '0;
-        op1_reg <= '0;
-        op2_reg <= '0;
+        // op1_reg <= '0;
+        // op2_reg <= '0;
         lower_reg <= '0;
         upper_reg <= '0;
     end
@@ -83,8 +85,8 @@ always_ff @(posedge clk) begin
         rs2_data_tmp <= rs2_data;
         row_top <= dadda_top_o;
         row_bot <= dadda_bot_o;
-        op1_reg <= op1;
-        op2_reg <= op2;
+        // op1_reg <= op1;
+        // op2_reg <= op2;
         lower_reg <= lower_partial_sum[31:0];
         upper_reg <= upper_partial_sum;
     end
