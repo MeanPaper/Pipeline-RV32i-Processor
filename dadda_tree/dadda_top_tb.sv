@@ -27,12 +27,14 @@ import m_extension::*;
     logic [31:0] operandB;
     logic [31:0] productAB;
     m_extension::m_funct3 funct3;
-    
+    logic mul_done;
+    logic mul_on;
+
     // input and output for solution
     logic [31:0] correct_A;
     logic [31:0] correct_B;
     logic [63:0] correct_ans;
-
+    
     // // dut initialization
     // dadda_tree dut(
     //     .opA(operandA),
@@ -45,6 +47,8 @@ import m_extension::*;
         .rs1_data(operandA),
         .rs2_data(operandB),
         .funct3(funct3),
+        .is_mul(mul_on),
+        .mul_done(mul_done),
         .mul_out(productAB)
     );
 
@@ -56,7 +60,7 @@ import m_extension::*;
     
     // dadda tree unsigned multiplication
     task unsigned_dadda_tree();
-      // testing loop
+        // testing loop
         for(int i = 0; i < testing_threshold; ++i) begin
             rand_A.randomize();
             rand_B.randomize();
@@ -68,9 +72,10 @@ import m_extension::*;
 
             operandA = rand_A.data;
             operandB = rand_B.data;
-            repeat (4) @(posedge clk);
+
+            @(posedge clk iff mul_done == 1'b1);
+
             if(dut.mul_result !== correct_ans) begin
-                $display("%c[0;31m",27); 
                 $display("A: 0x%0h", operandA);
                 $display("B: 0x%0h", operandB);
                 $display("dadda:   0x%0h", dut.mul_result);
@@ -78,17 +83,15 @@ import m_extension::*;
                 error_count += 1;
             end
         end
-        $write("%c[0m",27);
     endtask
 
     // logic [31:0] tempA;
     // logic [31:0] tempB;
     task signed_dadda_tree(logic A_const, logic B_const);
-        $display("%c[0;31m",27); 
+        $write("%c[0;31m", 27);
         for(int i = 0; i < testing_threshold; ++i) begin
             rand_A.randomize() with { data[31] == A_const; };
             rand_B.randomize() with { data[31] == B_const; };
-
 
             correct_A = rand_A.data;
             correct_B = rand_B.data;
@@ -97,31 +100,20 @@ import m_extension::*;
             operandA = rand_A.data;
             operandB = rand_B.data;
 
-            repeat (4) @(posedge clk);
-            // | 32'h80000000
-            // $display("correct_A: 0x%0h", correct_A);
-            // $display("correct_A: %0d", correct_A);
-
-            // $display("correct_A: 0x%0h", $signed(correct_A));
-            // $display("correct_A: %0d", $signed(correct_A));
-
-            // $display("correct_B: 0x%0h", correct_B);
-            // $display("correct_B: %0d", correct_B);
+            // repeat (3) @(posedge clk);
+            @(posedge clk iff mul_done == 1'b1);
             
-            // $display("correct_B: 0x%0h", $signed(correct_B));
-            // $display("correct_B: %0d", $signed(correct_B));
             if(correct_ans !== dut.mul_result) begin
                 error_count += 1;
                 $display("correct_A: 0x%0h", $signed(correct_A));
                 $display("correct_B: 0x%0h", $signed(correct_B));
-
                 $display("correct_ans: %0d", correct_ans);
                 $display("correct_ans: %0d", $signed(correct_ans));
                 $display("dadda_tree: %0d", dut.mul_result);
                 $display("dadda_tree: %0d", $signed(dut.mul_result));
             end 
         end
-        $write("%c[0m",27);
+        $write("%c[0m", 27);
     endtask
     
     initial begin
@@ -134,19 +126,37 @@ import m_extension::*;
         operandA = '0;
         operandB = '0;
         funct3 = mul;
+        mul_on = '0;
         @(posedge clk);
 
         // ********** code start here **********
+        // $write("%c[0;31m",27);    // color red
+        mul_on = 1'b1;
+
+        $display("%c[0mSimple unsigned test begin", 27);
+        $write("%c[0;31m", 27);
         unsigned_dadda_tree();
+        $display("%c[0mSimple unsigned test end\n", 27);
 
         operandA = '0;
         operandB = '0;
         funct3 = mulh;
 
+        $display("unsigned x unsigned begin");
         signed_dadda_tree(0,0);
+        $display("unsigned x unsigned end\n");
+
+        $display("signed x unsigned begin");
         signed_dadda_tree(1,0);
+        $display("signed x unsigned end\n");
+
+        $display("unsigned x signed begin");
         signed_dadda_tree(0,1);
+        $display("unsigned x signed end\n");
+
+        $display("signed x signed begin");
         signed_dadda_tree(1,1);
+        $display("signed x signed end");
 
         // color display for pass and failed
         if(error_count === 0) begin

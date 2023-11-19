@@ -6,6 +6,8 @@ import m_extension::*;
     input logic [31:0]  rs1_data,
     input logic [31:0]  rs2_data,
     input m_funct3      funct3,
+    input logic         is_mul,
+    output logic        mul_done,
     output logic [31:0] mul_out
 );
 
@@ -25,7 +27,8 @@ logic lower_partial_carry;
 
 // logic [31:0] lower_reg, upper_reg;
 logic [63:0] mul_result;
-
+logic [1:0] mul_cycle, next_cycle;
+assign next_cycle = mul_cycle + 1'b1;   
 
 // two's complement identifying
 /* 4 cases
@@ -71,8 +74,11 @@ always_ff @(posedge clk) begin
     if(rst) begin    
         row_top <= '0;
         row_bot <= '0;
+
+        // we can unflop rs1 and rs2 data to make the slack less negative
         rs1_data_tmp <= '0;
         rs2_data_tmp <= '0;
+        
         op1_reg <= '0;
         op2_reg <= '0;
     end
@@ -87,9 +93,25 @@ always_ff @(posedge clk) begin
     end
 end
 
-// simple version, does not have 2's complement
+// finished counter, the entire multiplier takes about 3 cycles
+always_ff @(posedge clk) begin
+    if(rst | (~is_mul)) begin
+        mul_cycle <= 2'b00;
+    end
+    else begin
+        mul_cycle <= next_cycle;
+    end 
+end
+
 always_comb begin
-    
+    mul_done = '0;
+    if(mul_cycle == 2'b11) begin
+        mul_done = 1'b1;
+    end
+end
+
+always_comb begin    
+
     // final result computation
     mul_result = row_top + row_bot;
     if(should_neg) begin
@@ -99,16 +121,10 @@ always_comb begin
     case(funct3)
         mulh, mulhsu, mulhu: begin  // get 32 higher bits 
             mul_out = mul_result[63:32];
-        end   
-                     
+        end     
         default: begin              // get 32 lower bits operation
             mul_out = mul_result[31:0];
         end
-        // mul: multiply two operands, output the lower 32 bits
-        // div     
-        // divu    
-        // rem     
-        // remu            
     endcase
 end
 
