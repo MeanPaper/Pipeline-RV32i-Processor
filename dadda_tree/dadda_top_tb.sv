@@ -68,7 +68,7 @@ import m_extension::*;
 
             operandA = rand_A.data;
             operandB = rand_B.data;
-            repeat (3) @(posedge clk);
+            repeat (4) @(posedge clk);
             if(productAB !== correct_ans) begin
                 $display("%c[0;31m",27); 
                 $display("A: 0x%0h", operandA);
@@ -97,7 +97,7 @@ import m_extension::*;
             operandA = rand_A.data;
             operandB = rand_B.data;
 
-            repeat (3) @(posedge clk);
+            repeat (4) @(posedge clk);
             // | 32'h80000000
             // $display("correct_A: 0x%0h", correct_A);
             // $display("correct_A: %0d", correct_A);

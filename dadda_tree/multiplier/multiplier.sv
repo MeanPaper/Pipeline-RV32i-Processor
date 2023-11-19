@@ -35,8 +35,8 @@ logic [31:0] lower_reg, upper_reg;
 
 // 4 case bit flip
 always_comb begin
-    op1 = rs1_data;
-    op2 = rs2_data;
+    op1 = rs1_data_tmp;
+    op2 = rs2_data_tmp;
     should_neg = '0;
     unique case(funct3)
         mul: begin
@@ -56,8 +56,6 @@ always_comb begin
     endcase
 end 
 
-assign op1_reg = op1;
-assign op2_reg = op2;
 
 // dadda_tree multiplier 
 dadda_tree dadda_tree(
@@ -73,10 +71,8 @@ always_ff @(posedge clk) begin
         row_bot <= '0;
         rs1_data_tmp <= '0;
         rs2_data_tmp <= '0;
-        // op1_reg <= '0;
-        // op2_reg <= '0;
-        lower_reg <= '0;
-        upper_reg <= '0;
+        op1_reg <= '0;
+        op2_reg <= '0;
     end
     else begin
         
@@ -85,10 +81,8 @@ always_ff @(posedge clk) begin
         rs2_data_tmp <= rs2_data;
         row_top <= dadda_top_o;
         row_bot <= dadda_bot_o;
-        // op1_reg <= op1;
-        // op2_reg <= op2;
-        lower_reg <= lower_partial_sum[31:0];
-        upper_reg <= upper_partial_sum;
+        op1_reg <= op1;
+        op2_reg <= op2;
     end
 end
 
@@ -96,23 +90,23 @@ end
 always_comb begin
 
     // bottom partial and 
-    lower_partial_sum = {1'b0, row_top[31:0]} + {1'b0, row_bot[31:0]};          // lower half of the product
-    lower_partial_carry = lower_partial_sum[32];                                // the carry from the lower part 
-    upper_partial_sum = row_top[63:32] + row_bot[63:32] + lower_partial_carry;  // upper half of the product adds with partial
+    // lower_partial_sum = {1'b0, row_top[31:0]} + {1'b0, row_bot[31:0]};          // lower half of the product
+    // lower_partial_carry = lower_partial_sum[32];                                // the carry from the lower part 
+    // upper_partial_sum = row_top[63:32] + row_bot[63:32] + lower_partial_carry;  // upper half of the product adds with partial
 
-    if(should_neg) begin
-        lower_partial_sum = {1'b0, ~row_top[31:0]} + {1'b0, ~row_bot[31:0]} + should_neg + 1'b1;         // negation, one complement + 1
-        lower_partial_carry = lower_partial_sum[32];                                        // the carry from the lower part 
-        upper_partial_sum = (~row_top[63:32]) + (~row_bot[63:32]) + lower_partial_carry;    // upper half of the product adds with partial
-    end 
+    // if(should_neg) begin
+    //     lower_partial_sum = {1'b0, ~row_top[31:0]} + {1'b0, ~row_bot[31:0]} + should_neg + 1'b1;         // negation, one complement + 1
+    //     lower_partial_carry = lower_partial_sum[32];                                        // the carry from the lower part 
+    //     upper_partial_sum = (~row_top[63:32]) + (~row_bot[63:32]) + lower_partial_carry;    // upper half of the product adds with partial
+    // end 
 
    
-    // mul_out = row_top + row_bot;
+    mul_out = row_top + row_bot;
+    if(should_neg) begin
+        mul_out = ~(row_top + row_bot) + 1'b1;
+    end
 end
-
-assign mul_out = {upper_reg, lower_reg}; // final result  
-// assign mul_out = result_word; // final assignment
 
 endmodule
 
-
+// Area: 9368.253932
