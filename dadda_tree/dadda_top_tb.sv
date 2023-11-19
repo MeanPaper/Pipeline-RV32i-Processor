@@ -25,7 +25,7 @@ import m_extension::*;
     // input and output for dut
     logic [31:0] operandA;
     logic [31:0] operandB;
-    logic [63:0] productAB;
+    logic [31:0] productAB;
     m_extension::m_funct3 funct3;
     
     // input and output for solution
@@ -69,11 +69,11 @@ import m_extension::*;
             operandA = rand_A.data;
             operandB = rand_B.data;
             repeat (4) @(posedge clk);
-            if(productAB !== correct_ans) begin
+            if(dut.mul_result !== correct_ans) begin
                 $display("%c[0;31m",27); 
                 $display("A: 0x%0h", operandA);
                 $display("B: 0x%0h", operandB);
-                $display("dadda:   0x%0h", productAB);
+                $display("dadda:   0x%0h", dut.mul_result);
                 $display("correct: 0x%0h\n", correct_ans);
                 error_count += 1;
             end
@@ -110,15 +110,15 @@ import m_extension::*;
             
             // $display("correct_B: 0x%0h", $signed(correct_B));
             // $display("correct_B: %0d", $signed(correct_B));
-            if(correct_ans !== productAB) begin
+            if(correct_ans !== dut.mul_result) begin
                 error_count += 1;
                 $display("correct_A: 0x%0h", $signed(correct_A));
                 $display("correct_B: 0x%0h", $signed(correct_B));
 
                 $display("correct_ans: %0d", correct_ans);
                 $display("correct_ans: %0d", $signed(correct_ans));
-                $display("dadda_tree: %0d", productAB);
-                $display("dadda_tree: %0d", $signed(productAB));
+                $display("dadda_tree: %0d", dut.mul_result);
+                $display("dadda_tree: %0d", $signed(dut.mul_result));
             end 
         end
         $write("%c[0m",27);
