@@ -2,7 +2,7 @@ SHELL=/bin/bash -o pipefail
 
 # PKG_SRCS := $(PWD)/pkg/rv32i_mux_types.sv $(PWD)/pkg/rv32i_types.sv $(PWD)/pkg/my_types.sv
 PKG_SRCS := $(PWD)/m_type.sv
-HDL_SRCS := $(shell find $(PWD)/multiplier -name '*.sv')
+HDL_SRCS := $(shell find $(PWD)/m_extension -name '*.sv')
 # HVL_SRCS := $(shell find $(PWD)/hvl -name '*.sv' -o -name '*.v')
 # SRCS := $(PKG_SRCS) $(HDL_SRCS) $(HVL_SRCS)
 

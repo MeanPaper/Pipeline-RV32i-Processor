@@ -4,7 +4,7 @@ SHELL=/bin/bash -o pipefail
 .SHELLFLAGS += -e
 
 export PKG_SRCS = $(PWD)/../m_type.sv
-export HDL_SRCS = $(shell find $(PWD)/../multiplier -name '*.sv')
+export HDL_SRCS = $(shell find $(PWD)/../m_extension -name '*.sv')
 
 export FREEPDK45=/class/ece411/freepdk-45nm
 export STD_CELL_LIB=$(FREEPDK45)/stdcells.db

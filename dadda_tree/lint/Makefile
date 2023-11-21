@@ -2,7 +2,7 @@ SHELL=/bin/bash -o pipefail
 .SHELLFLAGS += -e
 
 export PKG_SRCS = $(PWD)/../m_type.sv
-export HDL_SRCS = $(shell find $(PWD)/../multiplier -name '*.sv')
+export HDL_SRCS = $(shell find $(PWD)/../m_extension -name '*.sv')
 
 .PHONY: lint
 lint: clean

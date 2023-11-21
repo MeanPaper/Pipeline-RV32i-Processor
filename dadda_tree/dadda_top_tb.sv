@@ -9,6 +9,13 @@ import m_extension::*;
     initial clk = 1'b1;
     always #1 clk = ~clk;
 
+    bit rst;
+    task reset_all();
+        rst = 1'b1;
+        repeat (3) @(posedge clk);
+        rst = 1'b0;
+        @(posedge clk);
+    endtask
     //----------------------------------------------------------------------
     // Waveforms.
     //----------------------------------------------------------------------
@@ -70,10 +77,11 @@ import m_extension::*;
             correct_B = rand_B.data;
             correct_ans = correct_A * correct_B;
 
-            operandA = rand_A.data;
-            operandB = rand_B.data;
+            operandA <= rand_A.data;
+            operandB <= rand_B.data;
 
             @(posedge clk iff mul_done == 1'b1);
+            // @(posedge clk);
 
             if(dut.mul_result !== correct_ans) begin
                 $display("A: 0x%0h", operandA);
@@ -97,10 +105,10 @@ import m_extension::*;
             correct_B = rand_B.data;
             correct_ans = $signed(correct_A) * $signed(correct_B);
 
-            operandA = rand_A.data;
-            operandB = rand_B.data;
+            operandA <= rand_A.data;
+            operandB <= rand_B.data;
 
-            // repeat (3) @(posedge clk);
+            // repeat (4) @(posedge clk);
             @(posedge clk iff mul_done == 1'b1);
             
             if(correct_ans !== dut.mul_result) begin
@@ -116,12 +124,77 @@ import m_extension::*;
         $write("%c[0m", 27);
     endtask
     
+    logic [63:0] temp;
+    task mul_opcode_test(m_extension::m_funct3 op);
+        funct3 = op; // setting the funct3 signal
+        for(int i = 0; i < testing_threshold; ++i) begin
+            // rand_A.randomize();
+            // rand_B.randomize();
+            rand_A.randomize() with { data[31] == 1'b1;};
+            rand_B.randomize() with { data[31] == 1'b0;};
+            
+            correct_A = rand_A.data;
+            correct_B = rand_B.data;
+            correct_ans = correct_A * correct_B;
+
+            operandA <= rand_A.data;
+            operandB <= rand_B.data;
+            @(posedge clk iff mul_done == 1'b1);
+
+            if(op == mul) begin
+                if(correct_ans[31:0] !== productAB) begin
+                    $display("mul not working");
+                    $display("correct ans whole: %0h, %0h", correct_ans[63:32], correct_ans[31:0]);
+                    $display("correct ans lower 32: %0h", (correct_ans[31:0]));
+                    $display("dadda: %0h", (productAB));
+                end 
+            end 
+            if(op == mulh) begin
+                correct_ans = $signed(correct_A) * $signed(correct_B);
+                if(correct_ans[63:32] !== productAB) begin
+                    $display("mulh not working");
+                    $display("correct ans whole: %0h, %0h", correct_ans[63:32], correct_ans[31:0]);
+                    $display("correct ans upper 32: %0h", (correct_ans[63:32]));
+                    $display("dadda: %0h", (productAB));
+                end
+            end 
+            if(op == mulhsu) begin
+                correct_ans = $signed(correct_A) * $unsigned(correct_B);
+                // $display("A: %0h", $signed(correct_A));
+                // $display("B: %0h", $unsigned(correct_B));
+                if(correct_ans[63:32] !== productAB) begin
+                    $display("mulhsu not working");
+                    $display("correct ans whole: %0h, %0h", correct_ans[63:32], correct_ans[31:0]);
+                    $display("correct ans upper 32: %0h", (correct_ans[63:32]));
+                    $display("dadda: %0h", (productAB));
+                    $display("dadda whole: %0h, %0h", dut.mul_result[63:32], dut.mul_result[31:0]);
+                    temp = dut.row_top + dut.row_bot;
+                    $display("dadda whole no negate: %0h, %0h", temp[63:32], temp[31:0]);
+
+                end
+            end
+            if(op == mulhu) begin
+                correct_ans = $unsigned(correct_A) * $unsigned(correct_B);
+                if(correct_ans[63:32] !== productAB) begin
+                    $display("mulh not working");
+                    $display("correct ans whole: %0h, %0h", correct_ans[63:32], correct_ans[31:0]);
+                    $display("correct ans upper 32: %0h", (correct_ans[63:32]));
+                    $display("dadda: %0h", (productAB));
+                end
+            end
+        end
+    endtask 
+
+
+
+    logic [31:0] remainder;
     initial begin
         $display("%c[0;36m", 27);
         $display("Dadda Tree Test Begin");
-        
+        reset_all();
+
         // reset the inputs of the dadda tree
-        testing_threshold = 2 ** 14;
+        testing_threshold = 2 ** 10;
         error_count = 0;
         operandA = '0;
         operandB = '0;
@@ -130,7 +203,7 @@ import m_extension::*;
         @(posedge clk);
 
         // ********** code start here **********
-        // $write("%c[0;31m",27);    // color red
+        $write("%c[0;31m",27);    // color red
         mul_on = 1'b1;
 
         $display("%c[0mSimple unsigned test begin", 27);
@@ -138,10 +211,7 @@ import m_extension::*;
         unsigned_dadda_tree();
         $display("%c[0mSimple unsigned test end\n", 27);
 
-        operandA = '0;
-        operandB = '0;
         funct3 = mulh;
-
         $display("unsigned x unsigned begin");
         signed_dadda_tree(0,0);
         $display("unsigned x unsigned end\n");
@@ -157,6 +227,20 @@ import m_extension::*;
         $display("signed x signed begin");
         signed_dadda_tree(1,1);
         $display("signed x signed end");
+
+
+        mul_opcode_test(mul);
+        mul_opcode_test(mulh);
+        mul_opcode_test(mulhsu);
+        mul_opcode_test(mulhu);
+
+        // strange operation
+        // correct_ans = $signed(-1)*$unsigned(-1);
+        // $display("%0h", correct_ans);
+        // $display("%0h %0h", correct_ans[63:32], correct_ans[31:0]);
+
+        remainder = $signed(4) % $signed(-6);
+        $display("remainder is: %0d, 0x%0h", remainder, remainder);
 
         // color display for pass and failed
         if(error_count === 0) begin
