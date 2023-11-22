@@ -4,7 +4,7 @@ set hdlin_infer_multibit default_all
 set hdlin_check_no_latch true
 set_host_options -max_cores 4
 set_app_var report_default_significant_digits 6
-set design_toplevel multiplier
+set design_toplevel divider
 
 # output port '%s' is connected directly to output port '%s'
 suppress_message LINT-31

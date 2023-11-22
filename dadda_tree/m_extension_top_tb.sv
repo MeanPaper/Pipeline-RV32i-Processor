@@ -41,7 +41,8 @@ import m_extension::*;
     logic [31:0] correct_A;
     logic [31:0] correct_B;
     logic [63:0] correct_ans;
-    
+    logic [31:0] corrent_remainder;
+
     // // dut initialization
     // dadda_tree dut(
     //     .opA(operandA),
@@ -50,7 +51,7 @@ import m_extension::*;
     // );
     multiplier dut(
         .clk(clk),
-        .rst(1'b0),
+        .rst(rst),
         .rs1_data(operandA),
         .rs2_data(operandB),
         .funct3(funct3),
@@ -58,6 +59,30 @@ import m_extension::*;
         .mul_done(mul_done),
         .mul_out(productAB)
     );
+    
+    logic start, div_done;
+    logic [31:0] dividend, divisor, quotient, remainder;
+    divider dut2(
+        .clk(clk),
+        .rst(rst),
+        .dividend(dividend),   
+        .divisor(divisor),     /*** dividend / divisor ***/
+        .funct3(funct3),
+        .start(start),
+        .div_done(div_done),      
+        .quotient(quotient),
+        .remainder(remainder)
+    );
+
+    // srt_divider srt_dut2(
+    //     .clk(clk),
+    //     .rst(rst),
+    //     .dividend(dividend),   
+    //     .divisor(divisor),     /*** dividend / divisor ***/
+    //     // .complete(div_done),      
+    //     .quotient(quotient),
+    //     .remainder(remainder)
+    // );
 
     RandData rand_A = new;
     RandData rand_B = new;
@@ -186,8 +211,52 @@ import m_extension::*;
     endtask 
 
 
+    task simple_unsigned_div();
+        start = 1'b1;
+        $write("%c[0m",27);
+        for(int i = 0; i < testing_threshold; i++) begin
+            rand_A.randomize();
+            rand_B.randomize();
+            dividend = rand_A.data;
+            divisor  = rand_B.data;
+            correct_ans = rand_A.data / rand_B.data;
+            corrent_remainder = rand_A.data % rand_B.data;
+            @(posedge clk iff div_done == 1'b1);
 
-    logic [31:0] remainder;
+            if(quotient !== correct_ans[31:0] || remainder !== corrent_remainder) begin
+                $display("dividend: 0x%0h", rand_A.data);
+                $display("divisor: 0x%0h", rand_B.data);
+                if(quotient !== correct_ans[31:0]) begin
+                    $display("Divider quotient: 0x%0h", quotient);
+                    $display("Correct quotient: 0x%0h", correct_ans);
+                end
+
+                if(remainder !== corrent_remainder) begin
+                    $display("Divider remainder: 0x%0h", remainder);
+                    $display("Correct remainder: 0x%0h", corrent_remainder);
+                end
+                error_count += 1;
+                $display();
+            end
+        end
+    endtask
+    
+
+    task mulsu_behavior_testing(logic [31:0] signed_n, logic [31:0] unsigned_n);
+        funct3 = mulhsu;
+        mul_on = 1'b1;
+        operandA = signed_n;
+        operandB = unsigned_n;
+        @(posedge clk iff mul_done == 1'b1);
+        // if(productAB !== 32'hFFFFFFFF) begin
+        $display("top: 0x%0h, 0x%0h", dut.row_top[63:32], dut.row_top[31:0]);
+        $display("bot: 0x%0h, 0x%0h", dut.row_bot[63:32], dut.row_bot[31:0]);
+        $display("top + bot upper: 0x%0h", (dut.row_top[63:32] + dut.row_bot[63:32]));
+        $display("raw product: %0x0h", dut.mul_result);
+        $display("mulhsu op: 0x%0h", productAB);
+    endtask
+
+
     initial begin
         $display("%c[0;36m", 27);
         $display("Dadda Tree Test Begin");
@@ -200,48 +269,55 @@ import m_extension::*;
         operandB = '0;
         funct3 = mul;
         mul_on = '0;
+        start = '0;
         @(posedge clk);
 
         // ********** code start here **********
-        $write("%c[0;31m",27);    // color red
-        mul_on = 1'b1;
+        // $write("%c[0;31m",27);    // color red
+        // mul_on = 1'b1;
 
-        $display("%c[0mSimple unsigned test begin", 27);
-        $write("%c[0;31m", 27);
-        unsigned_dadda_tree();
-        $display("%c[0mSimple unsigned test end\n", 27);
+        // $display("%c[0mSimple unsigned test begin", 27);
+        // $write("%c[0;31m", 27);
+        // unsigned_dadda_tree();
+        // $display("%c[0mSimple unsigned test end\n", 27);
 
-        funct3 = mulh;
-        $display("unsigned x unsigned begin");
-        signed_dadda_tree(0,0);
-        $display("unsigned x unsigned end\n");
+        // funct3 = mulh;
+        // $display("unsigned x unsigned begin");
+        // signed_dadda_tree(0,0);
+        // $display("unsigned x unsigned end\n");
 
-        $display("signed x unsigned begin");
-        signed_dadda_tree(1,0);
-        $display("signed x unsigned end\n");
+        // $display("signed x unsigned begin");
+        // signed_dadda_tree(1,0);
+        // $display("signed x unsigned end\n");
 
-        $display("unsigned x signed begin");
-        signed_dadda_tree(0,1);
-        $display("unsigned x signed end\n");
+        // $display("unsigned x signed begin");
+        // signed_dadda_tree(0,1);
+        // $display("unsigned x signed end\n");
 
-        $display("signed x signed begin");
-        signed_dadda_tree(1,1);
-        $display("signed x signed end");
+        // $display("signed x signed begin");
+        // signed_dadda_tree(1,1);
+        // $display("signed x signed end");
 
 
-        mul_opcode_test(mul);
-        mul_opcode_test(mulh);
-        mul_opcode_test(mulhsu);
-        mul_opcode_test(mulhu);
+        // mul_opcode_test(mul);
+        // mul_opcode_test(mulh);
+        // mul_opcode_test(mulhsu);
+        // mul_opcode_test(mulhu);
 
         // strange operation
         // correct_ans = $signed(-1)*$unsigned(-1);
         // $display("%0h", correct_ans);
         // $display("%0h %0h", correct_ans[63:32], correct_ans[31:0]);
 
-        remainder = $signed(4) % $signed(-6);
-        $display("remainder is: %0d, 0x%0h", remainder, remainder);
+        // remainder = $signed(4) % $signed(-6);
+        // $display("remainder is: %0d, 0x%0h", remainder, remainder);
+        // funct3 = divu;
+        // simple_unsigned_div();
+        mulsu_behavior_testing(32'h2, 32'h2);
 
+
+        // end
+        
         // color display for pass and failed
         if(error_count === 0) begin
             $display("%c[1;32m",27);
@@ -261,3 +337,23 @@ import m_extension::*;
     end 
 
 endmodule
+
+
+
+// start = 1'b1;
+// rand_A.randomize();
+// rand_B.randomize();
+// dividend = rand_A.data;
+// divisor  = rand_B.data;
+// correct_ans = rand_A.data / rand_B.data;
+// corrent_remainder = rand_A.data % rand_B.data;
+// @(posedge clk);
+// @(posedge clk iff dut2.remainder_reg == 32'b0);
+// if(quotient !== correct_ans[31:0] || remainder !== corrent_remainder) begin
+//     $display("dividend: 0x%0h", rand_A.data);
+//     $display("divisor: 0x%0h", rand_B.data);
+//     $display("Divider quotient: 0x%0h", quotient);
+//     $display("Correct quotient: 0x%0h", correct_ans);
+//     $display("Divider remainder: 0x%0h", remainder);
+//     $display("Correct remainder: 0x%0h", corrent_remainder);
+// end

@@ -7,7 +7,7 @@ HDL_SRCS := $(shell find $(PWD)/m_extension -name '*.sv')
 # SRCS := $(PKG_SRCS) $(HDL_SRCS) $(HVL_SRCS)
 
 # HDL_SRCS :=$(PWD)/dadda_tree.sv
-HVL_SRCS :=$(PWD)/dadda_top_tb.sv
+HVL_SRCS :=$(PWD)/m_extension_top_tb.sv
 SRCS := $(PKG_SRCS) $(HDL_SRCS) $(HVL_SRCS)
 
 

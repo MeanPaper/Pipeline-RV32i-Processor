@@ -3,8 +3,8 @@ import m_extension::*;
 (   
     input logic         clk,
     input logic         rst,
-    input logic [31:0]  rs1_data,
-    input logic [31:0]  rs2_data,
+    input logic [31:0]  rs1_data,   // in mulsu, this is signed
+    input logic [31:0]  rs2_data,   // in mulsu, this is unsigned
     input m_funct3      funct3,
     input logic         is_mul,
     output logic        mul_done,
@@ -42,9 +42,15 @@ always_comb begin
     op2 = rs2_data_tmp;
     should_neg = '0;
     case(funct3)
-        mul, mulhu, mulhsu: begin
+        mul, mulhu: begin // weird behavior
         end 
-        default: begin
+        mulhsu: begin
+            should_neg = rs1_data_tmp[31];
+            if(rs1_data_tmp[31]) begin
+                op1 = (~rs1_data_tmp) + 1'b1;
+            end
+        end
+        default: begin // mul might belong here, but we will see
             // happen only in the sign multiplication
             should_neg = rs1_data_tmp[31] ^ rs2_data_tmp[31];   // see if negative should be used
 
@@ -120,9 +126,9 @@ always_comb begin
     end
 
     case(funct3)
-        mulh, mulhsu, mulhu: begin  // get 32 higher bits 
+        mulh, mulhu, mulhsu: begin  // get 32 higher bits 
             mul_out = mul_result[63:32];
-        end     
+        end                 
         default: begin              // get 32 lower bits operation
             mul_out = mul_result[31:0];
         end
