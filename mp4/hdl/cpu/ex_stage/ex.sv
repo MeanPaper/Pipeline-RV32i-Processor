@@ -1,6 +1,8 @@
 module execute
 import rv32i_types::*;
 (
+    input logic clk,
+    input logic rst,
     /* input signals from ID/EX buffer */
     input ID_EX_stage_t ex_in,
     input rv32i_reg ex_to_mem_rd,
@@ -12,6 +14,7 @@ import rv32i_types::*;
     input logic use_branch,  
 
     /* output to EX/MEM buffer */
+    output logic ex_stall,
     output EX_MEM_stage_t ex_out
     // output pcmux::pcmux_sel_t pcmux_sel,
     // output logic branch_take // 0 if there's not taking branch, 1 if we are taking branch
@@ -38,6 +41,32 @@ import rv32i_types::*;
 
     logic branch_take;
     pcmux::pcmux_sel_t pcmux_sel;
+
+    /* m extention signals */
+    rv32i_word m_alu_out;
+    logic m_alu_done;
+    m_funct3_t m_funct3;
+    logic m_alu_act;
+
+    
+    assign m_funct3 = m_funct3_t'(ex_in.ctrl_wd.funct3);
+    assign m_alu_act = ex_in.ctrl_wd.ex_ctrlwd.m_extension_act;
+    assign ex_stall = ~(m_alu_done);
+
+    m_extension_alu m_alu(
+        .clk(clk),
+        .rst(rst),
+    
+        // data input and opcode (operation)
+        .rs1_data_i(alumux1_out),
+        .rs2_data_i(alumux2_out),
+        .funct3(m_funct3),
+        .m_alu_active(m_alu_act),   // used to enable mul, div, rem, 1: unit is active, do work; 0: do not do work
+
+        // output
+        .m_ex_alu_done(m_alu_done),
+        .rd_data_o(m_alu_out)
+);
 
     assign is_jalr = (ex_in.ctrl_wd.opcode == op_jalr);
     assign is_jal = (ex_in.ctrl_wd.opcode == op_jal);
@@ -163,6 +192,9 @@ import rv32i_types::*;
         ex_out.cmp_out = br_en;
         ex_out.ctrl_wd = ex_in.ctrl_wd;
         ex_out.alu_out = alu_out;
+        if(m_alu_act) begin
+            ex_out.alu_out = m_alu_out;
+        end
         ex_out.mar = marmux_out;
         ex_out.mem_data_out = forward_rs2 << (8 * marmux_out[1:0]); 
         ex_out.u_imm = ex_in.u_imm;

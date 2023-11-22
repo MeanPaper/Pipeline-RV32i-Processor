@@ -54,6 +54,7 @@ logic load_ex_mem;
 logic load_mem_wb;
 logic dmem_stall;
 logic imem_stall;
+logic ex_stall;
 /****************************** Branch Signals ********************************/
 logic branch_miss;
 
@@ -109,6 +110,8 @@ i_decode i_decode(
 
 /******************************* EXE stage ***********************************/
 execute execute(
+    .clk(clk),
+    .rst(rst),
     /* input signals from ID/EX buffer */
     .ex_in(id_to_ex),
     
@@ -121,6 +124,7 @@ execute execute(
     .use_branch(ex_to_mem.branch_take),
 
     /* output to EX/MEM buffer */
+    .ex_stall(ex_stall),
     .ex_out(ex_to_mem_next)
     // .pcmux_sel(pcmux_sel),
     // .branch_take(branch_miss)
@@ -173,9 +177,9 @@ always_comb begin
     end 
     else if (dmem_stall) load_pc = 1'b0;
 
-    load_if_id = ~(dmem_stall | imem_stall);
-    load_id_ex = ~(dmem_stall | imem_stall);
-    load_ex_mem = ~(dmem_stall | imem_stall);
+    load_if_id = ~(dmem_stall | imem_stall | ex_stall);
+    load_id_ex = ~(dmem_stall | imem_stall | ex_stall);
+    load_ex_mem = ~(dmem_stall | imem_stall | ex_stall);
 
 end
 //it seems that we do not have if_id anymore?
