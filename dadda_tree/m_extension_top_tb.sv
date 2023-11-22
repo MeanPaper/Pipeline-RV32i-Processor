@@ -74,6 +74,23 @@ import m_extension::*;
         .remainder(remainder)
     );
 
+
+
+    logic [31:0] rd_data_o;
+    logic m_ex_alu_done;
+    m_extension_alu dut_fin(
+        .clk(clk),
+        .rst(rs1),
+        
+        // data input and opcode (operation)
+        .rs1_data_i(operandA),
+        .rs2_data_i(operandB),
+        .funct3(funct3),
+        .m_alu_active(1'b1),   // used to enable mul, div, rem, 1: unit is active, do work; 0: do not do work
+        // results
+        .m_ex_alu_done(m_ex_alu_done),
+        .rd_data_o(rd_data_o)
+    );
     // srt_divider srt_dut2(
     //     .clk(clk),
     //     .rst(rst),
@@ -256,7 +273,7 @@ import m_extension::*;
         $display("mulhsu op: 0x%0h", productAB);
     endtask
 
-    task signed_div_simple_test(logic [31:0] rs1, logic [31:0] rs2, m_funct3 op); 
+    task signed_div_rem_simple_test(logic [31:0] rs1, logic [31:0] rs2, m_funct3 op); 
         start = 1'b1;
         $write("%c[0m",27);
         funct3 = op;
@@ -268,9 +285,18 @@ import m_extension::*;
         $display("rs2: 0x%0h", rs2);
         $display("rs1 / rs2 result: 0x%0h", quotient);
         $display("rs1 mod rs2 result: 0x%0h", remainder);
-
     endtask
 
+    task mult_op_selection(logic [31:0] rs1, logic [31:0] rs2, m_funct3 op);
+        operandA = rs1;
+        operandB = rs2;
+        funct3 = op;
+        @(posedge clk iff mul_done == 1'b1);
+        $display();
+        $display("rs1: 0x%0h", rs1);
+        $display("rs2: 0x%0h", rs2);
+        $display("rs1 * rs2 result: 0x%0h", productAB);
+    endtask
 
     initial begin
         $display("%c[0;36m", 27);

@@ -8,7 +8,7 @@ import m_extension::*;
     input logic [31:0]  rs1_data_i,
     input logic [31:0]  rs2_data_i,
     input m_funct3      funct3,
-    input logic         m_alu_active,   // used to enable mul, div, rem
+    input logic         m_alu_active,   // used to enable mul, div, rem, 1: unit is active, do work; 0: do not do work
     // results
     output logic m_ex_alu_done,
     output logic [31:0] rd_data_o
@@ -24,7 +24,7 @@ logic [31:0] quotient, remainder;
 logic rst_or_not_act;   // if rst is on or m_alu is not active
 
 assign is_mul = (funct3[2] == '0); // if the operation is not mul, then it is div or rem
-assign m_ex_alu_done = mul_done | div_done;
+assign m_ex_alu_done = mul_done | div_done | ~(m_alu_active); // if no operation is performing, there will be no stalls
 
 assign rst_or_not_act = rst | ~(m_alu_active);
 
