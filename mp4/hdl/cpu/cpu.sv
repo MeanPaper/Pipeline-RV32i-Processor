@@ -175,7 +175,7 @@ always_comb begin
     if(rst) begin
         load_pc = 1'b0;
     end 
-    else if (dmem_stall) load_pc = 1'b0;
+    else if (dmem_stall | ex_stall) load_pc = 1'b0;
 
     load_if_id = ~(dmem_stall | imem_stall | ex_stall);
     load_id_ex = ~(dmem_stall | imem_stall | ex_stall);
@@ -212,7 +212,7 @@ always_ff @(posedge clk) begin
 
         // mem_wb pipline reg
         if(load_mem_wb) begin
-            if(dmem_stall | imem_stall) mem_to_wb.ctrl_wd.valid <= 1'b0;
+            if(dmem_stall | imem_stall | ex_stall) mem_to_wb.ctrl_wd.valid <= 1'b0;
             else mem_to_wb <= mem_to_wb_next;
         end
 
