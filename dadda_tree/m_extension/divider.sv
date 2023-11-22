@@ -55,21 +55,21 @@ always_comb begin
 
                     if(divisor == 32'b0) begin
                         next_state = done;
-                        case(funct3)
-                            divu, div: begin    // for unsigned: 2^32 - 1, for signed: -1
-                                next_data = {32'hFFFFFFFF, 32'hFFFFFFFF};
-                            end
+                        // case(funct3)
+                        //     divu, div: begin    // for unsigned: 2^32 - 1, for signed: -1
+                        next_data = {dividend, 32'hFFFFFFFF};
+                        // end
                             // rem, remu, and others; divisor = 0 case
-                            default: next_data = {dividend, 32'b0};
-                        endcase
+                        //     default: next_data = {dividend, 32'b0};
+                        // endcase
                     end
                     else if(signed_op && overflow_on) begin
                         next_state = done;
-                        case(funct3)
-                            div: next_data = {32'b0, 32'h80000000};
-                            rem: next_data = 64'h0;
-                            default: next_data = 64'h0;
-                        endcase
+                        // case(funct3)
+                        next_data = {32'b0, 32'h80000000};
+                            // rem: next_data = 64'h0;
+                            // default: next_data = 64'h0;
+                        // endcase
                     end
                     else begin
                         divisor_reg_in = divisor;

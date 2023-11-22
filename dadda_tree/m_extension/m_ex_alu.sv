@@ -59,4 +59,13 @@ divider divider
     .remainder(remainder)
 );
 
+always_comb begin
+    case(funct3)
+        mul, mulh, mulhsu, mulhu: rd_data_o = mul_out;
+        div, divu: rd_data_o = quotient;
+        rem, remu: rd_data_o = remainder;
+        default: rd_data_o = mul_out;
+    endcase
+end
+
 endmodule;

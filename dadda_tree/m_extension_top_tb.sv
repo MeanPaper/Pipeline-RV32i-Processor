@@ -80,7 +80,7 @@ import m_extension::*;
     logic m_ex_alu_done;
     m_extension_alu dut_fin(
         .clk(clk),
-        .rst(rs1),
+        .rst(rst),
         
         // data input and opcode (operation)
         .rs1_data_i(operandA),
@@ -358,9 +358,9 @@ import m_extension::*;
         // $display("remainder is: %0d, 0x%0h", remainder, remainder);
         // funct3 = divu;
         
-        // simple_unsigned_div();
+        simple_unsigned_div();
         // mulsu_behavior_testing(32'h2, 32'h2);
-        // signed_div_simple_test(32'h3, -32'h2, div);
+        signed_div_rem_simple_test(32'h80000000, -32'h1, div);
         /********* divider unit testing ************/
 
         /********* full m extension unit testing ************/
