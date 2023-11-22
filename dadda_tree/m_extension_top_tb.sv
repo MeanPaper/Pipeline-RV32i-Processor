@@ -256,6 +256,21 @@ import m_extension::*;
         $display("mulhsu op: 0x%0h", productAB);
     endtask
 
+    task signed_div_simple_test(logic [31:0] rs1, logic [31:0] rs2, m_funct3 op); 
+        start = 1'b1;
+        $write("%c[0m",27);
+        funct3 = op;
+        dividend = rs1;
+        divisor = rs2;
+        @(posedge clk iff div_done == 1'b1);
+        $display();
+        $display("rs1: 0x%0h", rs1);
+        $display("rs2: 0x%0h", rs2);
+        $display("rs1 / rs2 result: 0x%0h", quotient);
+        $display("rs1 mod rs2 result: 0x%0h", remainder);
+
+    endtask
+
 
     initial begin
         $display("%c[0;36m", 27);
@@ -312,11 +327,12 @@ import m_extension::*;
         // remainder = $signed(4) % $signed(-6);
         // $display("remainder is: %0d, 0x%0h", remainder, remainder);
         // funct3 = divu;
+        
         // simple_unsigned_div();
-        mulsu_behavior_testing(32'h2, 32'h2);
+        // mulsu_behavior_testing(32'h2, 32'h2);
+        signed_div_simple_test(32'h3, -32'h2, div);
 
 
-        // end
         
         // color display for pass and failed
         if(error_count === 0) begin
