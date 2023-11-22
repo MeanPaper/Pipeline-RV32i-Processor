@@ -288,6 +288,8 @@ import m_extension::*;
         @(posedge clk);
 
         // ********** code start here **********
+
+        /********* multiplier unit testing ************/
         // $write("%c[0;31m",27);    // color red
         // mul_on = 1'b1;
 
@@ -313,7 +315,6 @@ import m_extension::*;
         // signed_dadda_tree(1,1);
         // $display("signed x signed end");
 
-
         // mul_opcode_test(mul);
         // mul_opcode_test(mulh);
         // mul_opcode_test(mulhsu);
@@ -323,15 +324,21 @@ import m_extension::*;
         // correct_ans = $signed(-1)*$unsigned(-1);
         // $display("%0h", correct_ans);
         // $display("%0h %0h", correct_ans[63:32], correct_ans[31:0]);
+        /********* multiplier unit testing ************/
 
+
+        /********* divider unit testing ************/
         // remainder = $signed(4) % $signed(-6);
         // $display("remainder is: %0d, 0x%0h", remainder, remainder);
         // funct3 = divu;
         
         // simple_unsigned_div();
         // mulsu_behavior_testing(32'h2, 32'h2);
-        signed_div_simple_test(32'h3, -32'h2, div);
+        // signed_div_simple_test(32'h3, -32'h2, div);
+        /********* divider unit testing ************/
 
+        /********* full m extension unit testing ************/
+        /********* full m extension unit testing ************/
 
         
         // color display for pass and failed

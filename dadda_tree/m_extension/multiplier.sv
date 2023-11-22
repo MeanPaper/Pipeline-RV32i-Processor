@@ -22,7 +22,7 @@ logic [31:0] rs1_data_tmp, rs2_data_tmp;
 logic [63:0] row_top, row_bot;      // the multiplication is going to be 64 bits long
 logic [31:0] op1, op2;              // for opA and opB 
 logic [31:0] op1_reg, op2_reg;
-logic lower_partial_carry;
+// logic lower_partial_carry;
 logic [63:0] mul_result;
 
 // logic should_load, should_prop;
@@ -100,8 +100,10 @@ end
 // a simple state machine start
 always_comb begin
     mul_done = mul_cycle[2];
+    // mul_done = (mul_cycle == 3'b11);
     next_cycle = mul_cycle + 1'b1;
     if(mul_cycle[2]) begin
+    // if(mul_cycle == 3'b11) begin
         next_cycle = '0;
     end
 end
