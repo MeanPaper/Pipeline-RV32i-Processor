@@ -42,7 +42,25 @@ _start:
     # mulhu  x3, x1, x2   # check the behavior
 
 
+    andi x1, x1, 0      # clear x1
+    andi x2, x2, 0      # clear x2
+    addi x1, x1, -2     # 
+    addi x2, x2, 3      #
+    rem  x3, x1, x2     # x3 = x1 % x2
+
+
+    andi x1, x1, 0      # clear x1
+    andi x2, x2, 0      # clear x2
+    addi x1, x1, 3     # 
+    addi x2, x2, -2      #
+    rem  x3, x1, x2     # x3 = x1 % x2
     
+    andi x1, x1, 0      # clear x1
+    andi x2, x2, 0      # clear x2
+    addi x1, x1, 2       # 
+    addi x2, x2, -1      #
+    div  x3, x1, x2     # x3 = x1 / x2
+
 
     li  t0, 1
     la  t1, tohost
