@@ -77,6 +77,7 @@ import m_extension::*;
 
 
     logic [31:0] rd_data_o;
+    logic m_extension_alu_act;
     logic m_ex_alu_done;
     m_extension_alu dut_fin(
         .clk(clk),
@@ -86,7 +87,7 @@ import m_extension::*;
         .rs1_data_i(operandA),
         .rs2_data_i(operandB),
         .funct3(funct3),
-        .m_alu_active(1'b1),   // used to enable mul, div, rem, 1: unit is active, do work; 0: do not do work
+        .m_alu_active(m_extension_alu_act),   // used to enable mul, div, rem, 1: unit is active, do work; 0: do not do work
         // results
         .m_ex_alu_done(m_ex_alu_done),
         .rd_data_o(rd_data_o)
@@ -311,6 +312,7 @@ import m_extension::*;
         funct3 = mul;
         mul_on = '0;
         start = '0;
+        m_extension_alu_act = '0;
         @(posedge clk);
 
         // ********** code start here **********
@@ -358,12 +360,26 @@ import m_extension::*;
         // $display("remainder is: %0d, 0x%0h", remainder, remainder);
         // funct3 = divu;
         
-        simple_unsigned_div();
+        // simple_unsigned_div();
         // mulsu_behavior_testing(32'h2, 32'h2);
-        signed_div_rem_simple_test(32'h80000000, -32'h1, div);
+        // signed_div_rem_simple_test(32'h80000000, -32'h1, div);
         /********* divider unit testing ************/
 
         /********* full m extension unit testing ************/
+        
+        // m_extension not in use test start
+        @(posedge clk iff m_ex_alu_done);
+        @(posedge clk);
+        // m_extension not in use test end
+
+        // activate test begin
+        m_extension_alu_act = 1'b1;
+        $display(m_ex_alu_done);
+        @(posedge clk);
+        $display(m_ex_alu_done);
+        @(posedge clk iff m_ex_alu_done);
+        // activate test end 
+
         /********* full m extension unit testing ************/
 
         

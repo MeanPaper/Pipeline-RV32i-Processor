@@ -1,0 +1,2 @@
+Command Line: /software/Synopsys-2021_x86_64/verdi/R-2020.12-SP1-1/platform/LINUXAMD64/bin/Novas -ssf /home/dl35/ece411/mp_superscalar/dadda_tree/sim/dump.fsdb
+uname(Linux fastx3-20.ews.illinois.edu 4.18.0-477.27.2.el8_8.x86_64 #1 SMP Fri Sep 29 08:21:01 EDT 2023 x86_64)
