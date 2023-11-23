@@ -98,6 +98,7 @@ set_fanout_load 8 [all_outputs]
 
 link
 
+# 400Mhz if compile with compile_ultra 
 # compile_ultra -gate_clock -retime
 compile
 
