@@ -131,6 +131,9 @@ always_comb begin
             quotient = ~data[31:0] + 1'b1;
             // remainder = ~data[63:32] + 1'b1;
         end
+        if(dividend[31]) begin
+            remainder = ~data[63:32] + 1'b1;
+        end 
     end
 end
 

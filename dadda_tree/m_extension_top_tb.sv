@@ -362,22 +362,22 @@ import m_extension::*;
         
         // simple_unsigned_div();
         // mulsu_behavior_testing(32'h2, 32'h2);
-        // signed_div_rem_simple_test(32'h80000000, -32'h1, div);
+        signed_div_rem_simple_test(-32'h2, 32'h3, div);
         /********* divider unit testing ************/
 
         /********* full m extension unit testing ************/
         
         // m_extension not in use test start
-        @(posedge clk iff m_ex_alu_done);
-        @(posedge clk);
-        // m_extension not in use test end
+        // @(posedge clk iff m_ex_alu_done);
+        // @(posedge clk);
+        // // m_extension not in use test end
 
-        // activate test begin
-        m_extension_alu_act = 1'b1;
-        $display(m_ex_alu_done);
-        @(posedge clk);
-        $display(m_ex_alu_done);
-        @(posedge clk iff m_ex_alu_done);
+        // // activate test begin
+        // m_extension_alu_act = 1'b1;
+        // $display(m_ex_alu_done);
+        // @(posedge clk);
+        // $display(m_ex_alu_done);
+        // @(posedge clk iff m_ex_alu_done);
         // activate test end 
 
         /********* full m extension unit testing ************/

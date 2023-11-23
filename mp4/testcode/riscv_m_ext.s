@@ -35,11 +35,11 @@ _start:
     # mul  x3, x1, x2   # check the behavior
 
 
-    # andi x1, x1, 0      # clear x1
-    # andi x2, x2, 0      # clear x2
-    # addi x1, x1, -1     # x1 = -1
-    # addi x2, x2, 2      # x2 = 2, however, I will fake this to unsigned
-    # mulhu  x3, x1, x2   # check the behavior
+    andi x1, x1, 0      # clear x1
+    andi x2, x2, 0      # clear x2
+    addi x1, x1, -1     # x1 = -1
+    addi x2, x2, 2      # x2 = 2, however, I will fake this to unsigned
+    mulhu  x3, x1, x2   # check the behavior
 
 
     andi x1, x1, 0      # clear x1
