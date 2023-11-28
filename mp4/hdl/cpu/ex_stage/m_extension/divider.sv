@@ -111,18 +111,48 @@ always_comb begin
     if(complete) begin
         quotient = data[31:0];
         remainder = data[63:32];
+
+        if(divisor == 32'b0) begin
+            remainder = dividend;
+            quotient = 32'hFFFFFFFF;
+        end
+        else if(signed_op && overflow_on) begin
+            remainder = '0;
+            quotient = 32'h80000000;
+        end
+
         if(should_neg) begin
             quotient = ~data[31:0] + 1'b1;
             // remainder = ~data[63:32] + 1'b1;
         end
-        if(dividend[31]) begin
-            remainder = ~data[63:32] + 1'b1;
-        end 
+        // if(dividend[31]) begin
+        //     remainder = ~data[63:32] + 1'b1;
+        // end 
     end
 end
 
 endmodule
 // ===========================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 module divider_gai
 import rv32i_types::*;
@@ -175,12 +205,14 @@ always_comb begin
             idle: begin
                 if(start == 1'b1) begin
                     if(divisor == 32'b0) begin
-                        next_state = done;
-                        next_data = {dividend, 32'hFFFFFFFF};
+                        // next_state = done;
+                        complete = 1'b1;
+                        // next_data = {dividend, 32'hFFFFFFFF};
                     end
                     else if(signed_op && overflow_on) begin
-                        next_state = done;
-                        next_data = {32'b0, 32'h80000000};
+                        // next_state = done;
+                        complete = 1'b1;
+                        // next_data = {32'b0, 32'h80000000};
                     end
                     else begin
                         divisor_reg_in = divisor;
@@ -236,13 +268,24 @@ always_comb begin
     if(complete) begin
         quotient = data[31:0];
         remainder = data[63:32];
+
+        if(divisor == 32'b0) begin
+            remainder = dividend;
+            quotient = 32'hFFFFFFFF;
+        end
+        else if(signed_op && overflow_on) begin
+            remainder = '0;
+            quotient = 32'h80000000;
+        end
+
         if(should_neg) begin
             quotient = ~data[31:0] + 1'b1;
-            // remainder = ~data[63:32] + 1'b1;
-        end
-        if(dividend[31]) begin
             remainder = ~data[63:32] + 1'b1;
-        end 
+        end
+        // if(should_neg & dividend[31]) begin
+        //     remainder = ~data[63:32] + 1'b1;
+        // end 
+
     end
 end
 
