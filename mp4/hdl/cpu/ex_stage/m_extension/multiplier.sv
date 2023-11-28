@@ -43,6 +43,10 @@ logic [2:0] mul_cycle, next_cycle;
 always_comb begin : mult_pre_process
     op1 = rs1_data_tmp;
     op2 = rs2_data_tmp;
+    
+    // op1 = rs1_data;
+    // op2 = rs2_data;
+
     should_neg = '0;
     case(funct3)
         mul, mulhu: begin // weird behavior
@@ -52,6 +56,10 @@ always_comb begin : mult_pre_process
             if(rs1_data_tmp[31]) begin
                 op1 = (~rs1_data_tmp) + 1'b1;
             end
+            // should_neg = rs1_data[31];
+            // if(rs1_data[31]) begin
+            //     op1 = (~rs1_data) + 1'b1;
+            // end
         end
         default: begin // mul might belong here, but we will see
             // happen only in the sign multiplication
@@ -64,6 +72,13 @@ always_comb begin : mult_pre_process
             if(rs2_data_tmp[31] == 1'b1) begin  // find the abs of rs2 if rs2 neg
                 op2 = (~rs2_data_tmp) + 1'b1;
             end
+            // should_neg = rs1_data[31] ^ rs2_data[31];
+            // if(rs1_data[31]) begin
+            //     op1 = (~rs1_data) + 1'b1;
+            // end
+            // if(rs2_data[31]) begin
+            //     op2 = (~rs2_data) + 1'b1;
+            // end
             
         end
     endcase
@@ -107,16 +122,6 @@ always_ff @(posedge clk) begin : mult_flip_flops
 end
 
 // a simple state machine start
-always_comb begin : mult_cycle_counter
-    // mul_done = mul_cycle[2];
-    mul_done = (mul_cycle == 3'b101);
-    next_cycle = mul_cycle + 1'b1;
-    // if(mul_cycle[2]) begin
-    if(mul_cycle == 3'b101) begin
-        next_cycle = '0;
-    end
-end
-
 always_ff @(posedge clk) begin
     if(rst | (~is_mul)) begin
         mul_cycle <= '0;
@@ -125,10 +130,19 @@ always_ff @(posedge clk) begin
         mul_cycle <= next_cycle;
     end 
 end
-
 // a simple state machine end
 
 always_comb begin : final_compute
+
+    // mul_done = mul_cycle[2];
+    // mul_done = (mul_cycle == 3'b11);
+    mul_done = '0;
+    next_cycle = mul_cycle + 1'b1;
+    if(mul_cycle[2]) begin
+    // if(mul_cycle == 3'b11) begin
+        mul_done = 1'b1;
+        next_cycle = '0;
+    end
 
     lower_partial_sum = {1'b0, row_top[31:0]} + {1'b0, row_bot[31:0]};          // lower half of the product
     lower_partial_carry = lower_partial_sum[32];                                // the carry from the lower part 
@@ -146,9 +160,22 @@ always_comb begin : final_compute
     case(funct3)
         mulh, mulhu, mulhsu: begin  // get 32 higher bits 
             mul_out = mul_result[63:32];
+            if(lower_partial_carry == 1'b0) begin   // speed up the multiplication if we do not use the carry
+                if(mul_cycle == 3'b11) begin
+                    mul_done = 1'b1;
+                    next_cycle = '0;
+                end
+                mul_out = upper_partial_sum;
+            end
         end                 
         default: begin              // get 32 lower bits operation
-            mul_out = mul_result[31:0];
+        
+            if(mul_cycle == 3'b11) begin
+                mul_done = 1'b1;
+                next_cycle = '0;
+            end
+            mul_out = lower_partial_sum[31:0];
+            // mul_out = mul_result[31:0];
         end
     endcase
 
