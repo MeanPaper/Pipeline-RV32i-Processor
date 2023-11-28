@@ -20,6 +20,7 @@ enum logic[2:0]{
 logic [63:0] data, next_data;
 logic [31:0] divisor_reg, divisor_reg_in;
 logic [31:0] count, next_count;
+logic [31:0] neg_temp;
 
 // logic ready, busy;
 logic complete;
@@ -28,7 +29,7 @@ logic overflow_on;
 logic should_neg, next_should_neg;
 assign signed_op = (funct3 == div || funct3 == rem); // div and rem are signed operation
 assign overflow_on = (dividend == 32'h80000000 && divisor == 32'hFFFFFFFF);
-
+// assign neg_temp = ~(dividend) + 1'b1;
 
 always_comb begin
     next_state = state;
@@ -48,20 +49,17 @@ always_comb begin
     else begin
         case(state)
             idle: begin
-                next_data = '0;
-                next_count = '0;
                 next_should_neg = '0;
-                divisor_reg_in = '0;
                 if(start == 1'b1) begin
-                    if(divisor == 32'b0 | (signed_op && overflow_on)) begin
-                        // next_state = done;
-                        // next_data = {dividend, 32'hFFFFFFFF};
-                        complete = 1'b1;
+                    if(divisor == 32'b0) begin
+                        next_state = done;
+                        next_data = {dividend, 32'hFFFFFFFF};
+                        // complete = 1'b1;
                     end
-                    // else if(signed_op && overflow_on) begin
-                    //     next_state = done;
-                    //     // next_data = {32'b0, 32'h80000000};
-                    // end
+                    else if(signed_op && overflow_on) begin
+                        next_state = done;
+                        next_data = {32'b0, 32'h80000000};
+                    end
                     else begin
                         divisor_reg_in = divisor;
                         next_state = shift;
@@ -73,7 +71,8 @@ always_comb begin
                                 divisor_reg_in = ~divisor + 1'b1;
                             end
                             if(dividend[31]) begin
-                                next_data = {32'b0, {~(dividend) + 1'b1}[31:0]};
+                                neg_temp = ~(dividend) + 1'b1;
+                                next_data = {32'b0, neg_temp[31:0]};
                             end
                         end
                     end
@@ -118,21 +117,23 @@ always_comb begin
         remainder = data[63:32];
         
         // dependency matters
-        if(should_neg) begin
-            quotient = (~data[31:0]) + 1'b1;
+        if(~(divisor == 32'b0 | (signed_op && overflow_on))) begin
+            if(should_neg) begin
+                quotient = (~data[31:0]) + 1'b1;
+            end
+            if(dividend[31]) begin
+                remainder = ~data[63:32] + 1'b1;
+            end 
         end
-        if(dividend[31]) begin
-            remainder = ~data[63:32] + 1'b1;
-        end 
 
-        if(divisor == 32'b0) begin
-            remainder = dividend;
-            quotient = 32'hFFFFFFFF;
-        end
-        else if(signed_op && overflow_on) begin
-            remainder = '0;
-            quotient = 32'h80000000;
-        end
+        // if(divisor == 32'b0) begin
+        //     remainder = dividend;
+        //     quotient = 32'hFFFFFFFF;
+        // end
+        // else if(signed_op && overflow_on) begin
+        //     remainder = '0;
+        //     quotient = 32'h80000000;
+        // end
     end
 end
 
