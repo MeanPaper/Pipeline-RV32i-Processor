@@ -117,15 +117,17 @@ always_comb begin
         remainder = data[63:32];
         
         // dependency matters
-        if(~(divisor == 32'b0 | (signed_op && overflow_on))) begin
+        if(~(divisor == 32'b0 || (signed_op && overflow_on))) begin
             if(should_neg) begin
                 quotient = (~data[31:0]) + 1'b1;
             end
-            if(dividend[31]) begin
-                remainder = ~data[63:32] + 1'b1;
+            if(dividend[31] && signed_op) begin
+                remainder = (~data[63:32]) + 1'b1;
             end 
         end
-
+        // else if(divisor[31]) begin
+        //     remainder = (~data[63:32]) + 1'b1;
+        // end
         // if(divisor == 32'b0) begin
         //     remainder = dividend;
         //     quotient = 32'hFFFFFFFF;
