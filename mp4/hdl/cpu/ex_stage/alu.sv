@@ -12,7 +12,7 @@ begin
     unique case (aluop)
         alu_add:  f = a + b;
         alu_sll:  f = a << b[4:0];
-        alu_sra:  f = $signed(a) >>> b[4:0];
+        alu_sra:  f = unsigned'(signed'(a) >>> b[4:0]);
         alu_sub:  f = a - b;
         alu_xor:  f = a ^ b;
         alu_srl:  f = a >> b[4:0];
