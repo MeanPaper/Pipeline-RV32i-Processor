@@ -18,6 +18,7 @@ begin
         alu_srl:  f = a >> b[4:0];
         alu_or:   f = a | b;
         alu_and:  f = a & b;
+        default: f = a + b;
     endcase
 end
 

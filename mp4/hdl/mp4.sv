@@ -43,7 +43,7 @@ import rv32i_types::*;
             logic   [31:0]  monitor_mem_rdata;
             logic   [31:0]  monitor_mem_wdata;
 
-    /* My coding style */
+    // /* My coding style */
     logic commit;
     logic [63:0] order;
     
