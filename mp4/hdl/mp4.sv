@@ -25,7 +25,8 @@ import rv32i_types::*;
     output  logic   [63:0]  bmem_wdata,
     input   logic           bmem_resp
 );
-
+  
+  
     // /* Stanley coding style */
     //         logic           monitor_valid;
     //         logic   [63:0]  monitor_order;
@@ -214,7 +215,7 @@ import rv32i_types::*;
         // output logic pmem_read
     );
 
-    dcache dcache(
+  dcache dcache(
         .clk(clk),
         .rst(rst),
 
