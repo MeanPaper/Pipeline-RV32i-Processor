@@ -1,7 +1,7 @@
 import math
 
 # with plru, num_ways need to be a power of 2, only change this
-num_ways = 16
+num_ways = 4
 
 
 

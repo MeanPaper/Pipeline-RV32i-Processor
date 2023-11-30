@@ -7,7 +7,7 @@ import rv32i_types::*;         // import my datatypes
             parameter       s_mask   = 2**s_offset,
             parameter       s_line   = 8*s_mask,
             parameter       num_sets = 2**s_index,
-            parameter       num_ways = 8 // parameterized
+            parameter       num_ways = 4 // parameterized
 )( 
     input logic clk,
     input logic rst,

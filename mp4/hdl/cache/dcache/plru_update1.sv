@@ -1,25 +1,25 @@
 
-module plru_update(  
-    input logic [2 : 0] hit_way,
-    input logic [6 : 0] plru_bits,
-    output logic [6 : 0] new_plru_bits
-);
+// module plru_update(  
+//     input logic [2 : 0] hit_way,
+//     input logic [6 : 0] plru_bits,
+//     output logic [6 : 0] new_plru_bits
+// );
  
-always_comb begin
-    case(hit_way)
-        3'd0: new_plru_bits = {plru_bits[6], plru_bits[5], plru_bits[4], ~hit_way[0], plru_bits[2], ~hit_way[1], ~hit_way[2]};
-        3'd1: new_plru_bits = {plru_bits[6], plru_bits[5], plru_bits[4], ~hit_way[0], plru_bits[2], ~hit_way[1], ~hit_way[2]};
-        3'd2: new_plru_bits = {plru_bits[6], plru_bits[5], ~hit_way[0], plru_bits[3], plru_bits[2], ~hit_way[1], ~hit_way[2]};
-        3'd3: new_plru_bits = {plru_bits[6], plru_bits[5], ~hit_way[0], plru_bits[3], plru_bits[2], ~hit_way[1], ~hit_way[2]};
-        3'd4: new_plru_bits = {plru_bits[6], ~hit_way[0], plru_bits[4], plru_bits[3], ~hit_way[1], plru_bits[1], ~hit_way[2]};
-        3'd5: new_plru_bits = {plru_bits[6], ~hit_way[0], plru_bits[4], plru_bits[3], ~hit_way[1], plru_bits[1], ~hit_way[2]};
-        3'd6: new_plru_bits = {~hit_way[0], plru_bits[5], plru_bits[4], plru_bits[3], ~hit_way[1], plru_bits[1], ~hit_way[2]};
-        3'd7: new_plru_bits = {~hit_way[0], plru_bits[5], plru_bits[4], plru_bits[3], ~hit_way[1], plru_bits[1], ~hit_way[2]};
+// always_comb begin
+//     case(hit_way)
+//         3'd0: new_plru_bits = {plru_bits[6], plru_bits[5], plru_bits[4], ~hit_way[0], plru_bits[2], ~hit_way[1], ~hit_way[2]};
+//         3'd1: new_plru_bits = {plru_bits[6], plru_bits[5], plru_bits[4], ~hit_way[0], plru_bits[2], ~hit_way[1], ~hit_way[2]};
+//         3'd2: new_plru_bits = {plru_bits[6], plru_bits[5], ~hit_way[0], plru_bits[3], plru_bits[2], ~hit_way[1], ~hit_way[2]};
+//         3'd3: new_plru_bits = {plru_bits[6], plru_bits[5], ~hit_way[0], plru_bits[3], plru_bits[2], ~hit_way[1], ~hit_way[2]};
+//         3'd4: new_plru_bits = {plru_bits[6], ~hit_way[0], plru_bits[4], plru_bits[3], ~hit_way[1], plru_bits[1], ~hit_way[2]};
+//         3'd5: new_plru_bits = {plru_bits[6], ~hit_way[0], plru_bits[4], plru_bits[3], ~hit_way[1], plru_bits[1], ~hit_way[2]};
+//         3'd6: new_plru_bits = {~hit_way[0], plru_bits[5], plru_bits[4], plru_bits[3], ~hit_way[1], plru_bits[1], ~hit_way[2]};
+//         3'd7: new_plru_bits = {~hit_way[0], plru_bits[5], plru_bits[4], plru_bits[3], ~hit_way[1], plru_bits[1], ~hit_way[2]};
 
-        default: new_plru_bits = 7'b0000000;
-    endcase
-end
-endmodule
+//         default: new_plru_bits = 7'b0000000;
+//     endcase
+// end
+// endmodule
 
 
 
