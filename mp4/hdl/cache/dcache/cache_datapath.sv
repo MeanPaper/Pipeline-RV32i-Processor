@@ -75,7 +75,7 @@ import rv32i_types::*;         // import my datatypes
     cacheline_t data_out;       // one of the data in 4 ways
 
     logic [31:0] write_mask;    // write mask for cacheline
-    tag_word_t final_tag_out;
+    logic [31:(s_offset + s_index)] final_tag_out;
 
 
     // write enable should active low 
@@ -87,10 +87,10 @@ import rv32i_types::*;         // import my datatypes
 
 
     /*============================== Assignments begin ==============================*/
-    assign tag_from_addr = mem_address[31:9];
-    assign tag_arr_in = mem_address[31:9];
-    assign set_idx = mem_address[8:5];
-    assign pmem_address = {final_tag_out, mem_address[8:5], 5'b0};
+    assign tag_from_addr = mem_address[31:(s_offset + s_index)];
+    assign tag_arr_in = mem_address[31: (s_offset + s_index)];
+    assign set_idx = mem_address[(s_offset + s_index -1):(s_offset)];
+    assign pmem_address = {final_tag_out, mem_address[(s_offset + s_index -1):(s_offset)], 5'b0};
     // assign is_hit = |hit;            // OR all the hit bit to see if a way is hit
 
     assign mem_rdata256 = data_out;

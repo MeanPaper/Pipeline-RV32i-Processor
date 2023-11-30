@@ -4,9 +4,9 @@ num_rw_ports = 1
 num_r_ports = 0
 num_w_ports = 0
 
-word_size = 256
-write_size = 8
-num_words = 16  # number of sets
+word_size = 23
+# write_size = 23
+num_words = 32
 
 nominal_corner_only = True
 process_corners = ["TT"]
@@ -22,7 +22,7 @@ perimeter_pins = False
 load_scales = [0.5, 1, 4]
 slew_scales = [0.5, 1]
 
-output_name = "mp3_data_array"
+output_name = "L2_tag_array"
 output_path = "output/{}".format(output_name)
 
 print_banner = False

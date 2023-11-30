@@ -99,7 +99,7 @@ import rv32i_types::*;         // import my datatypes
     /*============================== Modules begin ==============================*/
     // generate 4 data_array
     generate for (genvar i = 0; i < 4; i++) begin : data_arrays
-        mp3_data_array l2_data_array (
+        L2_data_array l2_data_array (
             .clk0       (clk),
             .csb0       (1'b0),
             .web0       (data_web_arr[i]),
@@ -112,7 +112,7 @@ import rv32i_types::*;         // import my datatypes
 
     // generate 4 tag array
     generate for (genvar i = 0; i < 4; i++) begin : tag_arrays
-        mp3_tag_array l2_tag_array(
+        L2_tag_array l2_tag_array(
             .clk0    (clk),
             .csb0    (1'b0),
             .web0    (tag_web_arr[i]),
