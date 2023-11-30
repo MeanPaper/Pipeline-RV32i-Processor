@@ -2,7 +2,7 @@
 
 # Settings
 # Available options are rv32i, rv32ic, rv32im, rv32imc
-ARCH=rv32i
+ARCH=rv32im
 # Change to 8 for MP3 and MP4 Checkpoint 2 onwards. (For use with caches)
 ADDRESSABILITY=8
 
