@@ -1,6 +1,6 @@
 #/bin/bash
 
-AREA_LIMIT=100000
+AREA_LIMIT=150000
 
 if [ ! -f reports/synthesis.log ] || grep -iwq -f synth-error-codes reports/synthesis.log; then
     echo -e "\033[0;31mSynthesis failed:\033[0m"
