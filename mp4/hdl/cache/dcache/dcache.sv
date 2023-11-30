@@ -27,6 +27,7 @@ module dcache #(
     input   logic           pmem_resp
 );
 
+localparam num_ways = 4;
 
 logic [31:0] mem_byte_enable256;
 logic [255:0] mem_rdata256, mem_wdata256;
@@ -43,6 +44,7 @@ assign mem_wdata256 = mem_wdata;
 
 cache_control control(.*);
 
-cache_datapath datapath(.*);
+cache_datapath #(.s_index(s_index), .num_ways(num_ways))
+datapath(.*);
 
 endmodule : dcache
