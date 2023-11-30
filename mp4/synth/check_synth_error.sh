@@ -1,5 +1,6 @@
 #/bin/bash
 
+#AREA_LIMIT=75000
 AREA_LIMIT=150000
 
 if [ ! -f reports/synthesis.log ] || grep -iwq -f synth-error-codes reports/synthesis.log; then

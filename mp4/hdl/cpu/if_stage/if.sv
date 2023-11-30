@@ -32,6 +32,7 @@ assign imemmux_sel = (imem_resp & load_pc) | branch_take; // TODO: cp2
 // setting up rvfi signal
 always_comb begin    
     if_output.rvfi_d = '0;
+  
     case (pcmux_sel)
         pcmux::pc_plus4: pcmux_out = if_output.pc + 4;
         pcmux::alu_out: pcmux_out = alu_out;
