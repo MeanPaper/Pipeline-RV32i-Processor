@@ -43,7 +43,7 @@ import rv32i_types::*;
     //         logic   [31:0]  monitor_mem_rdata;
     //         logic   [31:0]  monitor_mem_wdata;
 
-    // // /* My coding style */
+    // /* My coding style */
     // logic commit;
     // logic [63:0] order;
     
@@ -107,7 +107,16 @@ import rv32i_types::*;
     logic           dcache_resp;
     logic [255:0]   dcache_rdata;
 
-    //connections between cacheline_adapter and arbiter
+    /**** connections between arbiter and l2_cache ****/
+    logic           l2_cache_read;
+    logic           l2_cache_write;
+    logic [31:0]    l2_cache_address;
+    logic [255:0]   l2_cache_wdata;
+    logic           l2_cache_resp;
+    logic [255:0]   l2_cache_rdata;
+
+
+    /**** connections between l2_cache and cacheline_adapter ****/
     logic           adapter_resp;
     logic   [255:0] adapter_rdata;
     logic           adapter_read;
@@ -240,15 +249,34 @@ import rv32i_types::*;
         .dcache_rdata(dcache_rdata),
 
         /**** with cacheline_adapter ****/
-        .adapter_resp(adapter_resp),
-        .adapter_rdata(adapter_rdata),
-        .adapter_read(adapter_read),
-        .adapter_write(adapter_write),
-        .adapter_address(adapter_address),
-        .adapter_wdata(adapter_wdata)
+        .adapter_resp(l2_cache_resp),
+        .adapter_rdata(l2_cache_rdata),
+        .adapter_read(l2_cache_read),
+        .adapter_write(l2_cache_write),
+        .adapter_address(l2_cache_address),
+        .adapter_wdata(l2_cache_wdata)
     );
 
+    l2_cache l2_cache(
+        .clk,
+        .rst,
 
+    /* Arbiter side signals */
+        .mem_address(l2_cache_address),
+        .mem_read(l2_cache_read),
+        .mem_write(l2_cache_write),
+        .mem_rdata(l2_cache_rdata),
+        .mem_wdata(l2_cache_wdata),
+        .mem_resp(l2_cache_resp),
+
+    /* Cacheline Adaptor side signals */
+        .pmem_address(adapter_address),
+        .pmem_read(adapter_read),
+        .pmem_write(adapter_write),
+        .pmem_rdata(adapter_rdata),
+        .pmem_wdata(adapter_wdata),
+        .pmem_resp(adapter_resp)
+    );
 
     cacheline_adaptor cacheline_adapter(
         .clk(clk),
