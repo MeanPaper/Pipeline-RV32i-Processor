@@ -10,7 +10,8 @@ module icache_bk_array
   output logic [datawidth-1:0] dataout
 );
 
-logic [datawidth-1:0] data [8] = '{8{'0}};
+logic [datawidth-1:0] data [8]; 
+// = '{8{'0}};
 
 always_comb begin
     dataout = data[index];

@@ -323,5 +323,3 @@ typedef enum logic[1:0] {
 }data_forward_t;
 
 endpackage
-
-
