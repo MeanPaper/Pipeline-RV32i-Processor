@@ -1,4 +1,4 @@
-module cache_datapath 
+module l2_cache_datapath 
 import rv32i_types::*;         // import my datatypes
 #(
             parameter       s_offset = 5,
@@ -11,9 +11,7 @@ import rv32i_types::*;         // import my datatypes
     input logic clk,
     input logic rst,
 
-    
     input logic [31:0] mem_address,
-    input logic [31:0] mem_byte_enable256,
     input cacheline_t  mem_wdata256,
     output cacheline_t mem_rdata256,
     
@@ -45,14 +43,14 @@ import rv32i_types::*;         // import my datatypes
     // logic   [255:0] data_d      [4];    // data array, wait why?
     // logic   [22:0]  tag_d       [4];    // tag array, wait why?
     // cacheline_t data_d;
-    // tag_word_t tag_d;
+    // logic[s_tag-1:0] tag_d;
 
     cacheline_t data_arr_in;
-    tag_word_t  tag_arr_in;  
+    logic[s_tag-1:0]  tag_arr_in;  
 
     // data array and tag array (4 ways)
     cacheline_t  data_arr_out  [4];     // data_out from 4 ways
-    tag_word_t   tag_arr_out   [4];     // tag_out from 4 ways
+    logic[s_tag-1:0]   tag_arr_out   [4];     // tag_out from 4 ways
     
     // plru array (one array for 4 way)
     plru_word_t  plru_data_out;
@@ -64,16 +62,16 @@ import rv32i_types::*;         // import my datatypes
 
     logic [3:0] hit;            // one hot hit vector
     
-    tag_word_t tag_from_addr;   // mem_addr[31:9]
+    logic[s_tag-1:0] tag_from_addr;   // mem_addr[31:9]
     logic [3:0] set_idx;        // mem_addr[8:5]      
 
     logic [1:0] hit_way, way_idx, replace_way;
     
-    tag_word_t tag_out;         // one of the tags in 4 ways
+    logic[s_tag-1:0] tag_out;         // one of the tags in 4 ways
     cacheline_t data_out;       // one of the data in 4 ways
 
     logic [31:0] write_mask;    // write mask for cacheline
-    tag_word_t final_tag_out;
+    logic[s_tag-1:0] final_tag_out;
 
 
     // write enable should active low 
@@ -85,21 +83,23 @@ import rv32i_types::*;         // import my datatypes
 
 
     /*============================== Assignments begin ==============================*/
-    assign tag_from_addr = mem_address[31:9];
-    assign tag_arr_in = mem_address[31:9];
-    assign set_idx = mem_address[8:5];
-    assign pmem_address = {final_tag_out, mem_address[8:5], 5'b0};
+    assign tag_from_addr = mem_address[31: (31-s_tag + 1)];
+    assign tag_arr_in = mem_address[31: (31-s_tag + 1)];
+    assign set_idx = mem_address[(31-s_tag): s_offset];
+    assign pmem_address = {final_tag_out, mem_address[(31-s_tag): s_offset], 5'b0};
     // assign is_hit = |hit;            // OR all the hit bit to see if a way is hit
 
     assign mem_rdata256 = data_out;
     assign pmem_wdata = data_out;
+    assign write_mask = 32'hFFFFFFFF;      // write entire cacheline at allocate
+
     /*============================== Assignments end ==============================*/
     
 
     /*============================== Modules begin ==============================*/
     // generate 4 data_array
     generate for (genvar i = 0; i < 4; i++) begin : data_arrays
-        mp3_data_array data_array (
+        mp3_data_array l2_data_array (
             .clk0       (clk),
             .csb0       (1'b0),
             .web0       (data_web_arr[i]),
@@ -112,7 +112,7 @@ import rv32i_types::*;         // import my datatypes
 
     // generate 4 tag array
     generate for (genvar i = 0; i < 4; i++) begin : tag_arrays
-        mp3_tag_array tag_array(
+        mp3_tag_array l2_tag_array(
             .clk0    (clk),
             .csb0    (1'b0),
             .web0    (tag_web_arr[i]),
@@ -124,7 +124,7 @@ import rv32i_types::*;         // import my datatypes
 
     // generate 4 valid arrays and 4 dirty arrays
     generate for (genvar i = 0; i < 4; i++) begin
-        ff_array valid_array (
+        ff_array l2_valid_array (
             .clk0(clk),
             .rst0(rst),
             .csb0(1'b0),
@@ -133,7 +133,7 @@ import rv32i_types::*;         // import my datatypes
             .din0(valid_in),        // data input for all valid array
             .dout0(valid_out[i])    // output
         );
-        ff_array dirty_array (  
+        ff_array l2_dirty_array (  
             .clk0(clk),
             .rst0(rst),
             .csb0(1'b0),
@@ -145,7 +145,7 @@ import rv32i_types::*;         // import my datatypes
     end endgenerate
 
     // create a plru_array with a width of 3 bits
-    ff_array #(.width(3)) plru_array(
+    ff_array #(.width(3)) l2_plru_array(
         .clk0(clk),
         .rst0(rst),
         .csb0(1'b0),                 
@@ -282,20 +282,16 @@ import rv32i_types::*;         // import my datatypes
             end
         endcase 
 
-        // mem_byte_enable256 base on current situation
         unique case(is_allocate)
             1'b0: begin
-                write_mask = mem_byte_enable256; // write mask
                 final_tag_out = tag_out;         // normal tag output from tag arrays
                 data_arr_in = mem_wdata256;
             end
             1'b1: begin 
-                write_mask = 32'hFFFFFFFF;      // write entire cacheline at allocate
                 final_tag_out = tag_from_addr; // using the tag out from mem_addr
                 data_arr_in = pmem_rdata;
             end
             default: begin
-                write_mask = mem_byte_enable256; // write mask
                 final_tag_out = tag_out;         // normal tag output from tag arrays
                 data_arr_in = mem_wdata256;
             end
@@ -303,4 +299,4 @@ import rv32i_types::*;         // import my datatypes
 
     end
 
-endmodule : cache_datapath
+endmodule : l2_cache_datapath

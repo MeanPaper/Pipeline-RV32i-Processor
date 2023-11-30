@@ -9,13 +9,11 @@ import rv32i_types::*;
     input logic mem_to_wb_load_regfile,
     input rv32i_word ex_mem_rd_data,
     input rv32i_word mem_wb_rd_data,
-    input logic use_branch,  
 
     /* output to EX/MEM buffer */
-    output EX_MEM_stage_t ex_out
-    // output pcmux::pcmux_sel_t pcmux_sel,
-    // output logic branch_take // 0 if there's not taking branch, 1 if we are taking branch
-    // input logic branch_take
+    output EX_MEM_stage_t ex_out,
+    output pcmux::pcmux_sel_t pcmux_sel,
+    output logic branch_take // 0 if there's not taking branch, 1 if we are taking branch
 );
     /* ALU signals */
     rv32i_word alumux1_out;
@@ -25,7 +23,8 @@ import rv32i_types::*;
     /* CMP signals */
     logic br_en;
     rv32i_word cmpmux_out;
-    logic is_jalr, is_jal;
+    logic is_jalr;
+    logic is_jal;
 
     /* MAR signals */
     rv32i_word marmux_out;
@@ -35,9 +34,6 @@ import rv32i_types::*;
     data_forward_t forwardA_sel, forwardB_sel;
     rv32i_word forward_rs1;
     rv32i_word forward_rs2;
-
-    logic branch_take;
-    pcmux::pcmux_sel_t pcmux_sel;
 
     assign is_jalr = (ex_in.ctrl_wd.opcode == op_jalr);
     assign is_jal = (ex_in.ctrl_wd.opcode == op_jal);
@@ -105,7 +101,6 @@ import rv32i_types::*;
             alumux::s_imm: alumux2_out = ex_in.s_imm;
             alumux::j_imm: alumux2_out = ex_in.j_imm;
             alumux::rs2_out: alumux2_out = forward_rs2;
-            default: alumux2_out = ex_in.i_imm;
         endcase
 
         unique case (ex_in.ctrl_wd.ex_ctrlwd.cmpmux_sel)
@@ -114,25 +109,25 @@ import rv32i_types::*;
         endcase
 
         unique case (is_jalr)
-            1'b0: 
-            begin
-                unique case(is_jal)
-                    1'b0: begin
-                        pcmux_sel = pcmux::pcmux_sel_t'({1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch}); 
-                        if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin // if there is a branch
-                            rvfi_pc_wdata_ex = alu_out;
-                            branch_take = 1'b1;
-                        end
-                    end
-                    1'b1: begin
-                        pcmux_sel = pcmux::alu_out;
+            1'b0: begin
+                unique case (is_jal) // both jal & jalr are unconditional branch, so...
+                1'b0: begin
+                    // need to treat jal and br separately
+                    pcmux_sel = pcmux::pcmux_sel_t'({1'b0, br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch}); 
+                    
+                    if(br_en & ex_in.ctrl_wd.ex_ctrlwd.is_branch) begin // if there is a branch
                         rvfi_pc_wdata_ex = alu_out;
                         branch_take = 1'b1;
                     end
+                end
+                1'b1: begin
+                    pcmux_sel = pcmux::alu_out;
+                    rvfi_pc_wdata_ex = alu_out;
+                    branch_take = 1'b1;
+                end
                 endcase
             end
-            1'b1:
-            begin
+            1'b1: begin
                 pcmux_sel = pcmux::alu_mod2;
                 rvfi_pc_wdata_ex = {alu_out[31:1], 1'b0};
                 branch_take = 1'b1;
@@ -168,22 +163,14 @@ import rv32i_types::*;
         ex_out.mem_data_out = forward_rs2 << (8 * marmux_out[1:0]); 
         ex_out.u_imm = ex_in.u_imm;
         ex_out.rd = ex_in.rd;
-
-        ex_out.pcmux_sel = pcmux_sel;
-        ex_out.branch_take = branch_take;
-        
         ex_out.rvfi_d = ex_in.rvfi_d;
         ex_out.rvfi_d.rvfi_pc_wdata = rvfi_pc_wdata_ex; // something wrong here, causing pc_wdata to be wrong
         // if(forwardA_sel != id_ex_fd) begin
-
         ex_out.rvfi_d.rvfi_rs1_rdata = forward_rs1;
         // end
         // if(forwardB_sel != id_ex_fd) begin
         ex_out.rvfi_d.rvfi_rs2_rdata = forward_rs2;
         // end
-        if(use_branch) begin
-            ex_out = '0;
-        end
     end
 
 endmodule

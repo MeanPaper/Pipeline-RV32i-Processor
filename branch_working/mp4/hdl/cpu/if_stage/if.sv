@@ -9,8 +9,7 @@ import rv32i_types::*;
     input logic load_pc,
     input logic imem_resp, /* response from icache */
     input logic branch_take,
-    input rv32i_word imem_rdata,
-    // input logic dmem_stall,
+    input logic dmem_stall,
 
     /* outputs to IF/ID buffer */
     output IF_ID_stage_t if_output,
@@ -25,14 +24,13 @@ logic imemmux_sel;
 
 /*****************************************************************************/
 // assign imem_address = if_output.pc;
-assign imem_read = 1'b1; //for CP1
+assign imem_read = 1'b1 & (~dmem_stall); //for CP1
 assign imem_address = imemmux_out;
 assign imemmux_sel = (imem_resp & load_pc) | branch_take; // TODO: cp2
 // assign imemmux_sel = (imem_resp dda)
 // setting up rvfi signal
 always_comb begin    
-    if_output.rvfi_d = '0;
-  
+    // if_output = '0;
     case (pcmux_sel)
         pcmux::pc_plus4: pcmux_out = if_output.pc + 4;
         pcmux::alu_out: pcmux_out = alu_out;
@@ -49,7 +47,6 @@ always_comb begin
 
     if_output.rvfi_d.rvfi_pc_wdata = pcmux_out;
     if_output.rvfi_d.rvfi_pc_rdata = if_output.pc;
-    if_output.ir = imem_rdata;
 end
 
 pc PC (

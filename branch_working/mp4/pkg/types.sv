@@ -72,9 +72,6 @@ typedef logic [4:0]     rv32i_reg;          // register index
 typedef logic [3:0]     rv32i_mem_wmask;    
 typedef logic [6:0]     funct7_t;           // instruction funct7 field    
 typedef logic [2:0]     funct3_t;           // instruction funct3 field
-typedef logic [22:0]   tag_word_t;
-typedef logic [255:0]  cacheline_t;
-typedef logic [2:0]    plru_word_t;
 
 
 typedef enum logic [6:0] {
@@ -295,8 +292,7 @@ typedef struct packed {
     rv32i_word  mem_data_out;    
     rv32i_word  u_imm;   
     rv32i_reg   rd;
-    logic       branch_take;
-    pcmux_sel_t pcmux_sel;
+    
     // rvfi signal (verification thing)
     rvfi_data_t     rvfi_d;
 }EX_MEM_stage_t;

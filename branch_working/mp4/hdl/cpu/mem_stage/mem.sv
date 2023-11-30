@@ -10,7 +10,7 @@ import rv32i_types::*;
 
     /* input signals from EX/MEM buffer */
     input EX_MEM_stage_t mem_in,
-    // input EX_MEM_stage_t mem_in_next,
+    input EX_MEM_stage_t mem_in_next,
     input logic dmem_resp,
 
     output rv32i_word ex_to_mem_rd_data,
@@ -50,7 +50,7 @@ assign reg_mux_sel = mem_in.ctrl_wd.wb_ctrlwd.regfilemux_sel;        // regfile 
 assign dmem_address = {mem_in.mar[31:2], 2'b0};
 assign dmem_wdata = mem_in.mem_data_out;
 assign shift = mem_in.mar[1:0];
-assign ex_to_mem_rd_data = rd_data;
+
 
 assign mdrreg_b = dmem_rdata[(shift * 8) +: 8];
 assign mdrreg_h = dmem_rdata[(shift * 8) +: 16];
@@ -70,6 +70,8 @@ always_comb begin
         default: rd_data = mem_in.alu_out;
     endcase
 end 
+
+assign ex_to_mem_rd_data = rd_data;
 
 /***************** wmask & rmask ******************************/
 always_comb begin

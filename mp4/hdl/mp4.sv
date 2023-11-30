@@ -26,58 +26,58 @@ import rv32i_types::*;
     input   logic           bmem_resp
 );
     /* Stanley coding style */
-            logic           monitor_valid;
-            logic   [63:0]  monitor_order;
-            logic   [31:0]  monitor_inst;
-            logic   [4:0]   monitor_rs1_addr;
-            logic   [4:0]   monitor_rs2_addr;
-            logic   [31:0]  monitor_rs1_rdata;
-            logic   [31:0]  monitor_rs2_rdata;
-            logic   [4:0]   monitor_rd_addr;
-            logic   [31:0]  monitor_rd_wdata;
-            logic   [31:0]  monitor_pc_rdata;
-            logic   [31:0]  monitor_pc_wdata;
-            logic   [31:0]  monitor_mem_addr;
-            logic   [3:0]   monitor_mem_rmask;
-            logic   [3:0]   monitor_mem_wmask;
-            logic   [31:0]  monitor_mem_rdata;
-            logic   [31:0]  monitor_mem_wdata;
+    //         logic           monitor_valid;
+    //         logic   [63:0]  monitor_order;
+    //         logic   [31:0]  monitor_inst;
+    //         logic   [4:0]   monitor_rs1_addr;
+    //         logic   [4:0]   monitor_rs2_addr;
+    //         logic   [31:0]  monitor_rs1_rdata;
+    //         logic   [31:0]  monitor_rs2_rdata;
+    //         logic   [4:0]   monitor_rd_addr;
+    //         logic   [31:0]  monitor_rd_wdata;
+    //         logic   [31:0]  monitor_pc_rdata;
+    //         logic   [31:0]  monitor_pc_wdata;
+    //         logic   [31:0]  monitor_mem_addr;
+    //         logic   [3:0]   monitor_mem_rmask;
+    //         logic   [3:0]   monitor_mem_wmask;
+    //         logic   [31:0]  monitor_mem_rdata;
+    //         logic   [31:0]  monitor_mem_wdata;
 
-    /* My coding style */
-    logic commit;
-    logic [63:0] order;
+    // /* My coding style */
+    // logic commit;
+    // logic [63:0] order;
     
-    always_ff @(posedge clk) begin
-        if(rst) begin
-            order <= '0;
-        end
-        else begin 
-            if(commit == 1'b1) order <= order + 1;
-        end
-    end
+    // always_ff @(posedge clk) begin
+    //     if(rst) begin
+    //         order <= '0;
+    //     end
+    //     else begin 
+    //         if(commit == 1'b1) order <= order + 1;
+    //     end
+    // end
 
 
-    // Fill this out
-    // Only use hierarchical references here for verification
-    // **DO NOT** use hierarchical references in the actual design!
-    assign commit = cpu.mem_to_wb.ctrl_wd.valid;
-    assign monitor_valid     = commit;
-    assign monitor_order     = order;
-    assign monitor_inst      = cpu.mem_to_wb.rvfi_d.rvfi_inst;
-    assign monitor_rs1_addr  = cpu.mem_to_wb.rvfi_d.rvfi_rs1_addr;
-    assign monitor_rs2_addr  = cpu.mem_to_wb.rvfi_d.rvfi_rs2_addr;
-    assign monitor_rs1_rdata = cpu.mem_to_wb.rvfi_d.rvfi_rs1_rdata;
-    assign monitor_rs2_rdata = cpu.mem_to_wb.rvfi_d.rvfi_rs2_rdata;
-    assign monitor_rd_addr   = cpu.mem_to_wb.rvfi_d.rvfi_rd_addr;
-    assign monitor_rd_wdata  = cpu.regfile_in;  
-    assign monitor_pc_rdata  = cpu.mem_to_wb.rvfi_d.rvfi_pc_rdata;
-    assign monitor_pc_wdata  = cpu.mem_to_wb.rvfi_d.rvfi_pc_wdata;
-    assign monitor_mem_addr  = cpu.mem_to_wb.rvfi_d.rvfi_mem_addr;        
-    assign monitor_mem_rmask = cpu.mem_to_wb.rvfi_d.rvfi_mem_rmask; 
-    assign monitor_mem_wmask = cpu.mem_to_wb.rvfi_d.rvfi_mem_wmask;
-    // assign monitor_mem_rdata = cpu.mem_to_wb.rvfi_d.rvfi_mem_rdata;
-    assign monitor_mem_rdata = cpu.mem_to_wb.mdr;           // this is somewhat bad, because cp1 use direct wire
-    assign monitor_mem_wdata = cpu.mem_to_wb.rvfi_d.rvfi_mem_wdata;
+    // // Fill this out
+    // // Only use hierarchical references here for verification
+    // // **DO NOT** use hierarchical references in the actual design!
+    // assign commit = cpu.mem_to_wb.ctrl_wd.valid;
+    // assign monitor_valid     = commit;
+    // assign monitor_order     = order;
+    // assign monitor_inst      = cpu.mem_to_wb.rvfi_d.rvfi_inst;
+    // assign monitor_rs1_addr  = cpu.mem_to_wb.rvfi_d.rvfi_rs1_addr;
+    // assign monitor_rs2_addr  = cpu.mem_to_wb.rvfi_d.rvfi_rs2_addr;
+    // assign monitor_rs1_rdata = cpu.mem_to_wb.rvfi_d.rvfi_rs1_rdata;
+    // assign monitor_rs2_rdata = cpu.mem_to_wb.rvfi_d.rvfi_rs2_rdata;
+    // assign monitor_rd_addr   = cpu.mem_to_wb.rvfi_d.rvfi_rd_addr;
+    // assign monitor_rd_wdata  = cpu.regfile_in;  
+    // assign monitor_pc_rdata  = cpu.mem_to_wb.rvfi_d.rvfi_pc_rdata;
+    // assign monitor_pc_wdata  = cpu.mem_to_wb.rvfi_d.rvfi_pc_wdata;
+    // assign monitor_mem_addr  = cpu.mem_to_wb.rvfi_d.rvfi_mem_addr;        
+    // assign monitor_mem_rmask = cpu.mem_to_wb.rvfi_d.rvfi_mem_rmask; 
+    // assign monitor_mem_wmask = cpu.mem_to_wb.rvfi_d.rvfi_mem_wmask;
+    // // assign monitor_mem_rdata = cpu.mem_to_wb.rvfi_d.rvfi_mem_rdata;
+    // assign monitor_mem_rdata = cpu.mem_to_wb.mdr;           // this is somewhat bad, because cp1 use direct wire
+    // assign monitor_mem_wdata = cpu.mem_to_wb.rvfi_d.rvfi_mem_wdata;
     
 
     //connections between cpu and icacheline_adapter & dcacheline_adapter
@@ -107,7 +107,16 @@ import rv32i_types::*;
     logic           dcache_resp;
     logic [255:0]   dcache_rdata;
 
-    //connections between cacheline_adapter and arbiter
+    /**** connections between arbiter and l2_cache ****/
+    logic           l2_cache_read;
+    logic           l2_cache_write;
+    logic [31:0]    l2_cache_address;
+    logic [255:0]   l2_cache_wdata;
+    logic           l2_cache_resp;
+    logic [255:0]   l2_cache_rdata;
+
+
+    /**** connections between l2_cache and cacheline_adapter ****/
     logic           adapter_resp;
     logic   [255:0] adapter_rdata;
     logic           adapter_read;
@@ -240,15 +249,34 @@ import rv32i_types::*;
         .dcache_rdata(dcache_rdata),
 
         /**** with cacheline_adapter ****/
-        .adapter_resp(adapter_resp),
-        .adapter_rdata(adapter_rdata),
-        .adapter_read(adapter_read),
-        .adapter_write(adapter_write),
-        .adapter_address(adapter_address),
-        .adapter_wdata(adapter_wdata)
+        .adapter_resp(l2_cache_resp),
+        .adapter_rdata(l2_cache_rdata),
+        .adapter_read(l2_cache_read),
+        .adapter_write(l2_cache_write),
+        .adapter_address(l2_cache_address),
+        .adapter_wdata(l2_cache_wdata)
     );
 
+    l2_cache l2_cache(
+        .clk,
+        .rst,
 
+    /* Arbiter side signals */
+        .mem_address(l2_cache_address),
+        .mem_read(l2_cache_read),
+        .mem_write(l2_cache_write),
+        .mem_rdata(l2_cache_rdata),
+        .mem_wdata(l2_cache_wdata),
+        .mem_resp(l2_cache_resp),
+
+    /* Cacheline Adaptor side signals */
+        .pmem_address(adapter_address),
+        .pmem_read(adapter_read),
+        .pmem_write(adapter_write),
+        .pmem_rdata(adapter_rdata),
+        .pmem_wdata(adapter_wdata),
+        .pmem_resp(adapter_resp)
+    );
 
     cacheline_adaptor cacheline_adapter(
         .clk(clk),
