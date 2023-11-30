@@ -105,6 +105,7 @@ import rv32i_types::*;
             alumux::s_imm: alumux2_out = ex_in.s_imm;
             alumux::j_imm: alumux2_out = ex_in.j_imm;
             alumux::rs2_out: alumux2_out = forward_rs2;
+            default: alumux2_out = ex_in.i_imm;
         endcase
 
         unique case (ex_in.ctrl_wd.ex_ctrlwd.cmpmux_sel)

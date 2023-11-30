@@ -7,7 +7,7 @@ import rv32i_types::*;         // import my datatypes
             parameter       s_mask   = 2**s_offset,
             parameter       s_line   = 8*s_mask,
             parameter       num_sets = 2**s_index,
-            parameter       num_ways = 16 // parameterized
+            parameter       num_ways = 8 // parameterized
 )( 
     input logic clk,
     input logic rst,
@@ -40,6 +40,7 @@ import rv32i_types::*;         // import my datatypes
     input logic dirty_in
 );
 
+    localparam length = $clog2(num_ways);
 
     /*============================== Signals begin ==============================*/
     // for data array and tag array inputs
@@ -389,12 +390,13 @@ import rv32i_types::*;         // import my datatypes
 
     always_comb begin 
         hit_way = '0; 
-        for (int i = 0; i < num_ways; i++) begin
+        for (int unsigned i = 0; i < num_ways; i++) begin
             if (hit[i] == 1'b1) begin
-                hit_way = i[$clog2(num_ways)-1:0]; 
+                hit_way = i[length-1:0]; 
             end
         end
     end 
+
     
     //MUXES
     always_comb begin
