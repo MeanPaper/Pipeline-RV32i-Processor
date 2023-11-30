@@ -25,6 +25,8 @@ import rv32i_types::*;
     output  logic   [63:0]  bmem_wdata,
     input   logic           bmem_resp
 );
+  
+  
     // /* Stanley coding style */
     //         logic           monitor_valid;
     //         logic   [63:0]  monitor_order;
@@ -78,7 +80,7 @@ import rv32i_types::*;
     // // assign monitor_mem_rdata = cpu.mem_to_wb.rvfi_d.rvfi_mem_rdata;
     // assign monitor_mem_rdata = cpu.mem_to_wb.mdr;           // this is somewhat bad, because cp1 use direct wire
     // assign monitor_mem_wdata = cpu.mem_to_wb.rvfi_d.rvfi_mem_wdata;
-    
+        
 
     //connections between cpu and icacheline_adapter & dcacheline_adapter
     logic   [31:0]  imem_address;
@@ -107,7 +109,16 @@ import rv32i_types::*;
     logic           dcache_resp;
     logic [255:0]   dcache_rdata;
 
-    //connections between cacheline_adapter and arbiter
+    /**** connections between arbiter and l2_cache ****/
+    logic           l2_cache_read;
+    logic           l2_cache_write;
+    logic [31:0]    l2_cache_address;
+    logic [255:0]   l2_cache_wdata;
+    logic           l2_cache_resp;
+    logic [255:0]   l2_cache_rdata;
+
+
+    /**** connections between l2_cache and cacheline_adapter ****/
     logic           adapter_resp;
     logic   [255:0] adapter_rdata;
     logic           adapter_read;
@@ -125,6 +136,13 @@ import rv32i_types::*;
     logic [255:0]   dmem_rdata256_bus;
     logic [31:0]    dmem_byte_enable256_bus;
     logic branch_is_take;
+
+    logic [255:0] from_arbiter_rdata;
+    logic from_arbiter_resp;
+    logic to_arbiter_write; 
+    logic to_arbiter_read;
+    logic [31:0] to_arbiter_address;
+    logic [255:0] to_arbiter_wdata;
 
     cpu cpu(
         .clk(clk),
@@ -197,7 +215,7 @@ import rv32i_types::*;
         // output logic pmem_read
     );
 
-    dcache dcache(
+  dcache dcache(
         .clk(clk),
         .rst(rst),
 
@@ -219,6 +237,24 @@ import rv32i_types::*;
         .pmem_resp(dcache_resp)
     );
 
+
+    eviction_buffer ev_buf(
+        .clk(clk),
+        .rst(rst), 
+        .from_dcache_address(dcache_address),
+        .from_dcache_write(dcache_write), 
+        .from_dcache_read(dcache_read), 
+        .from_dcache_wdata(dcache_wdata),
+        .to_dcache_rdata(dcache_rdata), 
+        .to_dcache_resp(dcache_resp), 
+        //
+        .from_arbiter_rdata(from_arbiter_rdata), 
+        .from_arbiter_resp(from_arbiter_resp), 
+        .to_arbiter_write(to_arbiter_write), 
+        .to_arbiter_read(to_arbiter_read), 
+        .to_arbiter_address(to_arbiter_address),
+        .to_arbiter_wdata(to_arbiter_wdata)
+    );
     
 
     arbiter arbiter(
@@ -232,23 +268,42 @@ import rv32i_types::*;
         .icache_rdata(icache_rdata),
 
         /**** with DCACHE ****/
-        .dcache_read(dcache_read),
-        .dcache_write(dcache_write),
-        .dcache_address(dcache_address),
-        .dcache_wdata(dcache_wdata),
-        .dcache_resp(dcache_resp),
-        .dcache_rdata(dcache_rdata),
+        .dcache_read(to_arbiter_read),
+        .dcache_write(to_arbiter_write),
+        .dcache_address(to_arbiter_address),
+        .dcache_wdata(to_arbiter_wdata),
+        .dcache_resp(from_arbiter_resp),
+        .dcache_rdata(from_arbiter_rdata),
 
         /**** with cacheline_adapter ****/
-        .adapter_resp(adapter_resp),
-        .adapter_rdata(adapter_rdata),
-        .adapter_read(adapter_read),
-        .adapter_write(adapter_write),
-        .adapter_address(adapter_address),
-        .adapter_wdata(adapter_wdata)
+        .adapter_resp(l2_cache_resp),
+        .adapter_rdata(l2_cache_rdata),
+        .adapter_read(l2_cache_read),
+        .adapter_write(l2_cache_write),
+        .adapter_address(l2_cache_address),
+        .adapter_wdata(l2_cache_wdata)
     );
 
+    l2_cache l2_cache(
+        .clk,
+        .rst,
 
+    /* Arbiter side signals */
+        .mem_address(l2_cache_address),
+        .mem_read(l2_cache_read),
+        .mem_write(l2_cache_write),
+        .mem_rdata(l2_cache_rdata),
+        .mem_wdata(l2_cache_wdata),
+        .mem_resp(l2_cache_resp),
+
+    /* Cacheline Adaptor side signals */
+        .pmem_address(adapter_address),
+        .pmem_read(adapter_read),
+        .pmem_write(adapter_write),
+        .pmem_rdata(adapter_rdata),
+        .pmem_wdata(adapter_wdata),
+        .pmem_resp(adapter_resp)
+    );
 
     cacheline_adaptor cacheline_adapter(
         .clk(clk),
