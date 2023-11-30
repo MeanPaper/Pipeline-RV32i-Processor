@@ -23,12 +23,11 @@ module top_tb;
 
     // dcache metrics
     logic [63:0] dcache_miss;
-    logic [63:0] icache_miss;
     logic [63:0] dcache_evict;
     logic [63:0] allocate_cycle;
     logic [63:0] write_back_cycle;
     logic [63:0] dcache_nonhit_total_cycles;
-    logic miss_flag, evict_flag, icache_miss_flag;
+    logic miss_flag, evict_flag;
     
 
     // CP1
@@ -107,7 +106,6 @@ module top_tb;
         $display("%c[0;36m", 27);
         $display("============= Data Cache =============");
         $display("Data cache miss total count: %0d", dcache_miss);
-        $display("instruction cache miss total count: %0d", icache_miss);
         $display("Data cache evict total count: %0d\n", dcache_evict);
         $display("Data cache allocate total cycles: %0d", allocate_cycle);
         $display("Data cache writeback total cycles: %0d\n", write_back_cycle);
@@ -176,10 +174,8 @@ module top_tb;
     always_ff @(posedge clk) begin
         if(rst)begin
             dcache_miss <= '0;
-            icache_miss <= '0;
             dcache_evict <= '0;
             miss_flag <= '0;
-            icache_miss_flag <= '0;
             evict_flag <= '0;
             allocate_cycle <= '0;
             write_back_cycle  <= '0;
@@ -199,14 +195,6 @@ module top_tb;
                 dcache_nonhit_total_cycles <= dcache_nonhit_total_cycles + 1'b1;
             end
 
-            if(icache_miss_flag == 1'b0) begin
-                if(dut.icache.icache_bk_control.state.name() == "read_mem") begin
-                    icache_miss <= icache_miss + 1'b1;
-                    icache_miss_flag <= 1'b1;
-                end
-            end else if (dut.icache.icache_bk_control.state.name() == "check_hit") begin
-                icache_miss_flag <= 1'b0;
-            end
 
             if(miss_flag == 1'b0) begin
                 if(dut.dcache.control.is_allocate == 1'b1) begin  // a miss

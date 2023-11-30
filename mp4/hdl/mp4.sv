@@ -43,7 +43,7 @@ import rv32i_types::*;
             logic   [31:0]  monitor_mem_rdata;
             logic   [31:0]  monitor_mem_wdata;
 
-    /* My coding style */
+    // /* My coding style */
     logic commit;
     logic [63:0] order;
     
@@ -92,11 +92,6 @@ import rv32i_types::*;
     logic   [31:0]  dmem_rdata;
     logic   [31:0]  dmem_wdata;
     logic           dmem_resp;
-
-    /**** signals between prefetchers and caches ****/
-    logic           i_prefetch_read;
-    logic           i_prefetch_resp;
-    logic   [31:0]  i_prefetch_address;
 
     /**** connections between arbiter and icache ****/
     logic           icache_read;
@@ -182,20 +177,12 @@ import rv32i_types::*;
         .mem_resp(imem_resp),
 
         /* Arbiter side signals */
-        // .pmem_address(icache_address),
-        // .pmem_read(icache_read),
-        // //.pmem_write(),
-        // .pmem_rdata(icache_rdata),
-        // //.pmem_wdata(),
-        // .pmem_resp(icache_resp)
-
-        /* prefetcher side signals */
-        .pmem_address(i_prefetch_address),
-        .pmem_read(i_prefetch_read),
+        .pmem_address(icache_address),
+        .pmem_read(icache_read),
         //.pmem_write(),
         .pmem_rdata(icache_rdata),
         //.pmem_wdata(),
-        .pmem_resp(i_prefetch_resp)
+        .pmem_resp(icache_resp)
 
         /* CPU memory signals */
         // input logic mem_read,
@@ -208,21 +195,6 @@ import rv32i_types::*;
         // input logic [255:0] pmem_rdata,
         // output logic [31:0] pmem_address,
         // output logic pmem_read
-    );
-
-    prefetcher i_prefetcher (
-        .clk(clk),
-        .rst(rst),
-
-        /* l1 cache signals */
-        .l1_mem_read(i_prefetch_read),
-        .l1_mem_resp(i_prefetch_resp),
-        .l1_mem_address(i_prefetch_address),
-
-        /* l2 cache signals */
-        .pmem_read(icache_read),
-        .pmem_resp(icache_resp),
-        .pmem_address(icache_address)
     );
 
     dcache dcache(
