@@ -42,8 +42,8 @@ store_funct3_t store_funct3;
 regfilemux::regfilemux_sel_t reg_mux_sel;
 
 
-assign load_funct3 = load_funct3_t'(mem_in.ctrl_wd.funct3);
-assign store_funct3 = store_funct3_t'(mem_in.ctrl_wd.funct3);
+assign load_funct3 = load_funct3_t'(mem_in.ctrl_wd.mem_ctrlwd.funct3);
+assign store_funct3 = store_funct3_t'(mem_in.ctrl_wd.mem_ctrlwd.funct3);
 assign reg_mux_sel = mem_in.ctrl_wd.wb_ctrlwd.regfilemux_sel;        // regfile mux selection
 
 /**********dmem_address***********/
