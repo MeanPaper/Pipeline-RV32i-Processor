@@ -22,7 +22,7 @@ perimeter_pins = False
 load_scales = [0.5, 1, 4]
 slew_scales = [0.5, 1]
 
-output_name = "mp3_data_array"
+output_name = "L2_data_array"
 output_path = "output/{}".format(output_name)
 
 print_banner = False

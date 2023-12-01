@@ -16,6 +16,7 @@ enum logic[2:0]{
     IDLE, IN_OP, DONE
 } state, next_state;
 
+
 assign done_count = (counter == 2'b11);
 // state transition
 always_comb begin

@@ -13,6 +13,7 @@ import rv32i_types::*;
     output  logic [31:0] remainder
 );
 
+
 enum logic[2:0]{
     idle, div_start, shift, done
 } state, next_state;
