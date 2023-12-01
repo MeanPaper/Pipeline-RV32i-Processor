@@ -10,6 +10,7 @@ import rv32i_types::*;
     input   logic   [31:0]  imem_rdata,
     input   logic           imem_resp, //tbd
 
+
     /* data memory signals */
     output  logic   [31:0]  dmem_address,
     output  logic           dmem_read,

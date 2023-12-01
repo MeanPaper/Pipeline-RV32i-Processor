@@ -9,6 +9,7 @@ import rv32i_types::*;
     output logic    done
 );
 
+
 logic done_count;
 logic [1:0] counter;
 enum logic[2:0]{

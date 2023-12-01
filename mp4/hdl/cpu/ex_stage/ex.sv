@@ -13,6 +13,7 @@ import rv32i_types::*;
     input rv32i_word mem_wb_rd_data,
     input logic use_branch,  
 
+
     /* output to EX/MEM buffer */
     output logic ex_stall,
     output EX_MEM_stage_t ex_out

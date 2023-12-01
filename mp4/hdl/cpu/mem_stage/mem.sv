@@ -55,6 +55,7 @@ assign ex_to_mem_rd_data = rd_data;
 assign mdrreg_b = dmem_rdata[(shift * 8) +: 8];
 assign mdrreg_h = dmem_rdata[(shift * 8) +: 16];
 
+
 // use by forwarding path
 always_comb begin
     unique case (reg_mux_sel) // use the control word from mem_in

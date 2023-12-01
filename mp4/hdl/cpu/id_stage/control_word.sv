@@ -9,6 +9,7 @@ import rv32i_types::*;
     output ctrl_word_t  control_words_o
 );
 
+
 // declarations
 ctrl_word_t     ctrl_word;
 EX_ctrl_t       ex_ctrls;

@@ -74,3 +74,4 @@ assign c_out = c_ff;
 // assign c_out = (A_i & B_i) | (A_i & c_in) | (B_i & c_in);
 
 endmodule
+

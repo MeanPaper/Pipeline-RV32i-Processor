@@ -109,6 +109,7 @@ assign div_done = complete;
 // assign quotient = complete ? data[31:0] : '0;
 // assign remainder = complete ? data[63:32] : '0;
 
+
 always_comb begin
     quotient = '0;
     remainder = '0;
