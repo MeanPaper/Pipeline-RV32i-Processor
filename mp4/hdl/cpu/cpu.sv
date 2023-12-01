@@ -10,7 +10,6 @@ import rv32i_types::*;
     input   logic   [31:0]  imem_rdata,
     input   logic           imem_resp, //tbd
 
-
     /* data memory signals */
     output  logic   [31:0]  dmem_address,
     output  logic           dmem_read,
@@ -55,6 +54,7 @@ logic load_ex_mem;
 logic load_mem_wb;
 logic dmem_stall;
 logic imem_stall;
+logic ex_stall;
 /****************************** Branch Signals ********************************/
 logic branch_miss;
 
@@ -110,6 +110,8 @@ i_decode i_decode(
 
 /******************************* EXE stage ***********************************/
 execute execute(
+    .clk(clk),
+    .rst(rst),
     /* input signals from ID/EX buffer */
     .ex_in(id_to_ex),
     
@@ -122,6 +124,7 @@ execute execute(
     .use_branch(ex_to_mem.branch_take),
 
     /* output to EX/MEM buffer */
+    .ex_stall(ex_stall),
     .ex_out(ex_to_mem_next)
     // .pcmux_sel(pcmux_sel),
     // .branch_take(branch_miss)
@@ -172,11 +175,11 @@ always_comb begin
     if(rst) begin
         load_pc = 1'b0;
     end 
-    else if (dmem_stall) load_pc = 1'b0;
+    else if (dmem_stall | ex_stall) load_pc = 1'b0;
 
-    load_if_id = ~(dmem_stall | imem_stall);
-    load_id_ex = ~(dmem_stall | imem_stall);
-    load_ex_mem = ~(dmem_stall | imem_stall);
+    load_if_id = ~(dmem_stall | imem_stall | ex_stall);
+    load_id_ex = ~(dmem_stall | imem_stall | ex_stall);
+    load_ex_mem = ~(dmem_stall | imem_stall | ex_stall);
 
 end
 //it seems that we do not have if_id anymore?
@@ -209,7 +212,7 @@ always_ff @(posedge clk) begin
 
         // mem_wb pipline reg
         if(load_mem_wb) begin
-            if(dmem_stall | imem_stall) mem_to_wb.ctrl_wd.valid <= 1'b0;
+            if(dmem_stall | imem_stall | ex_stall) mem_to_wb.ctrl_wd.valid <= 1'b0;
             else mem_to_wb <= mem_to_wb_next;
         end
 

@@ -135,6 +135,16 @@ typedef enum logic [2:0] {
     alu_and = 3'b111
 } alu_ops;
 
+typedef enum logic[2:0]{
+    mul     = 3'b000,       // multiply two operands, output the lower 32 bits
+    mulh    = 3'b001,
+    mulhsu  = 3'b010,
+    mulhu   = 3'b011,
+    div     = 3'b100,
+    divu    = 3'b101,
+    rem     = 3'b110,
+    remu    = 3'b111
+}m_funct3_t;
 
 
 /************** instructions formats **************/
@@ -208,6 +218,7 @@ typedef union packed{
 // the control word is valid. may use it flush pipeline
 // TODO: do we need pc and opcode
 typedef struct packed{
+    logic           m_extension_act;
     logic           is_branch;  
     alu_ops         aluop;
     branch_funct3_t cmpop;
@@ -220,7 +231,7 @@ typedef struct packed{
 typedef struct packed{
     logic               mem_read;
     logic               mem_write;
-    logic [2:0]         funct3;
+    // logic [2:0]         funct3;
 }MEM_ctrl_t;
 
 typedef struct packed{
@@ -232,6 +243,7 @@ typedef struct packed{
     logic           valid;
     rv32i_word      pc;
     rv32i_opcode    opcode;
+    logic[2:0]      funct3;
     rv32i_reg       rs1;
     rv32i_reg       rs2;
     EX_ctrl_t       ex_ctrlwd;
@@ -323,3 +335,4 @@ typedef enum logic[1:0] {
 }data_forward_t;
 
 endpackage
+
