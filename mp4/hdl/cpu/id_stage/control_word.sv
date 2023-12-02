@@ -153,12 +153,14 @@ endfunction
 function automatic void set_op_reg_ctrl();
     wb_ctrls.load_regfile = 1'b1; // op_reg always load regfile
     if(funct7[0]) begin
+        ctrl_word.valid = 1'b1; 
         ex_ctrls.alumux1_sel = alumux::rs1_out;
         ex_ctrls.alumux2_sel = alumux::rs2_out;
         wb_ctrls.regfilemux_sel = regfilemux::alu_out;
         ex_ctrls.m_extension_act = 1'b1;
     end 
     else begin
+        ctrl_word.valid = 1'b1; 
         unique case (arith_funct3)
             add: begin
                 ex_ctrls.alumux1_sel = alumux::rs1_out;
@@ -263,7 +265,6 @@ always_comb begin
             // src_1 = instr_i.r_inst.rs1;
             // src_2 = instr_i.r_inst.rs2;
             dest_r = instr_i.r_inst.rd;
-            ctrl_word.valid = 1'b1; 
             ctrl_word.rs1 = instr_i.r_inst.rs1;
             ctrl_word.rs2 = instr_i.r_inst.rs2;
             set_op_reg_ctrl();

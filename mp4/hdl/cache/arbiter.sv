@@ -1,4 +1,6 @@
-module arbiter(
+module arbiter
+#( parameter cacheline_size = 256)
+(
     input clk,
     input rst,
 
@@ -6,23 +8,23 @@ module arbiter(
     input logic icache_read,
     input logic [31:0] icache_address,
     output logic icache_resp,
-    output logic [255:0] icache_rdata,
+    output logic [cacheline_size - 1:0] icache_rdata,
 
     /**** with DCACHE ****/
     input logic dcache_read,
     input logic dcache_write,
     input logic [31:0] dcache_address,
-    input logic [255:0] dcache_wdata,
+    input logic [cacheline_size - 1:0] dcache_wdata,
     output logic dcache_resp,
-    output logic [255:0] dcache_rdata,
+    output logic [cacheline_size - 1:0] dcache_rdata,
 
     /**** with cacheline_adapter ****/
     input logic adapter_resp,
-    input logic [255:0] adapter_rdata,
+    input logic [cacheline_size-1:0] adapter_rdata,
     output logic adapter_read,
     output logic adapter_write,
     output logic [31:0] adapter_address,
-    output logic [255:0] adapter_wdata
+    output logic [cacheline_size-1:0] adapter_wdata
 );
     /**** three states ****/
     enum int unsigned{
@@ -32,15 +34,15 @@ module arbiter(
     /**** initialization ***/
     function void initialization();
         icache_resp = 1'b0;
-        icache_rdata = 256'b0;
+        icache_rdata = '0;
 
         dcache_resp = 1'b0;
-        dcache_rdata = 256'b0;
+        dcache_rdata = '0;
 
         adapter_read = 1'b0;
         adapter_write = 1'b0;
         adapter_address = 32'b0;
-        adapter_wdata = 256'b0;
+        adapter_wdata = '0;
     endfunction
 
     /**** icache actions ****/
@@ -51,7 +53,7 @@ module arbiter(
         adapter_read = 1'b1;
         adapter_address = icache_address;
         adapter_write = 1'b0;
-        adapter_wdata = 256'b0;
+        adapter_wdata = '0;
     endfunction
 
     /**** dcache actions ****/

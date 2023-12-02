@@ -4,7 +4,8 @@ num_rw_ports = 1
 num_r_ports = 0
 num_w_ports = 0
 
-word_size = 256
+# word_size = 256
+word_size = 128
 write_size = 8
 num_words = 16  # number of sets
 

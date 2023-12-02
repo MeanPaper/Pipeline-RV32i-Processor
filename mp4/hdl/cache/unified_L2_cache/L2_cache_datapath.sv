@@ -1,7 +1,7 @@
 module l2_cache_datapath 
 import rv32i_types::*;         // import my datatypes
 #(
-            parameter       s_offset = 5,
+            parameter       s_offset = 5,                   // cacheline size, 5 bit = 32, 32 * 8 = 256; 4 bit = 16, 16 * 8 = 128
             parameter       s_index  = 4,
             parameter       s_tag    = 32 - s_offset - s_index,
             parameter       s_mask   = 2**s_offset,
@@ -10,13 +10,13 @@ import rv32i_types::*;         // import my datatypes
 )( 
     input logic clk,
     input logic rst,
-
+    input logic[s_mask-1:0] mem_byte_enable256,
     input logic [31:0] mem_address,
-    input cacheline_t  mem_wdata256,
-    output cacheline_t mem_rdata256,
+    input [s_line-1:0]  mem_wdata256,
+    output [s_line-1:0] mem_rdata256,
     
-    input cacheline_t pmem_rdata,
-    output cacheline_t pmem_wdata,
+    input [s_line-1:0] pmem_rdata,
+    output [s_line-1:0] pmem_wdata,
     output logic [31:0] pmem_address,
 
     // to control
@@ -45,16 +45,16 @@ import rv32i_types::*;         // import my datatypes
     // cacheline_t data_d;
     // logic[s_tag-1:0] tag_d;
 
-    cacheline_t data_arr_in;
+    logic[s_line-1:0] data_arr_in;
     logic[s_tag-1:0]  tag_arr_in;  
 
     // data array and tag array (4 ways)
-    cacheline_t  data_arr_out  [4];     // data_out from 4 ways
+    logic[s_line-1:0]  data_arr_out  [4];     // data_out from 4 ways
     logic[s_tag-1:0]   tag_arr_out   [4];     // tag_out from 4 ways
     
     // plru array (one array for 4 way)
-    plru_word_t  plru_data_out;
-    plru_word_t  new_plru_data;
+    plru_word_t  plru_data_out; // need to change ?
+    plru_word_t  new_plru_data; // need to change ?
 
     // dirty array and valid array (4 ways)
     logic   valid_out   [4];
@@ -68,9 +68,9 @@ import rv32i_types::*;         // import my datatypes
     logic [1:0] hit_way, way_idx, replace_way;
     
     logic[s_tag-1:0] tag_out;         // one of the tags in 4 ways
-    cacheline_t data_out;       // one of the data in 4 ways
+    logic[s_line-1:0] data_out;       // one of the data in 4 ways
 
-    logic [31:0] write_mask;    // write mask for cacheline
+    logic [s_mask-1:0] write_mask;    // write mask for cacheline
     logic[s_tag-1:0] final_tag_out;
 
 
@@ -86,14 +86,13 @@ import rv32i_types::*;         // import my datatypes
     assign tag_from_addr = mem_address[31: (31-s_tag + 1)];
     assign tag_arr_in = mem_address[31: (31-s_tag + 1)];
     assign set_idx = mem_address[(31-s_tag): s_offset];
-    assign pmem_address = {final_tag_out, mem_address[(31-s_tag): s_offset], 5'b0};
+    assign pmem_address = {final_tag_out, mem_address[(31-s_tag): s_offset], {(s_offset){1'b0}}};
     // assign is_hit = |hit;            // OR all the hit bit to see if a way is hit
 
     assign mem_rdata256 = data_out;
     assign pmem_wdata = data_out;
-    assign write_mask = 32'hFFFFFFFF;      // write entire cacheline at allocate
 
-    /*============================== Assignments end ==============================*/
+    /*======mem_byte_enable======================== Assignments end ==============================*/
     
 
     /*============================== Modules begin ==============================*/
@@ -284,14 +283,17 @@ import rv32i_types::*;         // import my datatypes
 
         unique case(is_allocate)
             1'b0: begin
+                write_mask = mem_byte_enable256;      // write entire cacheline at allocate, no longer true in our case
                 final_tag_out = tag_out;         // normal tag output from tag arrays
                 data_arr_in = mem_wdata256;
             end
             1'b1: begin 
+                write_mask = {(s_mask){1'b1}};
                 final_tag_out = tag_from_addr; // using the tag out from mem_addr
                 data_arr_in = pmem_rdata;
             end
             default: begin
+                write_mask = mem_byte_enable256;
                 final_tag_out = tag_out;         // normal tag output from tag arrays
                 data_arr_in = mem_wdata256;
             end

@@ -152,13 +152,18 @@
 // endmodule : cacheline_adaptor
 
 // module cacheline_adaptor
+// #(
+//     parameter cacheline_size = 256,
+//     parameter burst_size = 64,
+//     parameter cycle_count = $clog2(cacheline_size / burst_size) - 1
+// )
 // (
 //     input clk,
 //     input reset_n,
 
 //     // Port to LLC (Lowest Level Cache)
-//     input logic [255:0] line_i,
-//     output logic [255:0] line_o,
+//     input logic [cacheline_size-1:0] line_i,
+//     output logic [cacheline_size-1:0] line_o,
 //     input logic [31:0] address_i,
 //     input read_i,
 //     input write_i,
@@ -173,8 +178,8 @@
 //     input resp_i
 // );
 
-// logic [255:0] to_llc_line;  // buffer 
-// logic [1:0] cycle, next_cycle; // counter
+// logic [cacheline_size-1:0] to_llc_line;  // buffer 
+// logic [cycle_count:0] cycle, next_cycle; // counter
 // logic [31:0] address_buf;
 // logic llc_line_done;  // data ready for LLC
 // enum int unsigned {NOT_USE, READ, WRITE, DONE} state, next_state;
@@ -232,7 +237,7 @@
 //             end
 //             READ: begin // reading operation
 //                 if(resp_i == 1 && read_o == 1) begin
-//                     to_llc_line <= {burst_i, to_llc_line[255: 64]}; // shift reg, shift in data
+//                     to_llc_line <= {burst_i, to_llc_line[cacheline_size-1: 64]}; // shift reg, shift in data
 //                     cycle <= next_cycle;
 //                 end
 //             end
@@ -251,6 +256,8 @@
 // end
 
 // endmodule : cacheline_adaptor
+
+
 
 module cacheline_adaptor
 (
