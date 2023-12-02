@@ -6,7 +6,8 @@ import rv32i_types::*;         // import my datatypes
             parameter       s_tag    = 32 - s_offset - s_index,
             parameter       s_mask   = 2**s_offset,
             parameter       s_line   = 8*s_mask,
-            parameter       num_sets = 2**s_index
+            parameter       num_sets = 2**s_index,
+            parameter       num_ways = 2
 )( 
     input logic clk,
     input logic rst,
@@ -36,7 +37,7 @@ import rv32i_types::*;         // import my datatypes
     input logic valid_in,
     input logic dirty_in
 );
-
+    localparam length = $clog2(num_ways);
 
     /*============================== Signals begin ==============================*/
     // for data array and tag array inputs
@@ -49,23 +50,23 @@ import rv32i_types::*;         // import my datatypes
     logic[s_tag-1:0]  tag_arr_in;  
 
     // data array and tag array (4 ways)
-    logic[s_line-1:0]  data_arr_out  [4];     // data_out from 4 ways
-    logic[s_tag-1:0]   tag_arr_out   [4];     // tag_out from 4 ways
+    logic[s_line-1:0]  data_arr_out  [num_ways];     // data_out from 4 ways
+    logic[s_tag-1:0]   tag_arr_out   [num_ways];     // tag_out from 4 ways
     
     // plru array (one array for 4 way)
-    plru_word_t  plru_data_out; // need to change ?
-    plru_word_t  new_plru_data; // need to change ?
+    logic [num_ways-2:0]  plru_data_out;
+    logic [num_ways-2:0]  new_plru_data;
 
     // dirty array and valid array (4 ways)
-    logic   valid_out   [4];
-    logic   dirty_out   [4];
+    logic   valid_out   [num_ways];
+    logic   dirty_out   [num_ways];
 
-    logic [3:0] hit;            // one hot hit vector
+    logic [num_ways-1:0] hit;            // one hot hit vector
     
     logic[s_tag-1:0] tag_from_addr;   // mem_addr[31:9]
     logic [3:0] set_idx;        // mem_addr[8:5]      
 
-    logic [1:0] hit_way, way_idx, replace_way;
+    logic [$clog2(num_ways)-1:0] hit_way, way_idx, replace_way;
     
     logic[s_tag-1:0] tag_out;         // one of the tags in 4 ways
     logic[s_line-1:0] data_out;       // one of the data in 4 ways
@@ -75,10 +76,10 @@ import rv32i_types::*;         // import my datatypes
 
 
     // write enable should active low 
-    logic [3:0] data_web_arr;   // data_web
-    logic [3:0] tag_web_arr;    // tag_web
-    logic [3:0] dirty_web_arr;   // chip select for dirty bits
-    logic [3:0] valid_web_arr;   // chip select for valid bits
+    logic [num_ways-1:0] data_web_arr;   // data_web
+    logic [num_ways-1:0] tag_web_arr;    // tag_web
+    logic [num_ways-1:0] dirty_web_arr;   // chip select for dirty bits
+    logic [num_ways-1:0] valid_web_arr;   // chip select for valid bits
     /*============================== Signals end ==============================*/
 
 
@@ -97,7 +98,7 @@ import rv32i_types::*;         // import my datatypes
 
     /*============================== Modules begin ==============================*/
     // generate 4 data_array
-    generate for (genvar i = 0; i < 4; i++) begin : data_arrays
+    generate for (genvar i = 0; i < num_ways; i++) begin : data_arrays
         L2_data_array l2_data_array (
             .clk0       (clk),
             .csb0       (1'b0),
@@ -110,7 +111,7 @@ import rv32i_types::*;         // import my datatypes
     end endgenerate
 
     // generate 4 tag array
-    generate for (genvar i = 0; i < 4; i++) begin : tag_arrays
+    generate for (genvar i = 0; i < num_ways; i++) begin : tag_arrays
         L2_tag_array l2_tag_array(
             .clk0    (clk),
             .csb0    (1'b0),
@@ -122,7 +123,7 @@ import rv32i_types::*;         // import my datatypes
     end endgenerate
 
     // generate 4 valid arrays and 4 dirty arrays
-    generate for (genvar i = 0; i < 4; i++) begin
+    generate for (genvar i = 0; i < num_ways; i++) begin
         ff_array l2_valid_array (
             .clk0(clk),
             .rst0(rst),
@@ -144,7 +145,7 @@ import rv32i_types::*;         // import my datatypes
     end endgenerate
 
     // create a plru_array with a width of 3 bits
-    ff_array #(.width(3)) l2_plru_array(
+    ff_array #(.width(num_ways-1)) l2_plru_array(
         .clk0(clk),
         .rst0(rst),
         .csb0(1'b0),                 
@@ -153,15 +154,31 @@ import rv32i_types::*;         // import my datatypes
         .din0(new_plru_data),        // new plru bits 
         .dout0(plru_data_out)        // output
     );
+
+    plru_update l2_plru_update(
+        .hit_way(hit_way),
+        // .plru_bits(plru_data_out),
+        .new_plru_bits(new_plru_data)
+    );
+
+    plru_tree #(.ways(num_ways))
+    plru_tree(
+        .plru_bits(plru_data_out),
+        .data_o(replace_way)
+    );
+
+    assign is_dirty = dirty_out[replace_way];
+
+
     /*============================== Modules end ==============================*/
 
 
     /*======================== load data handling begin ========================*/
     always_comb begin 
-        data_web_arr = 4'hF;
-        tag_web_arr = 4'hF;
-        valid_web_arr = 4'hF;
-        dirty_web_arr = 4'hF;
+        data_web_arr = {{(num_ways){1'b1}}};
+        tag_web_arr = {{(num_ways){1'b1}}};
+        valid_web_arr = {{(num_ways){1'b1}}};
+        dirty_web_arr = {{(num_ways){1'b1}}};
         
         unique case(use_replace | (~is_hit)) // determine when to use replace index or hit index
             1'b0: way_idx = hit_way;
@@ -187,45 +204,45 @@ import rv32i_types::*;         // import my datatypes
     end
     /*======================== load data handling end ========================*/
 
-    /*======================== PLRU begin ========================*/
-    always_comb begin
-        // PLRU traverse and updates, this is happen in HIT_CHECK state
-        // when cache miss, it use the slot here to replace the data
-        unique case(plru_data_out[0]) // L0
-            1'b0: begin
-                unique case(plru_data_out[1])   // L1: decision tree
-                    1'b0: replace_way = 2'd0;
-                    1'b1: replace_way = 2'd1;
-                    default: replace_way = 2'd0;
-                endcase
-            end
-            1'b1: begin
-                unique case(plru_data_out[2])   // L2: decision tree
-                    1'b0: replace_way = 2'd2;
-                    1'b1: replace_way = 2'd3;
-                    default: replace_way = 2'd2;
-                endcase
-            end
-            default: begin
-                unique case(plru_data_out[1])   // L1: decision tree
-                    1'b0: replace_way = 2'd0;
-                    1'b1: replace_way = 2'd1;
-                    default: replace_way = 2'd0;
-                endcase
-            end
-        endcase
+    // /*======================== PLRU begin ========================*/
+    // always_comb begin
+    //     // PLRU traverse and updates, this is happen in HIT_CHECK state
+    //     // when cache miss, it use the slot here to replace the data
+    //     unique case(plru_data_out[0]) // L0
+    //         1'b0: begin
+    //             unique case(plru_data_out[1])   // L1: decision tree
+    //                 1'b0: replace_way = 2'd0;
+    //                 1'b1: replace_way = 2'd1;
+    //                 default: replace_way = 2'd0;
+    //             endcase
+    //         end
+    //         1'b1: begin
+    //             unique case(plru_data_out[2])   // L2: decision tree
+    //                 1'b0: replace_way = 2'd2;
+    //                 1'b1: replace_way = 2'd3;
+    //                 default: replace_way = 2'd2;
+    //             endcase
+    //         end
+    //         default: begin
+    //             unique case(plru_data_out[1])   // L1: decision tree
+    //                 1'b0: replace_way = 2'd0;
+    //                 1'b1: replace_way = 2'd1;
+    //                 default: replace_way = 2'd0;
+    //             endcase
+    //         end
+    //     endcase
 
-        // use by hit_state, used to update PLRUs
-        unique case(hit_way[1])
-            1'd0: new_plru_data = {plru_data_out[2], ~hit_way[0], 1'b1};
-            1'd1: new_plru_data = {~hit_way[0], plru_data_out[1], 1'b0};
-            default: new_plru_data = 3'b0;
-        endcase
+    //     // use by hit_state, used to update PLRUs
+    //     unique case(hit_way[1])
+    //         1'd0: new_plru_data = {plru_data_out[2], ~hit_way[0], 1'b1};
+    //         1'd1: new_plru_data = {~hit_way[0], plru_data_out[1], 1'b0};
+    //         default: new_plru_data = 3'b0;
+    //     endcase
 
-        // select data from replace way (determined by current PLRU)
-        // is_valid = valid_out[replace_way];  // extract valid bits
-        is_dirty = dirty_out[replace_way];  // extract dirty bits
-    end
+    //     // select data from replace way (determined by current PLRU)
+    //     // is_valid = valid_out[replace_way];  // extract valid bits
+    //     is_dirty = dirty_out[replace_way];  // extract dirty bits
+    // end
     /*======================== PLRU end ========================*/
 
     // 000 --> 1, 011
@@ -237,63 +254,44 @@ import rv32i_types::*;         // import my datatypes
 
     always_comb begin
         is_hit = 1'b0;
-        for(int idx = 0; idx < 4; idx++) begin
+        for(int idx = 0; idx < num_ways; idx++) begin
             hit[idx] = 1'(tag_from_addr == tag_arr_out[idx]) & valid_out[idx];
         end 
         is_hit = |hit;            // OR all the hit bit to see if a way is hit
     end
 
-    // hit_way decoding
+
     always_comb begin 
-        unique case(hit)
-            4'b0001: hit_way = 2'd0; // way 0
-            4'b0010: hit_way = 2'd1; // way 1
-            4'b0100: hit_way = 2'd2; // way 2
-            4'b1000: hit_way = 2'd3; // way 3
-            default: hit_way = 2'd0;
-        endcase
+        hit_way = '0; 
+        for (int unsigned i = 0; i < num_ways; i++) begin
+            if (hit[i] == 1'b1) begin
+                hit_way = i[length-1:0]; 
+            end
+        end
     end 
+
     
     //MUXES
     always_comb begin
 
         // cache selection ord write back data selection  
-        unique case(way_idx)
-            2'd0: begin
-                tag_out = tag_arr_out[0];
-                data_out = data_arr_out[0];
-            end
-            2'd1: begin
-                tag_out = tag_arr_out[1];
-                data_out = data_arr_out[1];
-            end 
-            2'd2: begin
-                tag_out = tag_arr_out[2];
-                data_out = data_arr_out[2];
-            end
-            2'd3: begin
-                tag_out = tag_arr_out[3];
-                data_out = data_arr_out[3];
-            end
-            default: begin
-                tag_out = tag_arr_out[0];
-                data_out = data_arr_out[0];
-            end
-        endcase 
+        tag_out = tag_arr_out[way_idx];
+        data_out = data_arr_out[way_idx];
 
+        // mem_byte_enable256 base on current situation
         unique case(is_allocate)
             1'b0: begin
-                write_mask = mem_byte_enable256;      // write entire cacheline at allocate, no longer true in our case
+                write_mask = mem_byte_enable256; // write mask
                 final_tag_out = tag_out;         // normal tag output from tag arrays
                 data_arr_in = mem_wdata256;
             end
             1'b1: begin 
-                write_mask = {(s_mask){1'b1}};
+                write_mask = {(s_mask){1'b1}};      // write entire cacheline at allocate
                 final_tag_out = tag_from_addr; // using the tag out from mem_addr
                 data_arr_in = pmem_rdata;
             end
             default: begin
-                write_mask = mem_byte_enable256;
+                write_mask = mem_byte_enable256; // write mask
                 final_tag_out = tag_out;         // normal tag output from tag arrays
                 data_arr_in = mem_wdata256;
             end

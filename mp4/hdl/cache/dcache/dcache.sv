@@ -27,7 +27,7 @@ module dcache #(
     input   logic           pmem_resp
 );
 
-localparam num_ways = 2;
+localparam num_ways = 1;
 
 logic [s_mask-1:0] mem_byte_enable256;
 logic [s_line-1:0] mem_rdata256, mem_wdata256;

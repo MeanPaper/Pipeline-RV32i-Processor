@@ -7,7 +7,7 @@ import rv32i_types::*;         // import my datatypes
             parameter       s_mask   = 2**s_offset,
             parameter       s_line   = 8*s_mask,
             parameter       num_sets = 2**s_index,
-            parameter       num_ways = 4 // parameterized
+            parameter       num_ways = 1 // parameterized
 )( 
     input logic clk,
     input logic rst,
@@ -40,7 +40,7 @@ import rv32i_types::*;         // import my datatypes
     input logic dirty_in
 );
 
-    localparam length = $clog2(num_ways);
+    // localparam length = $clog2(num_ways);
 
     /*============================== Signals begin ==============================*/
     // for data array and tag array inputs
@@ -57,8 +57,8 @@ import rv32i_types::*;         // import my datatypes
     logic[s_tag-1:0]   tag_arr_out   [num_ways];     
     
     // plru array (one array for parameterized way)
-    logic [num_ways-2:0]  plru_data_out;
-    logic [num_ways-2:0]  new_plru_data;
+    // logic [num_ways-2:0]  plru_data_out;
+    // logic [num_ways-2:0]  new_plru_data;
 
     // dirty array and valid array (4 ways)
     logic   valid_out   [num_ways];
@@ -152,41 +152,41 @@ import rv32i_types::*;         // import my datatypes
     end endgenerate
 
     // create a plru_array with a width of (num_ways-1) bits
-    ff_array #( .s_index(s_index),
-                .width(num_ways-1)) 
-    plru_array(
-        .clk0(clk),
-        .rst0(rst),
-        .csb0(1'b0),                 
-        .web0(~load_plru),           // load_plru will output high from the control, so need to invert it   
-        .addr0(set_idx),
-        .din0(new_plru_data),        // new plru bits 
-        .dout0(plru_data_out)        // output
-    );
+    // ff_array #( .s_index(s_index),
+    //             .width(num_ways-1)) 
+    // plru_array(
+    //     .clk0(clk),
+    //     .rst0(rst),
+    //     .csb0(1'b0),                 
+    //     .web0(~load_plru),           // load_plru will output high from the control, so need to invert it   
+    //     .addr0(set_idx),
+    //     .din0(new_plru_data),        // new plru bits 
+    //     .dout0(plru_data_out)        // output
+    // );
 
-    // we are using correct plru, so we need to have a minimal of 4 ways
-    generate
-        if(num_ways >= 4) begin
-            plru_update plru_update(
-                .hit_way(hit_way),
-                .plru_bits(plru_data_out),
-                .new_plru_bits(new_plru_data)
-            );
-        end
-        else begin  
-            plru_update plru_update(
-                .hit_way(hit_way),
-                .new_plru_bits(new_plru_data)
-            );
-        end 
-    endgenerate
+    // // we are using correct plru, so we need to have a minimal of 4 ways
+    // generate
+    //     if(num_ways >= 4) begin
+    //         plru_update plru_update(
+    //             .hit_way(hit_way),
+    //             .plru_bits(plru_data_out),
+    //             .new_plru_bits(new_plru_data)
+    //         );
+    //     end
+    //     else begin  
+    //         plru_update plru_update(
+    //             .hit_way(hit_way),
+    //             .new_plru_bits(new_plru_data)
+    //         );
+    //     end 
+    // endgenerate
 
-    plru_tree #(.ways(num_ways))
-    plru_tree(
-        .plru_bits(plru_data_out),
-        .data_o(replace_way)
-    );
-
+    // plru_tree #(.ways(num_ways))
+    // plru_tree(
+    //     .plru_bits(plru_data_out),
+    //     .data_o(replace_way)
+    // );
+    assign replace_way = '0;
     assign is_dirty = dirty_out[replace_way];
 
     /*============================== Modules end ==============================*/
@@ -402,11 +402,11 @@ import rv32i_types::*;         // import my datatypes
 
     always_comb begin 
         hit_way = '0; 
-        for (int unsigned i = 0; i < num_ways; i++) begin
-            if (hit[i] == 1'b1) begin
-                hit_way = i[length-1:0]; 
-            end
-        end
+        // for (int unsigned i = 0; i < num_ways; i++) begin
+        //     if (hit[i] == 1'b1) begin
+        //         hit_way = i[length-1:0]; 
+        //     end
+        // end
     end 
 
     
