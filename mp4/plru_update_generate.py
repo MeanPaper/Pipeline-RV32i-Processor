@@ -1,7 +1,7 @@
 import math
 
 # with plru, num_ways need to be a power of 2, only change this
-num_ways = 4
+num_ways = 2
 
 
 
@@ -29,10 +29,20 @@ module plru_update(
     output logic [{plru_len-1} : 0] new_plru_bits
 );
 """
+
+if (num_ways < 4):
+    module_begin_string =f"""
+module plru_update(  
+    input logic [{replace_data_width-1} : 0] hit_way,
+    output logic [{plru_len-1} : 0] new_plru_bits
+);
+"""
+
+
 module_end_string = "endmodule\n"
 
-
-plru_update_sv_file = open("plru_update.sv", "w")
+plru_update_sv_path = "hdl/cache/dcache/plru_update.sv"
+plru_update_sv_file = open(plru_update_sv_path, "w")
 plru_update_sv_file.write(module_begin_string)
 plru_update_sv_file.write(""" 
 always_comb begin

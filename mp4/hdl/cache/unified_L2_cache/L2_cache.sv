@@ -13,21 +13,22 @@ module l2_cache #(
     input   logic   [31:0]  mem_address,
     input   logic           mem_read,
     input   logic           mem_write,
-    output  logic   [255:0] mem_rdata,
-    input   logic   [255:0] mem_wdata,
+    output  logic   [s_line-1:0] mem_rdata,
+    input   logic   [s_line-1:0] mem_wdata,
+    input   logic   [s_mask-1:0] mem_byte_enable256,
     output  logic           mem_resp,
 
     /* Cacheline Adaptor side signals */
     output  logic   [31:0]  pmem_address,
     output  logic           pmem_read,
     output  logic           pmem_write,
-    input   logic   [255:0] pmem_rdata,
-    output  logic   [255:0] pmem_wdata,
+    input   logic   [s_line-1:0] pmem_rdata,
+    output  logic   [s_line-1:0] pmem_wdata,
     input   logic           pmem_resp
 );
 
 
-logic [255:0] mem_rdata256, mem_wdata256;
+logic [s_line-1:0] mem_rdata256, mem_wdata256;
 logic load_data, load_tag, load_dirty, load_valid, load_plru;
 logic valid_in, dirty_in;
 logic is_hit, is_dirty;
@@ -73,14 +74,16 @@ l2_cache_control l2_cache_control(
     .use_replace
 );
 
-l2_cache_datapath l2_cache_datapath(
+l2_cache_datapath #(.s_offset(s_offset), .s_index(s_index)) 
+l2_cache_datapath(
     .clk,
     .rst,
 
     .mem_address,
     .mem_wdata256,
     .mem_rdata256,
-    
+    .mem_byte_enable256, // this is for writing to the cacheline
+
     .pmem_rdata,
     .pmem_wdata,
     .pmem_address,

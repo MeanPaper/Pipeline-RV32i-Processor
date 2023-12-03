@@ -13,8 +13,8 @@ import rv32i_types::*;
 
 
 logic [31:0] upper_partial_sum; //neg_upper;
-logic [32:0] lower_partial_sum; //neg_lower;   // 33 bits, [32] is the carry bit
-logic [32:0] lower_reg; // neg_lower_reg;
+logic [31:0] lower_partial_sum; //neg_lower;   // 33 bits, [32] is the carry bit
+logic [31:0] lower_reg; // neg_lower_reg;
 logic [31:0] upper_reg; // neg_upper_reg;
 
 
@@ -48,42 +48,41 @@ always_comb begin : mult_pre_process
     
     // op1 = rs1_data;
     // op2 = rs2_data;
+    // should_neg = '0;
+    // case(funct3)
+    //     mul, mulhu: begin // weird behavior
+    //     end 
+    //     mulhsu: begin
+    //         should_neg = rs1_data_tmp[31];
+    //         if(rs1_data_tmp[31]) begin
+    //             op1 = (~rs1_data_tmp) + 1'b1;
+    //         end
+    //         // should_neg = rs1_data[31];
+    //         // if(rs1_data[31]) begin
+    //         //     op1 = (~rs1_data) + 1'b1;
+    //         // end
+    //     end
+    //     default: begin // mul might belong here, but we will see
+    //         // happen only in the sign multiplication
+    //         should_neg = rs1_data_tmp[31] ^ rs2_data_tmp[31];   // see if negative should be used
 
-    should_neg = '0;
-    case(funct3)
-        mul, mulhu: begin // weird behavior
-        end 
-        mulhsu: begin
-            should_neg = rs1_data_tmp[31];
-            if(rs1_data_tmp[31]) begin
-                op1 = (~rs1_data_tmp) + 1'b1;
-            end
-            // should_neg = rs1_data[31];
-            // if(rs1_data[31]) begin
-            //     op1 = (~rs1_data) + 1'b1;
-            // end
-        end
-        default: begin // mul might belong here, but we will see
-            // happen only in the sign multiplication
-            should_neg = rs1_data_tmp[31] ^ rs2_data_tmp[31];   // see if negative should be used
+    //         if(rs1_data_tmp[31] == 1'b1) begin  // find the abs of rs1 if rs1 neg
+    //             op1 = (~rs1_data_tmp) + 1'b1;
+    //         end 
 
-            if(rs1_data_tmp[31] == 1'b1) begin  // find the abs of rs1 if rs1 neg
-                op1 = (~rs1_data_tmp) + 1'b1;
-            end 
-
-            if(rs2_data_tmp[31] == 1'b1) begin  // find the abs of rs2 if rs2 neg
-                op2 = (~rs2_data_tmp) + 1'b1;
-            end
-            // should_neg = rs1_data[31] ^ rs2_data[31];
-            // if(rs1_data[31]) begin
-            //     op1 = (~rs1_data) + 1'b1;
-            // end
-            // if(rs2_data[31]) begin
-            //     op2 = (~rs2_data) + 1'b1;
-            // end
+    //         if(rs2_data_tmp[31] == 1'b1) begin  // find the abs of rs2 if rs2 neg
+    //             op2 = (~rs2_data_tmp) + 1'b1;
+    //         end
+    //         // should_neg = rs1_data[31] ^ rs2_data[31];
+    //         // if(rs1_data[31]) begin
+    //         //     op1 = (~rs1_data) + 1'b1;
+    //         // end
+    //         // if(rs2_data[31]) begin
+    //         //     op2 = (~rs2_data) + 1'b1;
+    //         // end
             
-        end
-    endcase
+    //     end
+    // endcase
 end 
 
 
@@ -126,8 +125,8 @@ always_ff @(posedge clk) begin : mult_flip_flops
         row_top <= dadda_top_o;
         row_bot <= dadda_bot_o;
         
-        lower_reg <= lower_partial_sum;
-        upper_reg <= upper_partial_sum;
+        // lower_reg <= lower_partial_sum;
+        // upper_reg <= upper_partial_sum;
 
         // neg_lower_reg <= neg_lower;
         // neg_upper_reg <= neg_upper;
@@ -153,23 +152,29 @@ always_comb begin : final_compute
     next_cycle = mul_cycle + 1'b1;
     // if(mul_cycle[2]) begin
     // if(mul_cycle == 3'b101) begin
-    if(mul_cycle == 3'b11) begin
+    // if(mul_cycle == 3'b11) begin
+    //     mul_done = 1'b1;
+    //     next_cycle = '0;
+    // end
+
+    if(mul_cycle == 3'b10) begin
         mul_done = 1'b1;
         next_cycle = '0;
     end
 
-    lower_partial_sum = {1'b0, row_top[31:0]} + {1'b0, row_bot[31:0]};          // lower half of the product
-    upper_partial_sum = row_top[63:32] + row_bot[63:32];
+    mul_out = row_bot[31:0] + row_top[31:0];
+    // lower_partial_sum = {1'b0, row_top[31:0]} + {1'b0, row_bot[31:0]};          // lower half of the product
+    // upper_partial_sum = row_top[63:32] + row_bot[63:32];
 
-    lower_partial_carry = lower_reg[32];                                // the carry from the lower part 
-    mul_result = {upper_reg + lower_partial_carry, lower_reg[31:0]};
+    // lower_partial_carry = lower_reg[32];                                // the carry from the lower part 
+    // mul_result = {upper_reg + lower_partial_carry, lower_reg[31:0]};
 
-    if(should_neg) begin
-        // neg_lower = ~(lower_reg[32:0]) + 1'b1;
-        // neg_upper = ~(upper_reg + lower_partial_carry);
-        // mul_result = {neg_upper_reg + neg_lower_reg[32], neg_lower_reg[31:0]};
-        mul_result = ~{upper_reg + lower_partial_carry, lower_reg[31:0]} + 1'b1;
-    end
+    // if(should_neg) begin
+    //     // neg_lower = ~(lower_reg[32:0]) + 1'b1;
+    //     // neg_upper = ~(upper_reg + lower_partial_carry);
+    //     // mul_result = {neg_upper_reg + neg_lower_reg[32], neg_lower_reg[31:0]};
+    //     mul_result = ~{upper_reg + lower_partial_carry, lower_reg[31:0]} + 1'b1;
+    // end
 
     // lower_partial_carry;  // upper half of the product adds with partial
     // if(should_neg) begin
@@ -179,28 +184,28 @@ always_comb begin : final_compute
     // end 
 
 
-    case(funct3)
-        mulh, mulhsu, mulhu: begin  // get 32 higher bits 
-            mul_out = mul_result[63:32];
-            // if(lower_partial_carry == 1'b0) begin   // speed up the multiplication if we do not use the carry
-            //     if(mul_cycle == 3'b11) begin
-            //         mul_done = 1'b1;
-            //         next_cycle = '0;
-            //     end
-            //     mul_out = upper_partial_sum;
-            // end
-        end 
+    // case(funct3)
+    //     mulh, mulhsu, mulhu: begin  // get 32 higher bits 
+    //         mul_out = mul_result[63:32];
+    //         // if(lower_partial_carry == 1'b0) begin   // speed up the multiplication if we do not use the carry
+    //         //     if(mul_cycle == 3'b11) begin
+    //         //         mul_done = 1'b1;
+    //         //         next_cycle = '0;
+    //         //     end
+    //         //     mul_out = upper_partial_sum;
+    //         // end
+    //     end 
            
-        default: begin              // get 32 lower bits operation
-            // if(mul_cycle == 3'b11) begin
-            if(mul_cycle == 3'b10) begin
-                mul_done = 1'b1;
-                next_cycle = '0;
-            end
-            mul_out = lower_partial_sum[31:0];
-            // mul_out = mul_result[31:0];
-        end
-    endcase
+    //     default: begin              // get 32 lower bits operation
+    //         // if(mul_cycle == 3'b11) begin
+    //         if(mul_cycle == 3'b10) begin
+    //             mul_done = 1'b1;
+    //             next_cycle = '0;
+    //         end
+    //         mul_out = lower_partial_sum[31:0];
+    //         // mul_out = mul_result[31:0];
+    //     end
+    // endcase
 
 end
 

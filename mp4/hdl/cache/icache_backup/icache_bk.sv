@@ -1,4 +1,14 @@
-module icache_bk (
+module icache_bk 
+#(
+    parameter       s_offset = 5,
+    parameter       s_index = 3,
+    parameter       s_tag = 32 - s_offset - s_index,
+    parameter       s_mask   = 2**s_offset,
+    parameter       s_line   = 8*s_mask,
+    parameter       num_set  = 2 ** s_index,
+    parameter       addr_sel = s_offset - 1
+)
+(
     input clk,
     input rst,
 
@@ -11,7 +21,7 @@ module icache_bk (
     
     /* Physical memory signals */
     input logic pmem_resp,
-    input logic [255:0] pmem_rdata,
+    input logic [s_line-1:0] pmem_rdata,
     output logic [31:0] pmem_address,
     output logic pmem_read
 );
@@ -23,7 +33,7 @@ logic is_hit;
 logic load_data;
 logic load_tag;
 logic load_valid;
-logic [255:0] mem_rdata_line;
+logic [s_line-1:0] mem_rdata_line;
 logic [31:0] addr_reg;
 logic [31:0] current_address;
 logic addr_mux_sel;
@@ -54,10 +64,11 @@ end
 always_comb begin
     // access_addr = addr_reg;
     access_addr = addr_reg;
-    mem_rdata_cpu = mem_rdata_line[(32*access_addr[4:2]) +: 32];
+    mem_rdata_cpu = mem_rdata_line[(32*access_addr[addr_sel:2]) +: 32];
 end
 
-icache_bk_datapath icache_bk_datapath(
+icache_bk_datapath  #(.s_offset(s_offset), .s_index(s_index))
+icache_bk_datapath(
     .clk(clk),
     .rst(rst),
 

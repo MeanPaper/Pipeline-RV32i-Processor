@@ -1,14 +1,21 @@
 module icache_bk_data_array
+#(
+    parameter s_offset = 5,
+    parameter s_index = 3,
+    parameter s_mask   = 2**s_offset,
+    parameter s_line   = 8*s_mask,
+    parameter num_set = 2**s_index
+)
 (
     input   logic           clk,
     input   logic           rst,
     input   logic           web,
-    input   logic [2:0]     index,
-    input   logic [255:0]   datain,
-    output  logic [255:0]   dataout
+    input   logic [s_index-1:0]     index,
+    input   logic [s_line-1:0]   datain,
+    output  logic [s_line-1:0]   dataout
 );
 
-logic [255:0] data[8]; 
+logic [s_line-1:0] data[num_set]; 
 // = '{8{'0}}; 
 
 always_comb begin
@@ -17,7 +24,7 @@ end
 
 always_ff @(posedge clk) begin
     if(rst) begin
-        for(int i = 0; i < 8; ++i) begin
+        for(int i = 0; i < num_set; ++i) begin
             data[i] <= '0;
         end 
     end

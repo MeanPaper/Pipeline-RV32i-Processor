@@ -1,35 +1,39 @@
-module eviction_buffer (
+module eviction_buffer 
+#(
+    parameter cacheline_size = 256
+)
+(
     input clk, 
     input rst, 
     /*================= with L1 Cache ==================*/
     input logic [31:0] from_dcache_address,
     input logic from_dcache_write, 
     input logic from_dcache_read, 
-    input logic [255:0] from_dcache_wdata,
-    output logic [255:0] to_dcache_rdata, 
+    input logic [cacheline_size-1:0] from_dcache_wdata,
+    output logic [cacheline_size-1:0] to_dcache_rdata, 
     output logic to_dcache_resp, 
     /*================= with arbiter ==================*/
-    input logic [255:0] from_arbiter_rdata, 
+    input logic [cacheline_size-1:0] from_arbiter_rdata, 
     input logic from_arbiter_resp, 
     output logic to_arbiter_write, 
     output logic to_arbiter_read, 
     output logic [31:0] to_arbiter_address,
-    output logic [255:0] to_arbiter_wdata
+    output logic [cacheline_size-1:0] to_arbiter_wdata
 );
 
 logic [31:0] address, address_next;
-logic [255:0] data, data_next;
+logic [cacheline_size-1:0] data, data_next;
 logic wb_flag; 
 
 enum int unsigned {IDLE, READ, WB} state, next_state; 
 
 function void set_defaults();
-    to_dcache_rdata = 256'b0; 
+    to_dcache_rdata = '0; 
     to_dcache_resp = 1'b0; 
     to_arbiter_write = 1'b0;
     to_arbiter_read = 1'b0; 
     to_arbiter_address = 32'b0; 
-    to_arbiter_wdata = 256'b0; 
+    to_arbiter_wdata = '0; 
     address_next = address;
     data_next = data;
 endfunction
@@ -81,7 +85,7 @@ always_ff @(posedge clk) begin
         state <= IDLE; 
         wb_flag <= 1'b0; 
         address <= 32'd0; 
-        data <= 256'd0;
+        data <= '0;
     end
     else begin
         state <= next_state;
