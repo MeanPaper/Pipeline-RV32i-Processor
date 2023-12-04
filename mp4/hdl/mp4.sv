@@ -261,24 +261,24 @@ import rv32i_types::*;
     );
 
 
-    eviction_buffer #(.cacheline_size(l1_cacheline_size))
-    ev_buf(
-        .clk(clk),
-        .rst(rst), 
-        .from_dcache_address(dcache_address),
-        .from_dcache_write(dcache_write), 
-        .from_dcache_read(dcache_read), 
-        .from_dcache_wdata(dcache_wdata),
-        .to_dcache_rdata(dcache_rdata), 
-        .to_dcache_resp(dcache_resp), 
-        //
-        .from_arbiter_rdata(from_arbiter_rdata), 
-        .from_arbiter_resp(from_arbiter_resp), 
-        .to_arbiter_write(to_arbiter_write), 
-        .to_arbiter_read(to_arbiter_read), 
-        .to_arbiter_address(to_arbiter_address),
-        .to_arbiter_wdata(to_arbiter_wdata)
-    );
+    // eviction_buffer #(.cacheline_size(l1_cacheline_size))
+    // ev_buf(
+    //     .clk(clk),
+    //     .rst(rst), 
+    //     .from_dcache_address(dcache_address),
+    //     .from_dcache_write(dcache_write), 
+    //     .from_dcache_read(dcache_read), 
+    //     .from_dcache_wdata(dcache_wdata),
+    //     .to_dcache_rdata(dcache_rdata), 
+    //     .to_dcache_resp(dcache_resp), 
+    //     //
+    //     .from_arbiter_rdata(from_arbiter_rdata), 
+    //     .from_arbiter_resp(from_arbiter_resp), 
+    //     .to_arbiter_write(to_arbiter_write), 
+    //     .to_arbiter_read(to_arbiter_read), 
+    //     .to_arbiter_address(to_arbiter_address),
+    //     .to_arbiter_wdata(to_arbiter_wdata)
+    // );
     
 
     arbiter #(.cacheline_size(l1_cacheline_size))
@@ -293,12 +293,12 @@ import rv32i_types::*;
         .icache_rdata(icache_rdata),
 
         /**** with DCACHE ****/
-        .dcache_read(to_arbiter_read),
-        .dcache_write(to_arbiter_write),
-        .dcache_address(to_arbiter_address),
-        .dcache_wdata(to_arbiter_wdata),
-        .dcache_resp(from_arbiter_resp),
-        .dcache_rdata(from_arbiter_rdata),
+        .dcache_read(dcache_read),
+        .dcache_write(dcache_write),
+        .dcache_address(dcache_address),
+        .dcache_wdata(dcache_wdata),
+        .dcache_resp(dcache_resp),
+        .dcache_rdata(dcache_rdata),
 
         /**** with cacheline_adapter ****/
         .adapter_resp(l2_cache_resp),
@@ -308,6 +308,34 @@ import rv32i_types::*;
         .adapter_address(l2_cache_address),
         .adapter_wdata(l2_cache_wdata)
     );
+
+    // arbiter #(.cacheline_size(l1_cacheline_size))
+    // arbiter(
+    //     .clk(clk),
+    //     .rst(rst),
+
+    //     /**** with ICACHE ****/
+    //     .icache_read(icache_read),
+    //     .icache_address(icache_address),
+    //     .icache_resp(icache_resp),
+    //     .icache_rdata(icache_rdata),
+
+    //     /**** with DCACHE ****/
+    //     .dcache_read(to_arbiter_read),
+    //     .dcache_write(to_arbiter_write),
+    //     .dcache_address(to_arbiter_address),
+    //     .dcache_wdata(to_arbiter_wdata),
+    //     .dcache_resp(from_arbiter_resp),
+    //     .dcache_rdata(from_arbiter_rdata),
+
+    //     /**** with cacheline_adapter ****/
+    //     .adapter_resp(l2_cache_resp),
+    //     .adapter_rdata(l2_cache_rdata),
+    //     .adapter_read(l2_cache_read),
+    //     .adapter_write(l2_cache_write),
+    //     .adapter_address(l2_cache_address),
+    //     .adapter_wdata(l2_cache_wdata)
+    // );
 
 
     // 128 bit L1 cacheline and 256 bit L1 cacheline
