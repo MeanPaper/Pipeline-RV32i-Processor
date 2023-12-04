@@ -8,7 +8,7 @@ module icache_bk_data_array
     output  logic [255:0]   dataout
 );
 
-logic [255:0] data[8];
+logic [255:0] data[8] = '{8{'0}}; 
 
 always_comb begin
     dataout = data[index];

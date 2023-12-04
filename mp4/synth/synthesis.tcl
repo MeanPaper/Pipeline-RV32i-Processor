@@ -98,8 +98,9 @@ set_fanout_load 8 [all_outputs]
 
 link
 
-compile_ultra -gate_clock -retime
-# compile
+# 400Mhz if compile with compile_ultra 
+# compile_ultra -gate_clock -retime
+compile
 
 current_design $design_toplevel
 

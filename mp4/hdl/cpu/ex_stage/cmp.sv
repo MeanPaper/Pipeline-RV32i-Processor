@@ -16,7 +16,6 @@ import rv32i_types::*;
             bge: br_en = ($signed(a) >= $signed(b));
             bltu: br_en = (a < b);
             bgeu: br_en = (a >= b);
-            default: br_en = (a == b);
         endcase
     end
 
