@@ -1,7 +1,6 @@
 # A Pipelined Implementation of the RV32I Processor
 
-By the collaboration of [Dongming Liu](https://github.com/MeanPaper), [Elijah Ye](https://github.com/Elijah-Ye), [Tracy Miao](https://github.com/tracymiao111)
-
+By the collaboration of [Dongming Liu](https://github.com/MeanPaper), [Elijah Ye](https://github.com/Elijah-Ye), [Tracy Miao](https://github.com/tracymiao111)<br>
 UIUC ECE411 FA23 | October 2023 ~ December 2023
 
 ## Running the Processor
@@ -34,11 +33,19 @@ $ diff -s sim/spike.log sim/golden_spike.log > sim/diff.log
 $ cd synth
 $ make synth
 ```
+## Documentation
+| | Design | Report |
+| - | :-: | :-: |
+| **CP0** - Design Checkpoint | [Design](docs/pics/ECE411MP4CP0Design.png) ||
+| **CP1** - RV32I ISA, Basic Pipelining | [Design](docs/pics/ECE411MP4CP1Design.png) ||
+| **CP2** - Hazard Control, L1 Cache, <br> Forwarding, Static Branch Prediction | [Design](docs/pics/ECE411MP4CP2Design.png) ||
+| **CP3** - Advanced Design Options ||
+| **CP4** - Design Competition | | [Demo](docs/ECE411_Final_Presentation.pptx) <br> [Report](docs/ECE411%20MP4%20Report.pdf) |
+
 
 ## Academic Integrity
 Please review the University of Illinois Student Code, particularly all subsections of [Article 1, Part 4 - Academic Integrity Policy and Procedure](https://studentcode.illinois.edu/article1/part4/1-401/).
 
 ## Legal Notice
-This work is protected under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html).
-
-Copyright (c) 2023 Elijah Gaohan Ye, Dongming Liu, Tracy Miao, Jian Huang
+This work is protected under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html).<br>
+**Copyright (c) 2023 Elijah Gaohan Ye, Dongming Liu, Tracy Miao, Jian Huang**
