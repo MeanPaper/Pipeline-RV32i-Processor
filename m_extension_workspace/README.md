@@ -1,8 +1,5 @@
----
-Author: Dongming Liu
----
 # M Extension
-
+Author: Dongming Liu<br>
 This folder contains all the necessary scripts for generating and testing the m extension unit. 
 
 ## Folders
